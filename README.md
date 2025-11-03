@@ -138,7 +138,7 @@ A game where you brew coffee.
 - Balance Change: Golden Coffee cost will scale by factor of 10 every with every golden coffee collected, will go down if you spend golden coffee on golden upgrades
 - Stats button, next to settings button: Opens a window like info, but with tabs within it
   - Tab graph with history of total coffee and total CPS and golden coffee
-  - 
+  - Graph with percentage of CPS from each building (each building has its own graph), and on same graph a graph of CPS from each building
    
 ---
 #### Only used for major update when necessary
