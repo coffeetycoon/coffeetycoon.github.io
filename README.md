@@ -67,6 +67,7 @@ A game where you brew coffee.
 ## Future Updates
 
 ### v1.9 - Riches and Reaches
+#### Release Target: Nov 4, 2025
 - Achievements for coffee collection will scale to 1 quintillion coffee
 - Achievements for shop item collection will scale to 5000 items
 - New achievement pack: upgrades collection, achievement for 10% of upgrades, then 20% and so on until 100% of upgrades
@@ -79,6 +80,7 @@ A game where you brew coffee.
   - Unclaimed (but completed) achievements will not change
 
 ### v1.10 – A Whole Latte Trade
+#### Release Target: Nov 11, 2025
 - Progressive unlocking of shop items (shop items that you cannot afford 50% of the initial price for will not be shown)
 - Add new shop items beyond Coffee Franchise (up till producing 100 billion coffee [named like, coffee planet, galaxy, universe, solar system, continent, country, factory etc, can scale in size till universe if needed])
 - Add bulk buying options (×1, ×10, ×100)
