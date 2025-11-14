@@ -9,8 +9,8 @@ A game where you brew coffee.
   - [File Download](#option-1-file)
   - [Link to Game](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v181-gains-and-grains-patch-1)
-  - [Last Major Update](#last-major-update-v18-gains-and-grains)
+  - [Latest Version](#latest-version-v19-riches-and-reaches)
+  - [Last Major Update](#latest-version-v19-riches-and-reaches)
   - [Last Major Build](#last-major-build-v10)
 - [Future Updates](#future-updates)
 
@@ -34,40 +34,9 @@ A game where you brew coffee.
 
 ## Updates
 
-### Latest Version: v1.8.1: Gains and Grains Patch 1
-#### Release Date: Oct 29, 2025
-#### Bug Fixes
-- Remove the number of achievements from achievement packs ([number unlocked]/[number total] achievements will not show anymore), while keeping the green progress bar
-  - Same for upgrade packs
-- Reduce the size of red dot on tabs for notifications, so the dot doesn't overlay onto text
-- Upgrade purchase notifications don't look the same as shop item purchase notifications, so now upgrade purchase will look like shop item purchase notifications
-- Achievement unlock delivers duplicate notification, only the one that matches the shop purchase notification will be kept
-- Achievement claim notification will be restyled to look like the shop purchase notification
-
----
-
-### Last Major Update: v1.8: Gains and Grains
-#### Release Date: Oct 28, 2025
-#### New Features
-- Added notifications for **new Achievements and Upgrade Packs**
-- Notifications disappear after buying upgrades or claiming rewards
-- Cleaned up achievement icons (removed emojis)
-- Notifications now appear on the **right side of the screen** and will not overlap
-  - Older notifications move down, newer ones appear on top
-  - Disappear timing unchanged
-
----
-
-### Last Major Build: v1.0
-#### Release Date: Aug 31, 2025
-#### Coffee Tycoon beta test ends, and full release is live
-
----
-
-## Future Updates
-
-### v1.9 - Riches and Reaches
-#### Release Target: Nov 2025
+### Latest Version: v1.9: Riches and Reaches
+#### Release Date: Nov 14, 2025
+#### Main Changes
 - Achievements for coffee collection will scale to 1 quintillion coffee
 - Achievements for shop item collection will scale to 5000 items
 - New achievement pack: upgrades collection, achievement for 10% of upgrades, then 20% and so on until 100% of upgrades
@@ -78,6 +47,21 @@ A game where you brew coffee.
 - Affordable upgrades in an upgrade pack will be represented by "!" instead of "."
 - Claimed achievements will now have a green border/theme, so as not to confuse them with unclaimed achievements
   - Unclaimed (but completed) achievements will not change
+---
+
+### Last Major Update: v1.8: Gains and Grains
+#### Release Date: Nov 14, 2025
+#### See above
+
+---
+
+### Last Major Build: v1.0
+#### Release Date: Aug 31, 2025
+#### Coffee Tycoon beta test ends, and full release is live
+
+---
+
+## Future Updates
 
 ### v1.10 – A Whole Latte Trade
 #### Release Target: Dec 2025
