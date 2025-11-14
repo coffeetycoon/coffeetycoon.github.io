@@ -1,7 +1,7 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.8.1</title>
+<title>Coffee Tycoon v1.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { font-family: 'Comfortaa', cursive; box-sizing: border-box; }
@@ -111,32 +111,7 @@
     border-color: #d4a574;
     color: #1a1a2e;
   }
-  /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-  /* Tab notification dots are now inline and smaller */
-  /* === Coffee Tycoon v1.8 – Final Visual Polish === */
   .notification-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: 10px;
-    background: #ff4444;
-    border: 2px solid #1a1a2e;
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-  /* === Coffee Tycoon v1.8.1 – Achievement Dot Position Fix === */
-  .tab-btn .notification-badge {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -149,10 +124,7 @@
     font-size: 0;
     border: 1px solid #1a1a2e;
     pointer-events: none;
-  }
-  @keyframes pulse-badge {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
+    background: #ff4444;
   }
   .content-area {
     background: rgba(45, 45, 45, 0.8);
@@ -397,6 +369,10 @@
     border-color: #ffd700;
     background: rgba(255, 215, 0, 0.1);
   }
+  .achievement.claimed {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+  }
   .achievements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
@@ -416,7 +392,6 @@
     background: rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
   }
-  /* === Coffee Tycoon v1.8 – Final Visual Polish === */
   .achievement-pack .notification-badge {
     top: 16px;
     right: 16px;
@@ -529,6 +504,10 @@
     border-color: #ffd700;
     background: rgba(255, 215, 0, 0.1);
   }
+  .modal-achievement.claimed {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+  }
   .modal-achievement.unclaimed {
     border-color: #ffd700;
     background: rgba(255, 215, 0, 0.15);
@@ -617,26 +596,6 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
-  .toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(76, 175, 80, 0.95);
-    color: #fff;
-    padding: 16px 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    z-index: 10000;
-    animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
-    font-weight: 600;
-  }
-  .toast.achievement {
-    background: linear-gradient(135deg, #ffd700, #ffed4e);
-    color: #1a1a2e;
-  }
-  /* === Coffee Tycoon v1.8 – Gains and Grains === */
-  /* Right-side notification system */
-  /* === Coffee Tycoon v1.8 – Final Visual Polish === */
   .notification-container {
     position: fixed;
     top: 20px;
@@ -644,11 +603,10 @@
     z-index: 9999;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     pointer-events: none;
     max-width: 420px;
   }
-  /* === Coffee Tycoon v1.8 – Final Visual Polish === */
   .notification {
     background: linear-gradient(135deg, #2d2d2d, #1a1a2e);
     border: 2px solid #d4a574;
@@ -663,10 +621,10 @@
     transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     opacity: 1;
     transform: translateX(0);
-    /* === Coffee Tycoon v1.8 – Final Notification Merge Fix === */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 0;
   }
   .notification:hover {
     transform: translateX(-4px);
@@ -684,7 +642,6 @@
     border-color: #4CAF50;
     background: linear-gradient(135deg, #1e3d2d, #1e2a2a);
   }
-  /* === Coffee Tycoon v1.8 – Notification Combination === */
   .notification.purchase-notif {
     border-color: #66BB6A;
     background: linear-gradient(135deg, #1e2a2a, #1e3d2d);
@@ -709,12 +666,10 @@
     font-size: 0.95rem;
     opacity: 0.9;
     line-height: 1.4;
-    /* === Coffee Tycoon v1.8 – Final Notification Merge Fix === */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* === Coffee Tycoon v1.8 – Final Visual Polish === */
   @keyframes slideInNotif {
     from { 
       transform: translateX(450px); 
@@ -724,24 +679,6 @@
       transform: translateX(0); 
       opacity: 1; 
     }
-  }
-  @keyframes slideOutNotif {
-    from { 
-      transform: translateX(0); 
-      opacity: 1; 
-    }
-    to { 
-      transform: translateX(450px); 
-      opacity: 0; 
-    }
-  }
-  @keyframes slideIn {
-    from { transform: translateX(400px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(400px); opacity: 0; }
   }
   .overlay {
     position: fixed;
@@ -826,8 +763,6 @@
 </style>
 </head>
 <body>
-<!-- === Coffee Tycoon v1.8 – Gains and Grains === -->
-<!-- Notification container for right-side stacking notifications -->
 <div id="notificationContainer" class="notification-container"></div>
 
 <div id="instructionsOverlay" class="overlay hidden">
@@ -867,17 +802,19 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.8.1</div>
+      <div class="modal-title">Coffee Tycoon v1.9</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.8.1 – Gains and Grains Patch 1</h3>
+      <h3>What's New in v1.9 – Riches and Reaches</h3>
       <ul>
-        <li><strong>Cleaner Pack Display:</strong> Removed numeric counters from achievement and upgrade packs while keeping progress bars</li>
-        <li><strong>Smaller Tab Dots:</strong> Reduced notification dot size on tabs for better visual clarity</li>
-        <li><strong>Unified Notifications:</strong> Upgrade purchase notifications now match shop purchase style</li>
-        <li><strong>Fixed Duplicates:</strong> Removed duplicate achievement unlock notifications</li>
-        <li><strong>Consistent Styling:</strong> Achievement claim notifications now match purchase notification appearance</li>
+        <li><strong>Extended Achievements:</strong> Coffee collection achievements now scale up to 1 quintillion (1 × 10¹⁸)</li>
+        <li><strong>More Item Milestones:</strong> Shop item collection achievements now scale up to 5,000 items</li>
+        <li><strong>Upgrade Collection Pack:</strong> New achievement pack that tracks upgrade purchase milestones (10%, 20%, 30%...100%)</li>
+        <li><strong>Major Rebalance:</strong> Items from Coffee Grinder onward buffed significantly (≥2× compared to v1.8.1)</li>
+        <li><strong>Cleaner UI:</strong> Removed numeric counters from packs, keeping only visual progress bars</li>
+        <li><strong>Green Claimed Achievements:</strong> Claimed achievements now display with green borders and backgrounds</li>
+        <li><strong>Better Notifications:</strong> Affordable upgrades show "!" indicators, unified notification styling</li>
       </ul>
       <h3>Gameplay Tips</h3>
       <ul>
@@ -887,7 +824,7 @@
         <li>Global upgrades affect all items - save up for huge boosts!</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.8.1 - Gains and Grains Patch 1</p>
+      <p><strong>Version:</strong> 1.9 - Riches and Reaches</p>
       <p><strong>Created by:</strong> randomdoge</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/Coffee-Tycoon/" target="_blank">coffeetycoon.github.io/Coffee-Tycoon</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/CoffeeTycoon/Coffee-Tycoon" target="_blank">View Repository</a></p>
@@ -956,18 +893,10 @@
 </div>
 
 <script>
-/* === Coffee Tycoon v1.8 – Gains and Grains === */
-// Save/load keys retained from v1.7.2 for backward compatibility
-// New optional keys added: activeNotifications (transient, not saved)
-
-/* === Coffee Tycoon v1.8 – Final Polish === */
-// Single unified notification tracking array
 let activeNotifications = [];
 let notificationIdCounter = 0;
-/* === Coffee Tycoon v1.8 – Notification Combination === */
 let notificationTimers = new Map();
 
-// ========== GAME STATE ==========
 const gameState = {
   coffee: 0,
   totalCoffeeAllTime: 0,
@@ -988,25 +917,25 @@ const gameState = {
   targetCPS: 0
 };
 
-// ========== SHOP ITEMS ==========
+gameState.items = gameState.items || {};
+
+/* === Coffee Tycoon v1.9 – Riches and Reaches === */
 const shopItems = [
-  { id: 'brewer', name: 'Auto Brewer', baseCost: 50, cps: 1, scale: 1.15 },
-  { id: 'barista', name: 'Barista', baseCost: 500, cps: 5, scale: 1.15 },
-  { id: 'grinder', name: 'Coffee Grinder', baseCost: 5000, cps: 10, scale: 1.2 },
-  { id: 'espresso', name: 'Espresso Machine', baseCost: 50000, cps: 25, scale: 1.2 },
-  { id: 'roaster', name: 'Coffee Roaster', baseCost: 200000, cps: 60, scale: 1.25 },
-  { id: 'shop', name: 'Coffee Shop', baseCost: 1000000, cps: 150, scale: 1.25 },
-  { id: 'plantation', name: 'Coffee Plantation', baseCost: 8000000, cps: 400, scale: 1.3 },
-  { id: 'franchise', name: 'Coffee Franchise', baseCost: 50000000, cps: 1200, scale: 1.3 }
+  { id: 'brewer', name: 'Auto Brewer', baseCost: 50, cps: 5, scale: 1.15 },
+  { id: 'barista', name: 'Barista', baseCost: 500, cps: 10, scale: 1.15 },
+  { id: 'grinder', name: 'Coffee Grinder', baseCost: 5000, cps: 50, scale: 1.2 },
+  { id: 'espresso', name: 'Espresso Machine', baseCost: 50000, cps: 250, scale: 1.2 },
+  { id: 'truck', name: 'Coffee Truck', baseCost: 200000, cps: 1000, scale: 1.25 },
+  { id: 'factory', name: 'Coffee Factory', baseCost: 1000000, cps: 10000, scale: 1.25 },
+  { id: 'corporation', name: 'Coffee Corporation', baseCost: 8000000, cps: 100000, scale: 1.3 },
+  { id: 'franchise', name: 'Coffee Franchise', baseCost: 50000000, cps: 1000000, scale: 1.3 }
 ];
 
 shopItems.forEach(item => {
   gameState.items[item.id] = { count: 0, cost: item.baseCost };
 });
 
-// ========== UPGRADES ==========
 const upgrades = [
-  // Click Power Upgrades
   { 
     id: 'click_1', 
     name: 'Better Coffee Beans', 
@@ -1034,14 +963,13 @@ const upgrades = [
     unlockCondition: () => gameState.totalCoffeeAllTime >= 100000,
     pack: 'click-power'
   },
-  // Auto Brewer Upgrades
   { 
     id: 'brewer_1', 
     name: 'Upgraded Brewers', 
     description: 'Auto Brewers produce 2× coffee', 
     cost: 500, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 10,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 10,
     pack: 'brewer'
   },
   { 
@@ -1050,7 +978,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 5000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 25,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 25,
     pack: 'brewer'
   },
   { 
@@ -1059,7 +987,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 50000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 50,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 50,
     pack: 'brewer'
   },
   { 
@@ -1068,7 +996,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 500000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 100,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 100,
     pack: 'brewer'
   },
   { 
@@ -1077,7 +1005,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 5000000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 200,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 200,
     pack: 'brewer'
   },
   { 
@@ -1086,7 +1014,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 50000000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 400,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 400,
     pack: 'brewer'
   },
   { 
@@ -1095,7 +1023,7 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 500000000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 700,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 700,
     pack: 'brewer'
   },
   { 
@@ -1104,17 +1032,16 @@ const upgrades = [
     description: 'Auto Brewers produce 2× coffee', 
     cost: 5000000000, 
     effect: () => { gameState.itemMultipliers.brewer = (gameState.itemMultipliers.brewer || 1) * 2; },
-    unlockCondition: () => gameState.items.brewer.count >= 1000,
+    unlockCondition: () => (gameState.items?.brewer?.count ?? 0) >= 1000,
     pack: 'brewer'
   },
-  // Barista Upgrades
   { 
     id: 'barista_1', 
     name: 'Barista Training', 
     description: 'Baristas produce 2× coffee', 
     cost: 1500, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 10,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 10,
     pack: 'barista'
   },
   { 
@@ -1123,7 +1050,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 15000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 25,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 25,
     pack: 'barista'
   },
   { 
@@ -1132,7 +1059,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 150000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 50,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 50,
     pack: 'barista'
   },
   { 
@@ -1141,7 +1068,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 1500000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 100,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 100,
     pack: 'barista'
   },
   { 
@@ -1150,7 +1077,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 15000000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 200,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 200,
     pack: 'barista'
   },
   { 
@@ -1159,7 +1086,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 150000000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 400,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 400,
     pack: 'barista'
   },
   { 
@@ -1168,7 +1095,7 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 1500000000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 700,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 700,
     pack: 'barista'
   },
   { 
@@ -1177,17 +1104,16 @@ const upgrades = [
     description: 'Baristas produce 2× coffee', 
     cost: 15000000000, 
     effect: () => { gameState.itemMultipliers.barista = (gameState.itemMultipliers.barista || 1) * 2; },
-    unlockCondition: () => gameState.items.barista.count >= 1000,
+    unlockCondition: () => (gameState.items?.barista?.count ?? 0) >= 1000,
     pack: 'barista'
   },
-  // Coffee Grinder Upgrades
   { 
     id: 'grinder_1', 
     name: 'Steel Grinders', 
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 4000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 10,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 10,
     pack: 'grinder'
   },
   { 
@@ -1196,7 +1122,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 40000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 25,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 25,
     pack: 'grinder'
   },
   { 
@@ -1205,7 +1131,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 400000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 50,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 50,
     pack: 'grinder'
   },
   { 
@@ -1214,7 +1140,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 4000000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 100,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 100,
     pack: 'grinder'
   },
   { 
@@ -1223,7 +1149,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 40000000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 200,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 200,
     pack: 'grinder'
   },
   { 
@@ -1232,7 +1158,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 400000000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 400,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 400,
     pack: 'grinder'
   },
   { 
@@ -1241,7 +1167,7 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 4000000000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 700,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 700,
     pack: 'grinder'
   },
   { 
@@ -1250,17 +1176,16 @@ const upgrades = [
     description: 'Coffee Grinders produce 2× coffee', 
     cost: 40000000000, 
     effect: () => { gameState.itemMultipliers.grinder = (gameState.itemMultipliers.grinder || 1) * 2; },
-    unlockCondition: () => gameState.items.grinder.count >= 1000,
+    unlockCondition: () => (gameState.items?.grinder?.count ?? 0) >= 1000,
     pack: 'grinder'
   },
-  // Espresso Machine Upgrades
   { 
     id: 'espresso_1', 
     name: 'High-Pressure Espresso', 
     description: 'Espresso Machines produce 2× coffee', 
     cost: 8000, 
     effect: () => { gameState.itemMultipliers.espresso = (gameState.itemMultipliers.espresso || 1) * 2; },
-    unlockCondition: () => gameState.items.espresso.count >= 10,
+    unlockCondition: () => (gameState.items?.espresso?.count ?? 0) >= 10,
     pack: 'espresso'
   },
   { 
@@ -1326,233 +1251,229 @@ const upgrades = [
     unlockCondition: () => gameState.items.espresso.count >= 1000,
     pack: 'espresso'
   },
-  // Coffee Roaster Upgrades
   { 
-    id: 'roaster_1', 
-    name: 'Convection Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_1', 
+    name: 'Upgraded Trucks', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 20000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 10,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => (gameState.items?.truck?.count ?? 0) >= 10,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_2', 
-    name: 'Drum Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_2', 
+    name: 'Fleet Management', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 200000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 25,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 25,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_3', 
-    name: 'Fluid Bed Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_3', 
+    name: 'GPS Navigation', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 2000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 50,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 50,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_4', 
-    name: 'Infrared Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_4', 
+    name: 'Autonomous Trucks', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 20000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 100,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 100,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_5', 
-    name: 'Microwave Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_5', 
+    name: 'Electric Fleet', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 200000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 200,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 200,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_6', 
-    name: 'Plasma Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_6', 
+    name: 'Flying Trucks', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 2000000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 400,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 400,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_7', 
-    name: 'Solar Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_7', 
+    name: 'Teleportation Trucks', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 20000000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 700,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 700,
+    pack: 'truck'
   },
   { 
-    id: 'roaster_8', 
-    name: 'Stellar Roasters', 
-    description: 'Coffee Roasters produce 2× coffee', 
+    id: 'truck_8', 
+    name: 'Dimensional Trucks', 
+    description: 'Coffee Trucks produce 2× coffee', 
     cost: 200000000000, 
-    effect: () => { gameState.itemMultipliers.roaster = (gameState.itemMultipliers.roaster || 1) * 2; },
-    unlockCondition: () => gameState.items.roaster.count >= 1000,
-    pack: 'roaster'
+    effect: () => { gameState.itemMultipliers.truck = (gameState.itemMultipliers.truck || 1) * 2; },
+    unlockCondition: () => gameState.items.truck.count >= 1000,
+    pack: 'truck'
   },
-  // Coffee Shop Upgrades
   { 
-    id: 'shop_1', 
-    name: 'Cozy Ambiance', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_1', 
+    name: 'Assembly Lines', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 50000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 10,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => (gameState.items?.factory?.count ?? 0) >= 10,
+    pack: 'factory'
   },
   { 
-    id: 'shop_2', 
-    name: 'Premium Menu', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_2', 
+    name: 'Automation Systems', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 500000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 25,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 25,
+    pack: 'factory'
   },
   { 
-    id: 'shop_3', 
-    name: 'WiFi & Workspace', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_3', 
+    name: 'Quality Control', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 5000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 50,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 50,
+    pack: 'factory'
   },
   { 
-    id: 'shop_4', 
-    name: 'Loyalty Program', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_4', 
+    name: 'AI Management', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 50000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 100,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 100,
+    pack: 'factory'
   },
   { 
-    id: 'shop_5', 
-    name: 'Drive-Thru Service', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_5', 
+    name: 'Nano Manufacturing', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 500000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 200,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 200,
+    pack: 'factory'
   },
   { 
-    id: 'shop_6', 
-    name: 'Mobile App Ordering', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_6', 
+    name: 'Quantum Production', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 5000000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 400,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 400,
+    pack: 'factory'
   },
   { 
-    id: 'shop_7', 
-    name: 'Celebrity Endorsements', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_7', 
+    name: 'Matter Synthesis', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 50000000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition: () => gameState.items.shop.count >= 700,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 700,
+    pack: 'factory'
   },
   { 
-    id: 'shop_8', 
-    name: 'Global Coffee Culture', 
-    description: 'Coffee Shops produce 2× coffee', 
+    id: 'factory_8', 
+    name: 'Reality Fabrication', 
+    description: 'Coffee Factories produce 2× coffee', 
     cost: 500000000000, 
-    effect: () => { gameState.itemMultipliers.shop = (gameState.itemMultipliers.shop || 1) * 2; },
-    unlockCondition:() => gameState.items.shop.count >= 1000,
-    pack: 'shop'
+    effect: () => { gameState.itemMultipliers.factory = (gameState.itemMultipliers.factory || 1) * 2; },
+    unlockCondition: () => gameState.items.factory.count >= 1000,
+    pack: 'factory'
   },
-  // Coffee Plantation Upgrades
   { 
-    id: 'plantation_1', 
-    name: 'Irrigation Systems', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_1', 
+    name: 'Corporate Structure', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 150000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 10,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => (gameState.items?.corporation?.count ?? 0) >= 10,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_2', 
-    name: 'Shade-Grown Techniques', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_2', 
+    name: 'Market Dominance', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 1500000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 25,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 25,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_3', 
-    name: 'Organic Certification', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_3', 
+    name: 'Global Expansion', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 15000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 50,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 50,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_4', 
-    name: 'Precision Agriculture', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_4', 
+    name: 'Monopoly Status', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 150000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 100,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 100,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_5', 
-    name: 'Genetic Enhancement', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_5', 
+    name: 'Intergalactic Trade', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 1500000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 200,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 200,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_6', 
-    name: 'Climate Control Domes', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_6', 
+    name: 'Universal Commerce', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 15000000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 400,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 400,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_7', 
-    name: 'Vertical Farming', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_7', 
+    name: 'Multiversal Business', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 150000000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 700,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 700,
+    pack: 'corporation'
   },
   { 
-    id: 'plantation_8', 
-    name: 'Orbital Plantations', 
-    description: 'Coffee Plantations produce 2× coffee', 
+    id: 'corporation_8', 
+    name: 'Omnipresent Empire', 
+    description: 'Coffee Corporations produce 2× coffee', 
     cost: 1500000000000, 
-    effect: () => { gameState.itemMultipliers.plantation = (gameState.itemMultipliers.plantation || 1) * 2; },
-    unlockCondition: () => gameState.items.plantation.count >= 1000,
-    pack: 'plantation'
+    effect: () => { gameState.itemMultipliers.corporation = (gameState.itemMultipliers.corporation || 1) * 2; },
+    unlockCondition: () => gameState.items.corporation.count >= 1000,
+    pack: 'corporation'
   },
-  // Coffee Franchise Upgrades
   { 
     id: 'franchise_1', 
     name: 'Regional Marketing', 
     description: 'Coffee Franchises produce 2× coffee', 
     cost: 500000, 
     effect: () => { gameState.itemMultipliers.franchise = (gameState.itemMultipliers.franchise || 1) * 2; },
-    unlockCondition: () => gameState.items.franchise.count >= 10,
+    unlockCondition: () => (gameState.items?.franchise?.count ?? 0) >= 10,
     pack: 'franchise'
   },
   { 
@@ -1618,7 +1539,6 @@ const upgrades = [
     unlockCondition: () => gameState.items.franchise.count >= 1000,
     pack: 'franchise'
   },
-  // Global Upgrades
   { 
     id: 'global_1', 
     name: 'Efficient Operations', 
@@ -1630,7 +1550,7 @@ const upgrades = [
       });
     },
     unlockCondition: () => {
-      return shopItems.every(item => gameState.items[item.id].count >= 10);
+      return shopItems.every(item => (gameState.items[item.id]?.count || 0) >= 10);
     },
     pack: 'global'
   },
@@ -1645,14 +1565,12 @@ const upgrades = [
       });
     },
     unlockCondition: () => {
-      return shopItems.every(item => gameState.items[item.id].count >= 25);
+      return shopItems.every(item => (gameState.items[item.id]?.count || 0) >= 25);
     },
     pack: 'global'
   }
 ];
 
-/* === Coffee Tycoon v1.8 – Gains and Grains === */
-// Upgrade pack definitions (emojis removed)
 const upgradePacks = [
   { 
     id: 'click-power', 
@@ -1685,28 +1603,28 @@ const upgradePacks = [
     description: 'Upgrade Espresso Machine power'
   },
   { 
-    id: 'roaster', 
-    name: 'Coffee Roaster Upgrades', 
+    id: 'truck', 
+    name: 'Coffee Truck Upgrades', 
     icon: '', 
-    description: 'Amplify Coffee Roaster performance'
+    description: 'Enhance Coffee Truck capabilities'
   },
   { 
-    id: 'shop', 
-    name: 'Coffee Shop Upgrades', 
+    id: 'factory', 
+    name: 'Coffee Factory Upgrades', 
     icon: '', 
-    description: 'Expand Coffee Shop capabilities'
+    description: 'Amplify Coffee Factory performance'
   },
   { 
-    id: 'plantation', 
-    name: 'Coffee Plantation Upgrades', 
+    id: 'corporation', 
+    name: 'Coffee Corporation Upgrades', 
     icon: '', 
-    description: 'Optimize Coffee Plantation yield'
+    description: 'Expand Coffee Corporation reach'
   },
   { 
     id: 'franchise', 
     name: 'Coffee Franchise Upgrades', 
     icon: '', 
-    description: 'Scale Coffee Franchise reach'
+    description: 'Scale Coffee Franchise operations'
   },
   { 
     id: 'global', 
@@ -1716,223 +1634,174 @@ const upgradePacks = [
   }
 ];
 
-// ========== ACHIEVEMENTS ==========
-/* === Coffee Tycoon v1.8 – Gains and Grains === */
-// Achievements (emojis removed from titles)
+/* === Coffee Tycoon v1.9 – Riches and Reaches === */
 const achievements = [
-  // Coffee milestones
-  { id: 'first', name: 'First Coffee', requirement: 'Brew 1 coffee', condition: () => gameState.totalCoffeeAllTime >= 1, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1", percent: () => Math.min(gameState.totalCoffeeAllTime / 1 * 100, 100), reward: { type: 'coffee', value: 1 } },
-  { id: 'ten', name: 'Ten Brews', requirement: 'Brew 10 coffees', condition: () => gameState.totalCoffeeAllTime >= 10, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10", percent: () => Math.min(gameState.totalCoffeeAllTime / 10 * 100, 100), reward: { type: 'coffee', value: 5 } },
-  { id: 'hundred', name: 'Hundred Brews', requirement: 'Brew 100 coffees', condition: () => gameState.totalCoffeeAllTime >= 100, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100", percent: () => Math.min(gameState.totalCoffeeAllTime / 100 * 100, 100), reward: { type: 'coffee', value: 50 } },
-  { id: 'thousand', name: 'Thousand Brews', requirement: 'Brew 1,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000 * 100, 100), reward: { type: 'coffee', value: 500 } },
-  { id: 'tenk', name: 'Ten Thousand', requirement: 'Brew 10,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000 * 100, 100), reward: { type: 'coffee', value: 5000 } },
-  { id: 'hundredk', name: 'Hundred Thousand', requirement: 'Brew 100,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000 * 100, 100), reward: { type: 'coffee', value: 50000 } },
-  { id: 'million', name: 'Million Brews', requirement: 'Brew 1,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000 * 100, 100), reward: { type: 'coffee', value: 500000 } },
-  { id: 'tenmill', name: 'Ten Million Brews', requirement: 'Brew 10,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000 * 100, 100), reward: { type: 'coffee', value: 5000000 } },
-  { id: 'hundredmill', name: 'Hundred Million Brews', requirement: 'Brew 100,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000 * 100, 100), reward: { type: 'coffee', value: 50000000 } },
-  { id: 'billion', name: 'Billion Brews', requirement: 'Brew 1,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000 * 100, 100), reward: { type: 'coffee', value: 500000000 } },
-  { id: 'tenb', name: 'Ten Billion Brews', requirement: 'Brew 10,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000000 * 100, 100), reward: { type: 'coffee', value: 5000000000 } },
-  { id: 'hundredb', name: 'Hundred Billion Brews', requirement: 'Brew 100,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000000 * 100, 100), reward: { type: 'coffee', value: 50000000000 } },
-  { id: 'trillion', name: 'Trillion Brews', requirement: 'Brew 1,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000000 * 100, 100), reward: { type: 'coffee', value: 500000000000 } },
-  // General item achievements
-  { id: 'first_item', name: 'Novice Collector', requirement: 'Purchase your first item', condition: () => Object.values(gameState.items).some(i => i.count >= 1), earned: false, progress: () => Object.values(gameState.items).some(i => i.count >= 1) ? "1/1" : "0/1", percent: () => Object.values(gameState.items).some(i => i.count >= 1) ? 100 : 0, reward: { type: 'coffee', value: 50 } },
-  { id: 'five_any', name: 'Apprentice Purchaser', requirement: 'Have 5 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 5), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: 'first', name: 'First Coffee', requirement: 'Brew 1 coffee', condition: () => gameState.totalCoffeeAllTime >= 1, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1", percent: () => Math.min(gameState.totalCoffeeAllTime / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 1 } },
+  { id: 'ten', name: 'Ten Brews', requirement: 'Brew 10 coffees', condition: () => gameState.totalCoffeeAllTime >= 10, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10", percent: () => Math.min(gameState.totalCoffeeAllTime / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 5 } },
+  { id: 'hundred', name: 'Hundred Brews', requirement: 'Brew 100 coffees', condition: () => gameState.totalCoffeeAllTime >= 100, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100", percent: () => Math.min(gameState.totalCoffeeAllTime / 100 * 100, 100) || 0, reward: { type: 'coffee', value: 50 } },
+  { id: 'thousand', name: 'Thousand Brews', requirement: 'Brew 1,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000 * 100, 100) || 0, reward: { type: 'coffee', value: 500 } },
+  { id: 'tenk', name: 'Ten Thousand', requirement: 'Brew 10,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000 } },
+  { id: 'hundredk', name: 'Hundred Thousand', requirement: 'Brew 100,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000 } },
+  { id: 'million', name: 'Million Brews', requirement: 'Brew 1,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000 } },
+  { id: 'tenmill', name: 'Ten Million Brews', requirement: 'Brew 10,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
+  { id: 'hundredmill', name: 'Hundred Million Brews', requirement: 'Brew 100,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000000 } },
+  { id: 'billion', name: 'Billion Brews', requirement: 'Brew 1,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000000 } },
+  { id: 'tenb', name: 'Ten Billion Brews', requirement: 'Brew 10,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000000 } },
+  { id: 'hundredb', name: 'Hundred Billion Brews', requirement: 'Brew 100,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000000000 } },
+  { id: 'trillion', name: 'Trillion Brews', requirement: 'Brew 1,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000000000 } },
+  { id: 'tentr', name: 'Ten Trillion Brews', requirement: 'Brew 10,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000000000 } },
+  { id: 'hundredtr', name: 'Hundred Trillion Brews', requirement: 'Brew 100,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000000000000 } },
+  { id: 'quadrillion', name: 'Quadrillion Brews', requirement: 'Brew 1,000,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000000000000 } },
+  { id: 'tenq', name: 'Ten Quadrillion Brews', requirement: 'Brew 10,000,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 10000000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/10,000,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 10000000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000000000000 } },
+  { id: 'hundredq', name: 'Hundred Quadrillion Brews', requirement: 'Brew 100,000,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 100000000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/100,000,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 100000000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000000000000000 } },
+  { id: 'quintillion', name: 'Quintillion Brews', requirement: 'Brew 1,000,000,000,000,000,000 coffees', condition: () => gameState.totalCoffeeAllTime >= 1000000000000000000, earned: false, progress: () => Math.floor(gameState.totalCoffeeAllTime) + "/1,000,000,000,000,000,000", percent: () => Math.min(gameState.totalCoffeeAllTime / 1000000000000000000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000000000000000 } },
+  { id: 'first_item', name: 'Novice Collector', requirement: 'Purchase your first item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 1), earned: false, progress: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 1) ? "1/1" : "0/1", percent: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 1) ? 100 : 0, reward: { type: 'coffee', value: 50 } },
+  { id: 'five_any', name: 'Apprentice Purchaser', requirement: 'Have 5 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 5), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/5";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 5 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 5 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 3 } },
-  { id: 'ten_any', name: 'Seasoned Buyer', requirement: 'Have 10 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 10), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: 'ten_any', name: 'Seasoned Buyer', requirement: 'Have 10 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 10), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/10";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 10 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 10 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 5 } },
-  { id: 'fifty_any', name: 'Bulk Investor', requirement: 'Have 50 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 50), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: 'fifty_any', name: 'Bulk Investor', requirement: 'Have 50 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 50), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/50";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 50 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 50 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 25 } },
-  { id: 'hundred_any', name: 'Century Collector', requirement: 'Have 100 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 100), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: 'hundred_any', name: 'Century Collector', requirement: 'Have 100 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 100), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/100";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 100 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 100 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 50 } },
-  { id: '200_any', name: 'Double Century', requirement: 'Have 200 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 200), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: '200_any', name: 'Double Century', requirement: 'Have 200 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 200), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/200";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 200 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 200 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 100 } },
-  { id: '300_any', name: 'Triple Century', requirement: 'Have 300 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 300), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: '300_any', name: 'Triple Century', requirement: 'Have 300 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 300), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/300";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 300 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 300 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 150 } },
-  { id: '400_any', name: 'Quad Century', requirement: 'Have 400 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 400), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: '400_any', name: 'Quad Century', requirement: 'Have 400 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 400), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/400";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 400 * 100, 100);
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 400 * 100, 100) || 0;
   }, reward: { type: 'coffee', value: 200 } },
-  { id: '500_any', name: 'Quint Century', requirement: 'Have 500 of any single item', condition: () => Object.values(gameState.items).some(i => i.count >= 500), earned: false, progress: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
+  { id: '500_any', name: 'Quint Century', requirement: 'Have 500 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 500), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return max + "/500";
   }, percent: () => {
-    const max = Math.max(...Object.values(gameState.items).map(i => i.count), 0);
-    return Math.min(max / 500 * 100, 100);
-  }, reward: { type: 'coffee', value: 250 } }
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 500 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 250 } },
+  { id: '1000_any', name: 'Millennium', requirement: 'Have 1,000 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 1000), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return max + "/1,000";
+  }, percent: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 1000 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 500 } },
+  { id: '2000_any', name: 'Double Millennium', requirement: 'Have 2,000 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 2000), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return max + "/2,000";
+  }, percent: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 2000 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 1000 } },
+  { id: '3000_any', name: 'Triple Millennium', requirement: 'Have 3,000 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 3000), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return max + "/3,000";
+  }, percent: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 3000 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 1500 } },
+  { id: '4000_any', name: 'Quad Millennium', requirement: 'Have 4,000 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 4000), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return max + "/4,000";
+  }, percent: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 4000 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 2000 } },
+  { id: '5000_any', name: 'Quint Millennium', requirement: 'Have 5,000 of any single item', condition: () => Object.values(gameState.items).some(i => (i?.count ?? 0) >= 5000), earned: false, progress: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return max + "/5,000";
+  }, percent: () => {
+    const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
+    return Math.min(max / 5000 * 100, 100) || 0;
+  }, reward: { type: 'coffee', value: 2500 } }
 ];
 
-// Add item-specific achievements
 shopItems.forEach(item => {
-  achievements.push(
-    { 
-      id: `${item.id}_10`, 
-      name: `${item.name} Expert`, 
-      requirement: `Own 10 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 10, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/10", 
-      percent: () => Math.min(gameState.items[item.id].count / 10 * 100, 100),
-      reward: { type: 'multiplier', value: 1.025, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_50`, 
-      name: `${item.name} Master`, 
-      requirement: `Own 50 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 50, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/50", 
-      percent: () => Math.min(gameState.items[item.id].count / 50 * 100, 100),
-      reward: { type: 'multiplier', value: 1.05, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_100`, 
-      name: `${item.name} Century`, 
-      requirement: `Own 100 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 100, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/100", 
-      percent: () => Math.min(gameState.items[item.id].count / 100 * 100, 100),
-      reward: { type: 'multiplier', value: 1.075, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_200`, 
-      name: `${item.name} Bicentennial`, 
-      requirement: `Own 200 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 200, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/200", 
-      percent: () => Math.min(gameState.items[item.id].count / 200 * 100, 100),
-      reward: { type: 'multiplier', value: 1.1, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_300`, 
-      name: `${item.name} Tricentennial`, 
-      requirement: `Own 300 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 300, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/300", 
-      percent: () => Math.min(gameState.items[item.id].count / 300 * 100, 100),
-      reward: { type: 'multiplier', value: 1.125, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_400`, 
-      name: `${item.name} Quadcentennial`, 
-      requirement: `Own 400 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 400, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/400", 
-      percent: () => Math.min(gameState.items[item.id].count / 400 * 100, 100),
-      reward: { type: 'multiplier', value: 1.15, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_500`, 
-      name: `${item.name} Quincentennial`, 
-      requirement: `Own 500 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 500, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/500", 
-      percent: () => Math.min(gameState.items[item.id].count / 500 * 100, 100),
-      reward: { type: 'multiplier', value: 1.175, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_600`, 
-      name: `${item.name} Sexcentennial`, 
-      requirement: `Own 600 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 600, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/600", 
-      percent: () => Math.min(gameState.items[item.id].count / 600 * 100, 100),
-      reward: { type: 'multiplier', value: 1.2, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_700`, 
-      name: `${item.name} Septcentennial`, 
-      requirement: `Own 700 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 700, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/700", 
-      percent: () => Math.min(gameState.items[item.id].count / 700 * 100, 100),
-      reward: { type: 'multiplier', value: 1.225, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_800`, 
-      name: `${item.name} Octcentennial`, 
-      requirement: `Own 800 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 800, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/800", 
-      percent: () => Math.min(gameState.items[item.id].count / 800 * 100, 100),
-      reward: { type: 'multiplier', value: 1.25, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_900`, 
-      name: `${item.name} Noncentennial`, 
-      requirement: `Own 900 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 900, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/900", 
-      percent: () => Math.min(gameState.items[item.id].count / 900 * 100, 100),
-      reward: { type: 'multiplier', value: 1.3, itemId: item.id }
-    },
-    { 
-      id: `${item.id}_1000`, 
-      name: `${item.name} Millennium`, 
-      requirement: `Own 1,000 ${item.name}s`, 
-      condition: () => gameState.items[item.id].count >= 1000, 
-      earned: false, 
-      progress: () => gameState.items[item.id].count + "/1,000", 
-      percent: () => Math.min(gameState.items[item.id].count / 1000 * 100, 100),
-      reward: { type: 'multiplier', value: 1.5, itemId: item.id }
-    }
-  );
+  const milestones = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+  milestones.forEach(milestone => {
+    const multiplier = 1.025 + (milestones.indexOf(milestone) * 0.025);
+    achievements.push({
+      id: `${item.id}_${milestone}`,
+      name: `${item.name} ${milestone >= 1000 ? (milestone/1000).toFixed(0) + 'K' : milestone}`,
+      requirement: `Own ${milestone.toLocaleString()} ${item.name}${milestone > 1 ? 's' : ''}`,
+      condition: () => (gameState.items[item.id]?.count || 0) >= milestone,
+      earned: false,
+      progress: () => (gameState.items[item.id]?.count || 0) + "/" + milestone.toLocaleString(),
+      percent: () => Math.min((gameState.items[item.id]?.count || 0) / milestone * 100, 100) || 0,
+      reward: { type: 'multiplier', value: multiplier, itemId: item.id }
+    });
+  });
 });
+
+for (let i = 10; i <= 100; i += 10) {
+  achievements.push({
+    id: `upgrades_${i}`,
+    name: `Upgrade Collector ${i}%`,
+    requirement: `Purchase ${i}% of all upgrades`,
+    condition: () => {
+      const totalUpgrades = upgrades.length;
+      const purchasedCount = gameState.purchasedUpgrades.size;
+      return (purchasedCount / totalUpgrades * 100) >= i;
+    },
+    earned: false,
+    progress: () => {
+      const totalUpgrades = upgrades.length;
+      const purchasedCount = gameState.purchasedUpgrades.size;
+      const percent = Math.floor(purchasedCount / totalUpgrades * 100);
+      return `${percent}%/${i}%`;
+    },
+    percent: () => {
+      const totalUpgrades = upgrades.length;
+      const purchasedCount = gameState.purchasedUpgrades.size;
+      const currentPercent = (purchasedCount / totalUpgrades * 100);
+      return Math.min(currentPercent / i * 100, 100) || 0;
+    },
+    reward: { type: 'coffee', value: i * 10000 }
+  });
+}
 
 gameState.achievements = achievements;
 
-// ========== ACHIEVEMENT PACKS ==========
 function getVisibleAchievements(achievementList) {
   const visible = [];
-  
   for (let i = 0; i < achievementList.length; i++) {
     const achievement = achievementList[i];
-    
     if (achievement.earned) {
       visible.push(achievement);
-    } 
-    else {
+    } else {
       const previousEarned = i === 0 || achievementList[i - 1].earned;
       if (previousEarned) {
         visible.push(achievement);
@@ -1940,12 +1809,9 @@ function getVisibleAchievements(achievementList) {
       break;
     }
   }
-  
   return visible;
 }
 
-/* === Coffee Tycoon v1.8 – Gains and Grains === */
-// Achievement packs (emojis removed)
 function getAchievementPacks() {
   const packs = [
     {
@@ -1957,7 +1823,8 @@ function getAchievementPacks() {
         a.id.includes('first') || a.id.includes('ten') || 
         a.id.includes('hundred') || a.id.includes('thousand') || 
         a.id.includes('million') || a.id.includes('billion') || 
-        a.id.includes('trillion')
+        a.id.includes('trillion') || a.id.includes('quadrillion') ||
+        a.id.includes('quintillion')
       )
     },
     {
@@ -1967,14 +1834,20 @@ function getAchievementPacks() {
       icon: '',
       achievements: achievements.filter(a => 
         a.id.includes('_item') || 
-        a.id.includes('_any') || 
-        (a.id.match(/^\d+_any$/))
+        a.id.includes('_any')
       )
+    },
+    {
+      id: 'upgrade_collection',
+      title: 'Upgrade Collection',
+      description: 'Achievements for purchasing upgrades',
+      icon: '',
+      achievements: achievements.filter(a => a.id.startsWith('upgrades_'))
     }
   ];
   
   shopItems.forEach(item => {
-    const itemAchievements = achievements.filter(a => a.id.startsWith(item.id + '_'));
+    const itemAchievements = achievements.filter(a => a.id.startsWith(item.id + '_') && !a.id.includes('_any'));
     if (itemAchievements.length > 0) {
       packs.push({
         id: item.id + '_pack',
@@ -1989,21 +1862,26 @@ function getAchievementPacks() {
   return packs;
 }
 
-// ========== UTILITY FUNCTIONS ==========
 function abbreviateNumber(num) {
   if (num < 1000) return Math.floor(num).toString();
   if (num < 1000000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   if (num < 1000000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
   if (num < 1000000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-  return (num / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (num < 1000000000000000) return (num / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (num < 1000000000000000000) return (num / 1000000000000000).toFixed(1).replace(/\.0$/, '') + 'Q';
+  return (num / 1000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qi';
 }
 
 function calculateTotalCPS() {
   let totalCPS = 0;
   shopItems.forEach(item => {
+    if (!gameState.items[item.id]) {
+      gameState.items[item.id] = { count: 0, cost: item.baseCost };
+    }
     const itemState = gameState.items[item.id];
     const multiplier = gameState.itemMultipliers[item.id] || 1;
-    totalCPS += item.cps * itemState.count * multiplier;
+    const count = itemState.count ?? 0;
+    totalCPS += item.cps * count * multiplier;
   });
   return totalCPS * gameState.prestigeMultiplier;
 }
@@ -2013,16 +1891,6 @@ function calculateItemCPS(item) {
   return item.cps * multiplier * gameState.prestigeMultiplier;
 }
 
-function showToast(message, isAchievement = false) {
-  const toast = document.createElement('div');
-  toast.className = 'toast' + (isAchievement ? ' achievement' : '');
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
-
-/* === Coffee Tycoon v1.8 – Final Polish === */
-// Unified notification system with instant removal
 function showNotification(title, message, type = 'default', metadata = {}) {
   const container = document.getElementById('notificationContainer');
   const notifId = notificationIdCounter++;
@@ -2047,7 +1915,8 @@ function showNotification(title, message, type = 'default', metadata = {}) {
   container.appendChild(notif);
   activeNotifications.push(notif);
   
-  // Auto-dismiss after 3 seconds
+  updateNotificationPositions();
+  
   const timer = setTimeout(() => {
     removeNotificationNow(notif);
   }, 3000);
@@ -2056,28 +1925,28 @@ function showNotification(title, message, type = 'default', metadata = {}) {
   return notifId;
 }
 
-/* === Coffee Tycoon v1.8 – Notification Combination === */
-/* === Coffee Tycoon v1.8 – Final Notification Merge Fix === */
+function updateNotificationPositions() {
+  activeNotifications.forEach((notif, i) => {
+    notif.style.transform = `translateY(${i * 10}px)`;
+  });
+}
+
 function showPurchaseNotification(itemName) {
   const container = document.getElementById('notificationContainer');
   
-  // Check if there's an existing notification for this item
   const existing = activeNotifications.find(n => 
     n.dataset.itemName === itemName && 
     n.classList.contains('purchase-notif')
   );
   
   if (existing) {
-    // Extract current count from message text
     const messageEl = existing.querySelector('.notification-message');
     const match = messageEl.textContent.match(/x(\d+)/);
     const count = match ? parseInt(match[1]) + 1 : 2;
     
-    // Update message with new count
     messageEl.textContent = `Purchased x${count} ${itemName}`;
     existing.dataset.count = count;
     
-    // Clear old timer and set new one
     const oldTimer = notificationTimers.get(existing);
     if (oldTimer) clearTimeout(oldTimer);
     
@@ -2086,16 +1955,15 @@ function showPurchaseNotification(itemName) {
     }, 4000);
     notificationTimers.set(existing, newTimer);
     
-    // Subtle pulse effect to show update without jarring animation
     existing.style.transform = 'scale(1.02)';
     setTimeout(() => {
       existing.style.transform = '';
+      updateNotificationPositions();
     }, 150);
     
     return;
   }
   
-  // Create new notification
   const notifId = notificationIdCounter++;
   const notif = document.createElement('div');
   notif.className = 'notification purchase-notif';
@@ -2111,31 +1979,29 @@ function showPurchaseNotification(itemName) {
   container.appendChild(notif);
   activeNotifications.push(notif);
   
-  // Auto-dismiss after 4 seconds
+  updateNotificationPositions();
+  
   const timer = setTimeout(() => {
     removeNotificationNow(notif);
   }, 4000);
   notificationTimers.set(notif, timer);
 }
 
-/* === Coffee Tycoon v1.8 – Final Notification Merge Fix === */
 function removeNotificationNow(notificationElement) {
   if (!notificationElement || !notificationElement.parentNode) return;
   
-  // Clear any associated timer
   const timer = notificationTimers.get(notificationElement);
   if (timer) {
     clearTimeout(timer);
     notificationTimers.delete(notificationElement);
   }
   
-  // Remove from tracking array immediately to prevent duplicates
   activeNotifications = activeNotifications.filter(n => n !== notificationElement);
   
-  // Apply fade-out animation
   notificationElement.classList.add('fade-out');
   
-  // Remove from DOM after animation
+  updateNotificationPositions();
+  
   setTimeout(() => {
     if (notificationElement.parentNode) {
       notificationElement.remove();
@@ -2167,7 +2033,7 @@ function getUnlockRequirementText(upgrade) {
     const itemName = shopItems.find(i => i.id === itemId)?.name || itemId;
     const requirements = [10, 25, 50, 100, 200, 400, 700, 1000];
     const required = requirements[tier - 1] || 0;
-    const current = gameState.items[itemId]?.count || 0;
+    const current = (gameState.items[itemId]?.count ?? 0);
     return `Requires ${required} ${itemName}s (Currently: ${current})`;
   }
   
@@ -2187,7 +2053,7 @@ function getRewardText(reward) {
     return `Reward: ${abbreviateNumber(reward.value)} Coffee`;
   } else if (reward.type === 'multiplier') {
     const itemName = shopItems.find(i => i.id === reward.itemId)?.name;
-    const multiplierPercent = ((reward.value - 1) * 100).toFixed(0);
+    const multiplierPercent = ((reward.value - 1) * 100).toFixed(1);
     return `Reward: +${multiplierPercent}% ${itemName} production`;
   }
   return '';
@@ -2199,12 +2065,8 @@ function claimAchievementReward(achievement) {
   gameState.unclaimedAchievements.delete(achievement.id);
   gameState.viewedAchievements.add(achievement.id);
   
-  /* === Coffee Tycoon v1.8 – Final Polish === */
-  // Remove related notifications instantly
   removeNotificationsByAchievement(achievement.id);
   
-  /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-  // Show unified claim notification
   showPurchaseNotification(`Claimed: ${achievement.name}`);
   
   if (achievement.reward.type === 'coffee') {
@@ -2217,7 +2079,7 @@ function claimAchievementReward(achievement) {
     const itemId = achievement.reward.itemId;
     gameState.itemMultipliers[itemId] = (gameState.itemMultipliers[itemId] || 1) * achievement.reward.value;
     const itemName = shopItems.find(i => i.id === itemId)?.name;
-    const multiplierPercent = ((achievement.reward.value - 1) * 100).toFixed(0);
+    const multiplierPercent = ((achievement.reward.value - 1) * 100).toFixed(1);
     saveGame();
     updateUI();
     return ` (+${multiplierPercent}% ${itemName} production!)`;
@@ -2226,7 +2088,6 @@ function claimAchievementReward(achievement) {
   return '';
 }
 
-// ========== SAVE/LOAD SYSTEM ==========
 function saveGame() {
   const saveData = {
     coffee: gameState.coffee,
@@ -2263,6 +2124,12 @@ function loadGame() {
     gameState.collapsedPacks = new Set(data.collapsedPacks || []);
     gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
     
+    shopItems.forEach(item => {
+      if (!gameState.items[item.id]) {
+        gameState.items[item.id] = { count: 0, cost: item.baseCost };
+      }
+    });
+    
     if (data.achievements) {
       data.achievements.forEach(savedAch => {
         const ach = gameState.achievements.find(a => a.id === savedAch.id);
@@ -2274,7 +2141,6 @@ function loadGame() {
   return false;
 }
 
-// ========== NOTIFICATION BADGES ==========
 function updateNotificationBadges() {
   const availableUpgrades = upgrades.filter(u => 
     u.unlockCondition() && 
@@ -2303,7 +2169,6 @@ function updateNotificationBadges() {
   }
 }
 
-// ========== UI RENDERING ==========
 function updateUI() {
   document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.displayCoffee);
   document.getElementById('cpsDisplay').textContent = abbreviateNumber(gameState.displayCPS);
@@ -2323,8 +2188,14 @@ function renderShop() {
   container.innerHTML = '';
   
   shopItems.forEach(item => {
+    if (!gameState.items[item.id]) {
+      gameState.items[item.id] = { count: 0, cost: item.baseCost };
+    }
+    
     const itemState = gameState.items[item.id];
-    const canAfford = gameState.coffee >= itemState.cost;
+    const currentCost = itemState.cost ?? item.baseCost;
+    const currentCount = itemState.count ?? 0;
+    const canAfford = gameState.coffee >= currentCost;
     const itemCPS = calculateItemCPS(item);
     
     const div = document.createElement('div');
@@ -2335,9 +2206,9 @@ function renderShop() {
         <div class="item-effect">Effect: +${abbreviateNumber(itemCPS)} CPS</div>
       </div>
       <div class="item-actions">
-        <div class="quantity-display">${itemState.count}</div>
+        <div class="quantity-display">${currentCount}</div>
         <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>BUY</button>
-        <div class="cost-tile">☕ ${abbreviateNumber(itemState.cost)}</div>
+        <div class="cost-tile">☕ ${abbreviateNumber(currentCost)}</div>
       </div>
     `;
     
@@ -2346,8 +2217,6 @@ function renderShop() {
   });
 }
 
-/* === Coffee Tycoon v1.8 – Final Polish === */
-// Track previously unlocked upgrades for notification generation
 let previouslyUnlockedUpgrades = new Set();
 
 function renderUpgrades() {
@@ -2364,7 +2233,6 @@ function renderUpgrades() {
     const unlockedUpgrades = packUpgrades.filter(u => u.unlockCondition());
     if (unlockedUpgrades.length === 0) return;
     
-    // Check for newly unlocked upgrades in this pack
     const newlyUnlocked = unlockedUpgrades.filter(u => 
       !previouslyUnlockedUpgrades.has(u.id) && 
       !gameState.purchasedUpgrades.has(u.id)
@@ -2402,8 +2270,6 @@ function renderUpgrades() {
     packDiv.className = 'upgrade-pack';
     
     const previewUpgrades = unlockedUpgrades.slice(0, 8);
-    /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-    // Removed numeric progress counter, keeping only visual progress bar
     packDiv.innerHTML = `
       <div class="upgrade-pack-header">
         <div class="upgrade-pack-title">
@@ -2417,8 +2283,8 @@ function renderUpgrades() {
       <div class="upgrade-pack-preview">
         ${previewUpgrades.map(u => {
           const purchased = gameState.purchasedUpgrades.has(u.id);
-          const affordable = !purchased && gameState.coffee >= u.cost;
-          return `<span class="upgrade-pack-badge">${purchased ? '✓' : (affordable ? '●' : '○')}</span>`;
+          const affordable = !purchased && gameState.coffee >= u.cost && u.unlockCondition();
+          return `<span class="upgrade-pack-badge" ${affordable ? 'title="Affordable" aria-label="Affordable"' : ''}>${purchased ? '✓' : (affordable ? '!' : '○')}</span>`;
         }).join('')}
         ${unlockedUpgrades.length > 8 ? '<span style="opacity: 0.6;">...</span>' : ''}
       </div>
@@ -2512,14 +2378,6 @@ function renderPrestige() {
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
           <div style="opacity: 0.8; margin-bottom: 8px;">Total Coffee Brewed</div>
-          <div style="font-size: 1.8rem; font-weight: 700; color: #ffd700;">${abbreviateNumber(gameState.totalCoffeeAllTime)}</div>
-        </div>
-        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
-          <div style="opacity: 0.8; margin-bottom: 8px;">Current Golden Coffee</div>
-          <div style="font-size: 1.8rem; font-weight: 700; color: #ffd700;">${gameState.goldenCoffee}</div>
-        </div>
-        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
-          <div style="opacity: 0.8; margin-bottom: 8px;">After Prestige</div>
           <div style="font-size: 1.8rem; font-weight: 700; color: #ffd700;">${goldenCoffeeToGain}</div>
         </div>
       </div>
@@ -2570,8 +2428,6 @@ function renderAchievements() {
     
     const badgeHTML = unclaimedInPack > 0 ? `<div class="notification-badge">${unclaimedInPack}</div>` : '';
     
-    /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-    // Removed numeric progress counter, keeping only visual progress bar
     div.innerHTML = `
       ${badgeHTML}
       <div class="pack-header">
@@ -2614,7 +2470,7 @@ function openAchievementModal(pack) {
     if (isUnclaimed) {
       div.className = 'modal-achievement unlocked unclaimed';
     } else if (isClaimed) {
-      div.className = 'modal-achievement unlocked';
+      div.className = 'modal-achievement claimed';
     } else {
       div.className = 'modal-achievement';
     }
@@ -2625,7 +2481,6 @@ function openAchievementModal(pack) {
       </div>
       <div style="opacity: 0.9; margin-bottom: 8px; font-size: 0.9rem;">${a.requirement}</div>
       ${a.reward ? `<div class="achievement-reward">${getRewardText(a.reward)}${isUnclaimed ? ' - Click to claim!' : ''}</div>` : ''}
-      <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 4px;">Progress: ${a.progress()}</div>
       <div class="progress">
         <div class="progress-bar" style="width: ${a.percent()}%; ${a.earned ? 'background: #4CAF50;' : ''}"></div>
       </div>
@@ -2633,9 +2488,7 @@ function openAchievementModal(pack) {
     
     if (isUnclaimed) {
       div.onclick = () => {
-        const rewardText = claimAchievementReward(a);
-        /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-        // Removed redundant toast - notification now shown in claimAchievementReward
+        claimAchievementReward(a);
         openAchievementModal(pack);
         renderAchievements();
       };
@@ -2667,17 +2520,22 @@ function closeInstructions() {
   document.getElementById('instructionsOverlay').classList.add('hidden');
 }
 
-// ========== GAME ACTIONS ==========
 function buyItem(itemId) {
   const shopItem = shopItems.find(i => i.id === itemId);
-  const itemState = gameState.items[itemId];
+  if (!shopItem) return;
   
-  if (gameState.coffee >= itemState.cost) {
-    gameState.coffee -= itemState.cost;
-    itemState.count++;
+  if (!gameState.items[itemId]) {
+    gameState.items[itemId] = { count: 0, cost: shopItem.baseCost };
+  }
+  
+  const itemState = gameState.items[itemId];
+  const currentCost = itemState.cost ?? shopItem.baseCost;
+  
+  if (gameState.coffee >= currentCost) {
+    gameState.coffee -= currentCost;
+    itemState.count = (itemState.count ?? 0) + 1;
     itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
     
-    /* === Coffee Tycoon v1.8 – Notification Combination === */
     showPurchaseNotification(shopItem.name);
     
     saveGame();
@@ -2695,15 +2553,11 @@ function buyUpgrade(upgradeId) {
     gameState.viewedUpgrades.add(upgradeId);
     upgrade.effect();
     
-    /* === Coffee Tycoon v1.8 – Final Polish === */
-    // Remove notifications related to this upgrade pack instantly
     const packId = upgrade.pack;
     if (packId) {
       removeNotificationsByPack(packId);
     }
     
-    /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-    // Use unified purchase notification
     showPurchaseNotification(upgrade.name);
     
     saveGame();
@@ -2724,15 +2578,13 @@ function doPrestige() {
       gameState.purchasedUpgrades = new Set();
       gameState.itemMultipliers = {};
       
-      /* === Coffee Tycoon v1.8 – Final Polish === */
-      // Reset upgrade tracking for notifications
       previouslyUnlockedUpgrades = new Set();
       
       shopItems.forEach(item => {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
       });
       
-      showToast(`Prestiged! Gained ${gained} Golden Coffee!`, true);
+      showPurchaseNotification(`Prestiged! Gained ${gained} Golden Coffee!`);
       saveGame();
       updateUI();
     }
@@ -2745,8 +2597,6 @@ function checkAchievements() {
       a.earned = true;
       gameState.unclaimedAchievements.add(a.id);
       
-      /* === Coffee Tycoon v1.8.1 – Gains and Grains Patch 1 === */
-      // Single unified notification for achievement unlock
       showNotification(
         'Achievement Unlocked!',
         `${a.name}`,
@@ -2759,7 +2609,6 @@ function checkAchievements() {
   });
 }
 
-// ========== COFFEE BUTTON ==========
 document.getElementById('coffeeButton').onclick = () => {
   const earned = gameState.clickPower * gameState.prestigeMultiplier;
   gameState.coffee += earned;
@@ -2772,7 +2621,6 @@ document.getElementById('coffeeButton').onclick = () => {
   setTimeout(() => btn.style.transform = 'scale(1)', 100);
 };
 
-// ========== SMOOTH ANIMATION SYSTEM ==========
 function smoothAnimate() {
   const lerpFactor = 0.15;
   
@@ -2791,7 +2639,6 @@ function smoothAnimate() {
   }
 }
 
-// ========== MAIN GAME LOOP ==========
 let lastRenderTime = Date.now();
 
 setInterval(() => {
@@ -2823,7 +2670,6 @@ setInterval(() => {
   saveGame();
 }, 30000);
 
-// ========== TAB SWITCHING ==========
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2838,7 +2684,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   };
 });
 
-// ========== KEYBOARD SHORTCUTS ==========
 document.addEventListener('keydown', (e) => {
   const key = e.key;
   const tabs = ['brew', 'shop', 'upgrades', 'prestige', 'achievements'];
@@ -2874,11 +2719,8 @@ document.getElementById('instructionsOverlay').onclick = (e) => {
   }
 };
 
-// ========== INITIALIZATION ==========
 const hasExistingSave = loadGame();
 
-/* === Coffee Tycoon v1.8 – Final Polish === */
-// Default to Brew House tab (already active in HTML)
 if (!hasExistingSave) {
   document.getElementById('instructionsOverlay').classList.remove('hidden');
 } else {
@@ -2893,7 +2735,6 @@ gameState.targetCPS = calculateTotalCPS();
 gameState.displayCPS = gameState.targetCPS;
 
 updateUI();
-
 </script>
 </body>
 </html>
