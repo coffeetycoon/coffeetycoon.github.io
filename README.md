@@ -1,135 +1,127 @@
-# Coffee Tycoon
+# Coffee Tycoon ☕
 
-A game where you brew coffee.
+A game where you brew coffee
 
 ---
 
 ## Contents
 - [How to Download and Play](#how-to-download-and-play)
-  - [File Download](#option-1-file)
-  - [Link to Game](#option-2-link)
+  - [Option 1: File](#option-1-file)
+  - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v19-riches-and-reaches)
-  - [Last Major Update](#latest-version-v19-riches-and-reaches)
+  - [Latest Version](#latest-version-v110-a-whole-latte-trade)
+  - [Last Major Update](#last-major-update-v110-a-whole-latte-trade)
   - [Last Major Build](#last-major-build-v10)
 - [Future Updates](#future-updates)
+- [Undecided Additions](#undecided-additions)
 
 ---
 
 ## How to Download and Play
 
 ### Option 1: File
-1. Download the **coffeetycoon.html** file above  
+1 Download the **coffeetycoon.html** file  
    <img src="Images/Open.png" alt="Open" width="500">
-2. Download the file  
+2 Save the file to your computer  
    <img src="Images/Download.png" alt="Download" width="500">
-3. Open the HTML in any modern browser (Chrome, Edge, Firefox, Opera, etc.)  
+3 Open the HTML file in any modern browser (Chrome, Edge, Firefox, Opera, etc.)  
    <img src="Images/Files.png" alt="Files" width="500">
-4. Have fun!
+4 Enjoy brewing your coffee empire
 
 ### Option 2: Link
-1. Current Link: [https://coffeetycoon.github.io/Coffee-Tycoon/](https://coffeetycoon.github.io/Coffee-Tycoon/)
+- Play directly in your browser: [Coffee Tycoon Online](https://coffeetycoon.github.io/Coffee-Tycoon/)
 
 ---
 
 ## Updates
 
-### Latest Version: v1.9: Riches and Reaches
-#### Release Date: Nov 14, 2025
-#### Main Changes
-- Achievements for coffee collection will scale to 1 quintillion coffee
-- Achievements for shop item collection will scale to 5000 items
-- New achievement pack: upgrades collection, achievement for 10% of upgrades, then 20% and so on until 100% of upgrades
-- Remove number from notifications on achievement packs
-- All shop items coffee grinder and beyond buffed by at least 200%
-- All shop items more spaced out (CPS-wise), no price changes but Coffee Franchise now produces 1M CPS, with all items before till coffee grinder scaling along with it
-- Auto Brewer now does 5 CPS, Barista now does 10 CPS
-- Affordable upgrades in an upgrade pack will be represented by "!" instead of "."
-- Claimed achievements will now have a green border/theme, so as not to confuse them with unclaimed achievements
-  - Unclaimed (but completed) achievements will not change
+### Latest Version: v1.10 – A Whole Latte Trade
+**Release Date:** Nov 17, 2025
+
+**Key Features**
+- Progressive shop unlocking (items hidden until ≥50% base cost)
+- Added high-tier buildings: Coffee Planet → Coffee Multiverse
+- Bulk buy ×1/×10/×100
+- Sell 1 item (50% refund)
+- Building buffs 2×–5×
+- CPS Achievement Pack up to 1e20 CPS
+- Renamed all achievements with coffee puns
+- Updated credits to Sanchit P.
+- Fixed duplicate achievement notifications and wording
+
 ---
 
-### Last Major Update: v1.8: Gains and Grains
-#### Release Date: Nov 14, 2025
-#### See above
+### Last Major Update: v1.10 – A Whole Latte Trade
+**Release Date:** Nov 17, 2025  
+*See details above*
 
 ---
 
 ### Last Major Build: v1.0
-#### Release Date: Aug 31, 2025
-#### Coffee Tycoon beta test ends, and full release is live
+**Release Date:** Aug 31, 2025  
+- Coffee Tycoon beta test concluded; full release live
 
 ---
 
 ## Future Updates
 
-### v1.10 – A Whole Latte Trade
-#### Release Target: Dec 2025
-- Progressive unlocking of shop items (shop items that you cannot afford 50% of the initial price for will not be shown)
-- Add new shop items beyond Coffee Franchise (up till producing 100 billion coffee [named like, coffee planet, galaxy, universe, solar system, continent, country, factory etc, can scale in size till universe if needed])
-- Add bulk buying options (×1, ×10, ×100)
-  - Notifications like “Bought 10× Barista”
-- Add ability to **sell shop items**
-- Buff all buildings (except first 2) by 2-5x
+### v1.11 – A Latte Noise
+- Coffee cup animation reacts to clicks and CPS output
+- CPS button opens a breakdown window showing contributions
+- Looping background music and button SFX
+- Affordable upgrade/shop item notifications
 
-### v1.11 - A Latte Noise
-#### Release Target: Dec 2025/Jan 2026
-- Coffee cup animation (cups fall based on click/CPS output)
-- Turn the CPS into a button that opens a window showing a breakdown of CPS contributions (percent and number)
-- Looping Background Music: TBD
-- Generic sound effect for buttons
-- Affordable upgrades notifications (pop-up like unlocking upgrades)
-- Affordable shop items notifications (Red dot)
-
-### v1.12 Pick Your Brew
-- Settings Button next to info and help
-  - Notifications for affordable upgrades (toggle)
-  - Background Music toggle and SFX toggle
-  - Customizable Quick Keys
-  - Toggle to change coffee display to full number instead of abbreviated (also a toggle for CPS, and another one for golden coffee
-- Export/Import save system using save strings  
+### v1.12 – Pick Your Brew
+- Settings button with toggles (notifications, music, SFX, quick keys, number display)
+- Export/import save system
 - Erase progress option
 
-### v1.13 Golden Gains
- Golden Coffee can buy **Golden Upgrades**  
-  - Loses production boost but gains stronger buffs
-  - Golden Upgrades (New Pack) - Will not reset after prestige, is permanent upgrade:
-    - Auto-Buy Upgrades - (5 min gap between upgrades being bought - can't spam buy upgrades) {10 Golden Coffee}
-    - Auto-Buy Shop Items - (1 min gap between next cheapest item being bought) {10 Golden Coffee}
-    - Auto Claim Achievement Rewards - (Claims max one reward every minute; Level 2 upgrade claims all every 5 minutes) {10 Golden Coffee} - First level is claim all button, then auto-claim is second level
-    - Permanent Upgrades (Such as +15% CPS boost, etc.)
-    - Mark All Notifications As Read
+### v1.13 – Golden Gains
+- Golden Coffee unlocks permanent Golden Upgrades
+- Auto-buy upgrades/items
+- Auto-claim achievements
+- Permanent bonuses (+CPS, etc.)
+- Mark all notifications as read
+- Progress bar for golden coffee
+- Golden Coffee cost scaling
 
-### v1.14 Grab a Lab
-  - Prior to unlocking, the tab is greyed out and when you click on it it should say "Unlock/Purchase the Research Lab Golden Upgrade" in a notification, 
-  - Research Lab (Available as Golden Upgrade)
-    - A new tab where you can spend coffee to discover new drink recipes
-    - Research Drink Recipes (e.g., Espresso, Latte, Cappuccino, Macchiato) ~10 drinks total
-    - Each unlocked drink provides a unique, passive boost (e.g., "Espressos boost click power by +25%", "Lattes boost all Barista CPS by +10%") + some will have debuffs and buffs as part of the same drink
-      - You can choose in the tab which drink is active, max 3 is active at a time, 1st one is at 100% power, 2nd is at 75% power, last is at 50% power
-      - To change the drink it costs 1 swap, each swap generates over an hour
-   
-### v1.15 Roasters and Coasters
-  - Roastery (Available as Golden Upgrade)
-    - A new building/tab that allows you to buy different tiers of raw Coffee Beans
-    - The Roastery processes beans into "Roasted Blends" (e.g., Light, Medium, Dark)
-    - Activating a blend consumes it and provides a powerful, temporary global boost (e.g., "Activate Dark Roast: 2x all CPS for 60 seconds")
+### v1.14 – Grab a Lab
+- Research Lab as Golden Upgrade
+- Discover ~10 drink recipes with buffs/debuffs
+- Max 3 active drinks at a time
+- Swaps regenerate over time
+
+### v1.15 – Roasters and Coasters
+- Roastery as Golden Upgrade
+- Buy and process beans into blends (Light, Medium, Dark)
+- Activate blends for temporary global boosts
+
+### v1.17 – Super Coffee
+- Randomly spawning Super Coffee with temporary bonuses
+- Occasional Golden Super Coffee with stronger buffs
+- Coffee storms temporarily boost all CPS 2×–5×
+- Achievements for collecting Super Coffees
+- Chance to spawn Mystery Coffee Beans for rare boosts
+
+### v1.18 – Stats Window
+- Stats button with tabs for total coffee, CPS, golden coffee
+- Graphs for each building and combined CPS
+- Historical coffee production timeline
+- Filter CPS by building or upgrade type
+- Tooltip hover to see exact numbers
+- Option to export stats as image or CSV
 
 ---
 
 ## Undecided Additions
-#### These may move to planned or unplanned updates, or be removed entirely:
 - Mobile UI
-  - Will use sidebar instead of tabs
-- Add "super coffee", which gives random bonuses and randomly spawns once every 10 min
-- Progress bar in prestige tab to show with progress till next golden coffee
-- Balance Change: Golden Coffee cost will scale by factor of 10 every with every golden coffee collected, will go down if you spend golden coffee on golden upgrades
-- Stats button, next to settings button: Opens a window like info, but with tabs within it
-  - Tab graph with history of total coffee and total CPS and golden coffee
-  - Graph with percentage of CPS from each building (each building has its own graph), and on same graph a graph of CPS from each building
-   
+  - Sidebar navigation instead of tabs
+  - Adjusted touch controls for phones/tablets
+
 ---
+
 #### Only used for major update when necessary
+```javascript
 // ===== One-time global reset for Coffee Tycoon vx.x.x =====
 const GAME_VERSION = "x.x.x-reset"; // Change this if want another one-time reset
 
@@ -147,5 +139,3 @@ if (savedVersion !== GAME_VERSION) {
   localStorage.setItem("gameVersion", GAME_VERSION);
 
 }
----
-*Stay tuned for more updates as Coffee Tycoon continues to brew improvements!*
