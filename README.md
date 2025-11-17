@@ -70,6 +70,8 @@ A game where you brew coffee
 - CPS button opens a breakdown window showing contributions
 - Looping background music and button SFX
 - Affordable upgrade/shop item notifications
+- Achievement packs of shop items not unlocked yet should show up
+- Add selling of up to 100x
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
