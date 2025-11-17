@@ -70,6 +70,7 @@ A game where you brew coffee.
 - Add bulk buying options (×1, ×10, ×100)
   - Notifications like “Bought 10× Barista”
 - Add ability to **sell shop items**
+- Buff all buildings (except first 2) by 2-5x
 
 ### v1.11 - A Latte Noise
 - Coffee cup animation (cups fall based on click/CPS output)
