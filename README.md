@@ -72,6 +72,7 @@ A game where you brew coffee
 - Affordable upgrade/shop item notifications
 - Achievement packs of shop items not unlocked yet should show up
 - Add selling of up to 100x
+- Everything in shop is vertically aligned with each other (all sell blocks with sells etc.)
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
@@ -80,6 +81,7 @@ A game where you brew coffee
 
 ### v1.13 – Golden Gains
 - Golden Coffee unlocks permanent Golden Upgrades
+- Tab within tab design, inside upgrades tab, there will be a tab for golden upgrades and one for upgrades (golden upgrades button will be greyed out until unlocked), unlock cost is 1 golden coffee
 - Auto-buy upgrades/items
 - Auto-claim achievements
 - Permanent bonuses (+CPS, etc.)
