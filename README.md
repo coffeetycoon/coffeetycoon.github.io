@@ -109,7 +109,6 @@ A game where you brew coffee
 - Historical coffee production timeline
 - Filter CPS by building or upgrade type
 - Tooltip hover to see exact numbers
-- Option to export stats as image or CSV
 
 ---
 
