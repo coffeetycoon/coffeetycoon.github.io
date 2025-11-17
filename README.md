@@ -138,3 +138,6 @@ if (savedVersion !== GAME_VERSION) {
   localStorage.setItem("gameVersion", GAME_VERSION);
 
 }
+```
+---
+*Stay tuned for more updates as coffee tycoon improves!*
