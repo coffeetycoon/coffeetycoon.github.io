@@ -73,6 +73,7 @@ A game where you brew coffee.
 - Buff all buildings (except first 2) by 2-5x
 
 ### v1.11 - A Latte Noise
+#### Release Target: Dec 2025/Jan 2026
 - Coffee cup animation (cups fall based on click/CPS output)
 - Turn the CPS into a button that opens a window showing a breakdown of CPS contributions (percent and number)
 - Looping Background Music: TBD
