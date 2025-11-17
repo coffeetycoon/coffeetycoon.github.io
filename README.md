@@ -1,4 +1,4 @@
-# Coffee Tycoon ☕
+# Coffee Tycoon
 
 A game where you brew coffee
 
