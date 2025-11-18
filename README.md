@@ -74,10 +74,12 @@ A game where you brew coffee
 - Add selling of up to 100x
 - Everything in shop is vertically aligned with each other (all sell blocks with sells etc.)
 - Coffee country and universe moved before planet, and everything adjusted in CPS to match new order (while keeping old progression)
+- Achievements for buildings that haven't been unlocked yet should not be displayed
+- New achievement pack, building unlocks, each achievement opens when the corresponding building is unlocked (it shows up in shop screen)
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
-- Export/import save system
+- Export/import save system (based on strings of text with info)
 - Erase progress option
 
 ### v1.13 – Golden Gains
