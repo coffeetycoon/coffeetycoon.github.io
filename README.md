@@ -29,7 +29,7 @@ A game where you brew coffee
 4 Enjoy brewing your coffee empire
 
 ### Option 2: Link
-- Play directly in your browser: [Coffee Tycoon Online](https://coffeetycoon.github.io/Coffee-Tycoon/)
+- Play directly in your browser: [Coffee Tycoon Online](https://coffeetycoon.github.io/)
 
 ---
 
@@ -73,6 +73,7 @@ A game where you brew coffee
 - Achievement packs of shop items not unlocked yet should show up
 - Add selling of up to 100x
 - Everything in shop is vertically aligned with each other (all sell blocks with sells etc.)
+- Coffee country and universe moved before planet, and everything adjusted in CPS to match new order (while keeping old progression)
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
