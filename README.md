@@ -76,7 +76,7 @@ A game where you brew coffee
 - Coffee country and universe moved before planet, and everything adjusted in CPS to match new order (while keeping old progression)
 - Achievements for buildings that haven't been unlocked yet should not be displayed
 - New achievement pack, building unlocks, each achievement opens when the corresponding building is unlocked (it shows up in shop screen)
-- Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated
+- Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated and if over 100 then deleted
 - general collection achievement pack expanded till 1 million buildings
 - Prestige will be allowed upon collecting one golden coffee
 
