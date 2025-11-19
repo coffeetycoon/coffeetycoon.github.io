@@ -78,6 +78,7 @@ A game where you brew coffee
 - New achievement pack, building unlocks, each achievement opens when the corresponding building is unlocked (it shows up in shop screen)
 - Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated
 - general collection achievement pack expanded till 1 million buildings
+- Prestige will be allowed upon collecting one golden coffee
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
@@ -92,18 +93,20 @@ A game where you brew coffee
 - Permanent bonuses (+CPS, etc.)
 - Mark all notifications as read
 - Progress bar for golden coffee
-- Golden Coffee cost scaling
+- Spending golden coffee will reduce your default bonus
 
 ### v1.14 – Grab a Lab
 - Research Lab as Golden Upgrade
 - Discover ~10 drink recipes with buffs/debuffs
 - Max 3 active drinks at a time
 - Swaps regenerate over time
+- Golden Upgrades for building
 
 ### v1.15 – Roasters and Coasters
 - Roastery as Golden Upgrade
 - Buy and process beans into blends (Light, Medium, Dark)
 - Activate blends for temporary global boosts
+- Golden Upgrades for building
 
 ### v1.17 – Super Coffee
 - Randomly spawning Super Coffee with temporary bonuses
