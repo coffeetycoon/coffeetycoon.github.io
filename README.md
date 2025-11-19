@@ -77,6 +77,7 @@ A game where you brew coffee
 - Achievements for buildings that haven't been unlocked yet should not be displayed
 - New achievement pack, building unlocks, each achievement opens when the corresponding building is unlocked (it shows up in shop screen)
 - Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated
+- general collection achievement pack expanded till 1 million buildings
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
