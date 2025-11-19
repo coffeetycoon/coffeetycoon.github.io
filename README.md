@@ -82,6 +82,7 @@ A game where you brew coffee
 - general collection achievement pack expanded till 1 million buildings
 - Prestige will be allowed upon collecting one golden coffee
 - Remove the emojis shown on the achievement packs
+- Max golden coffee is 100
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
@@ -91,12 +92,13 @@ A game where you brew coffee
 ### v1.13 – Golden Gains
 - Golden Coffee unlocks permanent Golden Upgrades (does not reset after prestige)
 - Tab within tab design, inside upgrades tab, there will be a tab for golden upgrades and one for upgrades (golden upgrades button will be greyed out until unlocked), unlock cost is 1 golden coffee
-- Auto-buy upgrades/items
-- Auto-claim achievements
-- Permanent bonuses (+CPS, etc.)
-- Mark all notifications as read
-- Progress bar for golden coffee
-- Spending golden coffee will reduce your default bonus
+- Available upgrades
+  - Auto-buy upgrades/items
+  - Auto-claim achievements
+  - Permanent bonuses (+CPS, etc.)
+  - Mark all notifications as read
+  - Progress bar for golden coffee
+  - Spending golden coffee will reduce your default bonus
 
 ### v1.14 – Grab a Lab
 - Research Lab as Golden Upgrade
