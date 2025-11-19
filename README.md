@@ -69,6 +69,8 @@ A game where you brew coffee
 - Coffee cup animation reacts to clicks and CPS output
 - CPS button opens a breakdown window showing contributions
 - Looping background music and button SFX
+  - click from https://www.youtube.com/watch?v=h6_8SlZZwvQ
+  - background from https://www.youtube.com/watch?v=GsY331YBUkg
 - Affordable upgrade/shop item notifications
 - Achievement packs of shop items not unlocked yet should show up
 - Add selling of up to 100x
@@ -79,6 +81,7 @@ A game where you brew coffee
 - Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated and if over 100 then deleted
 - general collection achievement pack expanded till 1 million buildings
 - Prestige will be allowed upon collecting one golden coffee
+- Remove the emojis shown on the achievement packs
 
 ### v1.12 – Pick Your Brew
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
@@ -86,7 +89,7 @@ A game where you brew coffee
 - Erase progress option
 
 ### v1.13 – Golden Gains
-- Golden Coffee unlocks permanent Golden Upgrades
+- Golden Coffee unlocks permanent Golden Upgrades (does not reset after prestige)
 - Tab within tab design, inside upgrades tab, there will be a tab for golden upgrades and one for upgrades (golden upgrades button will be greyed out until unlocked), unlock cost is 1 golden coffee
 - Auto-buy upgrades/items
 - Auto-claim achievements
