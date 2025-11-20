@@ -84,7 +84,7 @@ A game where you brew coffee
 - Settings button with toggles (notifications, music, SFX, quick keys, number display)
 - Export/import save system (based on strings of text with info)
 - Erase progress option
-- Add support for numbers up to trevigintillion
+- Add support for numbers up to trigintillion
 
 ### v1.13 – Golden Gains
 - Golden Coffee unlocks permanent Golden Upgrades (does not reset after prestige)
