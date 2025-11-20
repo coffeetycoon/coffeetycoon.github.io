@@ -67,10 +67,6 @@ A game where you brew coffee
 
 ### v1.11 – A Latte Noise
 - Coffee cup animation reacts to clicks and CPS output
-- CPS button opens a breakdown window showing contributions
-- Looping background music and button SFX
-  - click from https://www.youtube.com/watch?v=h6_8SlZZwvQ
-  - background from https://www.youtube.com/watch?v=GsY331YBUkg
 - Affordable upgrade/shop item notifications
 - Achievement packs of shop items not unlocked yet should show up
 - Add selling of up to 100x
