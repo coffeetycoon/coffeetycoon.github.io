@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHOP TAB - Styles
+   Specific styles for the Shop tab
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Shop item styles are in components.css */
+/* Additional shop-specific styles can be added here */
+
+/* Future: Shop categories, filters, special shop events styling */
+
+/* Example: Shop category tabs (for future implementation) */
+.shop-categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shop-category-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #f5f5f5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shop-category-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(212, 165, 116, 0.5);
+}
+
+.shop-category-btn.active {
+  background: rgba(212, 165, 116, 0.2);
+  border-color: #d4a574;
+  color: #d4a574;
+}

@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACHIEVEMENTS TAB - Styles
+   Specific styles for the Achievements tab
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Achievement styles are in components.css */
+/* Additional achievement-specific styles can be added here */
+
+/* Future: Achievement statistics, showcase, special effects */
+
+/* Example: Achievement showcase (for future implementation) */
+.achievement-showcase {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(212, 165, 116, 0.1));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.achievement-showcase-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 16px;
+}
+
+/* Example: Achievement statistics panel */
+.achievement-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.achievement-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.achievement-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 8px;
+}
+
+.achievement-stat-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}

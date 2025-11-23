@@ -1,0 +1,62 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRESTIGE TAB - Styles
+   Specific styles for the Prestige tab
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Prestige styles are in components.css */
+/* Additional prestige-specific styles can be added here */
+
+/* Future: Prestige history, milestones, special effects */
+
+/* Example: Prestige milestone display (for future implementation) */
+.prestige-milestones {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.prestige-milestone {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin: 8px 0;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 4px solid #ffd700;
+}
+
+.prestige-milestone.completed {
+  opacity: 0.6;
+  border-left-color: #4CAF50;
+}
+
+.prestige-milestone-icon {
+  font-size: 2rem;
+  margin-right: 16px;
+}
+
+.prestige-milestone-info {
+  flex: 1;
+}
+
+.prestige-milestone-title {
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 4px;
+}
+
+.prestige-milestone-desc {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Example: Prestige animation effect */
+@keyframes prestigeGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+  }
+}

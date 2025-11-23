@@ -1,0 +1,49 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPGRADES TAB - Styles
+   Specific styles for the Upgrades tab
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Upgrade styles are in components.css */
+/* Additional upgrade-specific styles can be added here */
+
+/* Future: Upgrade trees, special upgrade effects, tooltips */
+
+/* Example: Upgrade tree visualization (for future implementation) */
+.upgrade-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.upgrade-tier {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.upgrade-connection {
+  width: 2px;
+  height: 20px;
+  background: rgba(212, 165, 116, 0.3);
+  margin: 0 auto;
+}
+
+/* Example: Upgrade tooltip (for future implementation) */
+.upgrade-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  padding: 12px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.upgrade-tooltip.show {
+  opacity: 1;
+}

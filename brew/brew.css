@@ -1,0 +1,28 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BREW TAB - Styles
+   Specific styles for the Brew House tab
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Coffee Button - Main styles are in components.css */
+/* Additional brew-specific styles can be added here */
+
+/* Future: Brew tab specific animations, effects, or layouts */
+
+/* Example: Click animation effect */
+@keyframes coffeeClickEffect {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* Example: Floating particles effect (for future implementation) */
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
