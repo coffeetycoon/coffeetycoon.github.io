@@ -73,6 +73,12 @@
   color: #fff;
 }
 
+.buy-mode-btn[data-type="sell"].active {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  border-color: #ff6b6b;
+  color: #fff;
+}
+
 .buy-btn, .sell-btn, .upgrade-buy-btn {
   background: linear-gradient(135deg, #4CAF50, #45a049);
   border: none;
@@ -775,6 +781,15 @@
 
 .notification.purchase-notif .notification-title {
   color: #66BB6A;
+}
+
+.notification.sell-notif {
+  border-color: #ff6b6b;
+  background: linear-gradient(135deg, #3d1e1e, #2a1e1e);
+}
+
+.notification.sell-notif .notification-title {
+  color: #ff6b6b;
 }
 
 .notification-title {

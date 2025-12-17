@@ -50,54 +50,79 @@ function updateNotificationPositions() {
 
 function showPurchaseNotification(itemName) {
   const container = document.getElementById('notificationContainer');
-  
-  const existing = activeNotifications.find(n => 
-    n.dataset.itemName === itemName && 
+
+  const existing = activeNotifications.find(n =>
+    n.dataset.itemName === itemName &&
     n.classList.contains('purchase-notif')
   );
-  
+
   if (existing) {
     const messageEl = existing.querySelector('.notification-message');
     const match = messageEl.textContent.match(/x(\d+)/);
     const count = match ? parseInt(match[1]) + 1 : 2;
-    
+
     messageEl.textContent = `Purchased x${count} ${itemName}`;
     existing.dataset.count = count;
-    
+
     const oldTimer = notificationTimers.get(existing);
     if (oldTimer) clearTimeout(oldTimer);
-    
+
     const newTimer = setTimeout(() => {
       removeNotificationNow(existing);
     }, 4000);
     notificationTimers.set(existing, newTimer);
-    
+
     existing.style.transform = 'scale(1.02)';
     setTimeout(() => {
       existing.style.transform = '';
       updateNotificationPositions();
     }, 150);
-    
+
     return;
   }
-  
+
   const notifId = notificationIdCounter++;
   const notif = document.createElement('div');
   notif.className = 'notification purchase-notif';
   notif.dataset.notifId = notifId;
   notif.dataset.itemName = itemName;
   notif.dataset.count = 1;
-  
+
   notif.innerHTML = `
     <div class="notification-title">Purchase Complete</div>
     <div class="notification-message">${itemName}</div>
   `;
-  
+
   container.appendChild(notif);
   activeNotifications.push(notif);
-  
+
   updateNotificationPositions();
-  
+
+  const timer = setTimeout(() => {
+    removeNotificationNow(notif);
+  }, 4000);
+  notificationTimers.set(notif, timer);
+}
+
+function showSellNotification(itemName, count) {
+  const container = document.getElementById('notificationContainer');
+
+  const notifId = notificationIdCounter++;
+  const notif = document.createElement('div');
+  notif.className = 'notification sell-notif';
+  notif.dataset.notifId = notifId;
+  notif.dataset.itemName = itemName;
+
+  notif.innerHTML = `
+    <div class="notification-title">Sell Complete</div>
+    <div class="notification-message">Sold x${count} ${itemName}</div>
+  `;
+
+  container.appendChild(notif);
+  activeNotifications.push(notif);
+
+  updateNotificationPositions();
+
   const timer = setTimeout(() => {
     removeNotificationNow(notif);
   }, 4000);
@@ -627,9 +652,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mode selector
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
     btn.onclick = () => {
-      document.querySelectorAll('.buy-mode-btn').forEach(b => b.classList.remove('active'));
+      const type = btn.dataset.type;
+      document.querySelectorAll(`.buy-mode-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      if (btn.textContent.includes('Sell')) {
+      if (type === 'sell') {
         gameState.sellMode = parseInt(btn.dataset.mode);
       } else {
         gameState.buyMode = parseInt(btn.dataset.mode);
@@ -718,8 +744,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Update mode button display
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
-    if ((btn.textContent.includes('Sell') && parseInt(btn.dataset.mode) === gameState.sellMode) ||
-        (btn.textContent.includes('Buy') && parseInt(btn.dataset.mode) === gameState.buyMode)) {
+    const type = btn.dataset.type;
+    const mode = parseInt(btn.dataset.mode);
+    if ((type === 'sell' && mode === gameState.sellMode) ||
+        (type === 'buy' && mode === gameState.buyMode)) {
       btn.classList.add('active');
     }
   });

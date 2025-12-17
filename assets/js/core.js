@@ -484,7 +484,7 @@ function sellItem(itemId, amount = 1) {
 
   itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
 
-  showPurchaseNotification(`Sold ${amountToSell}× ${shopItem.name}`);
+  showSellNotification(shopItem.name, amountToSell);
 
   saveGame();
   updateUI();
