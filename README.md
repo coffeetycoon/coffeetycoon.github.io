@@ -10,7 +10,7 @@ A game where you brew coffee
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
   - [Latest Version](#latest-version-v111-a-latte-noise)
-  - [Last Major Update](#last-major-update-v110-a-whole-latte-trade)
+  - [Last Major Update](#last-major-update-v111-a-latte-noise)
   - [Last Major Build](#last-major-build-v10)
 - [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
@@ -55,20 +55,9 @@ A game where you brew coffee
 
 ---
 
-### Last Major Update: v1.10 – A Whole Latte Trade
-**Release Date:** Nov 17, 2025
-
-**Key Features**
-- Progressive shop unlocking (items hidden until ≥50% base cost)
-- Added high-tier buildings: Coffee Planet → Coffee Multiverse
-- Bulk buy ×1/×10/×100
-- Sell 1 item (50% refund)
-- Building buffs 2×–5×
-- CPS Achievement Pack up to 1e20 CPS
-- Renamed all achievements with coffee puns
-- Updated credits to Sanchit P.
-- Fixed duplicate achievement notifications and wording
-
+### Last Major Update: v1.11 – A Latte Noise
+**Release Date:** Dec 16, 2025
+See above.
 ---
 
 ### Last Major Build: v1.0
