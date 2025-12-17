@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.10</title>
+<title>Coffee Tycoon v1.11</title>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
 <link rel="stylesheet" href="assets/css/layout.css">
@@ -49,30 +49,36 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.10</div>
+      <div class="modal-title">Coffee Tycoon v1.11</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.10 — A Whole Latte Trade</h3>
+      <h3>What's New in v1.11 — A Latte Noise</h3>
       <ul>
-        <li><strong>Progressive Shop Unlocking:</strong> Buildings appear when you can afford ≥50% of their base cost</li>
-        <li><strong>8 New High-Tier Buildings:</strong> Coffee Planet, Solar System, Galaxy, Universe, Continent, Country, Multiverse, and more!</li>
-        <li><strong>Bulk Buy System:</strong> Purchase ×1, ×10, or ×100 buildings at once with smart cost calculation</li>
-        <li><strong>Sell Buildings:</strong> Sell items for 50% refund when you need quick coffee</li>
-        <li><strong>Building Buffs:</strong> All buildings from Coffee Grinder onwards buffed 2×-5× for faster progression</li>
-        <li><strong>CPS Achievement Pack:</strong> New achievements tracking your CPS from 1 to 100 quintillion!</li>
-        <li><strong>Coffee Pun Achievements:</strong> All achievements renamed with clever coffee-themed names</li>
-        <li><strong>Better Notifications:</strong> Fixed duplicate notifications and improved claim messages</li>
+        <li><strong>Coffee Cup Animation:</strong> The coffee cup now reacts to clicks with intensity scaling based on CPS and clicking speed</li>
+        <li><strong>Sound Effects:</strong> Added sound effects for purchases and claims, preloaded and managed to prevent stacking</li>
+        <li><strong>Enhanced Selling:</strong> Sell options now available up to ×100 for quick refunds</li>
+        <li><strong>Shop Layout Improvements:</strong> All shop items are now vertically aligned for cleaner presentation</li>
+        <li><strong>Affordable Item Indicators:</strong> Clear visual indicators highlight shop items you can currently afford</li>
+        <li><strong>Achievement Pack Visibility:</strong> Achievement packs appear in the shop screen even when locked, clearly marked as such</li>
+        <li><strong>Building Order Adjustment:</strong> Coffee Country and Universe now appear before Planet with recalculated progression</li>
+        <li><strong>Building Achievement Packs:</strong> Each building now has its own achievement pack that unlocks with the building</li>
+        <li><strong>Expanded General Achievements:</strong> General collection achievements now go up to 1,000,000 total buildings</li>
+        <li><strong>Golden Coffee Nerf:</strong> Each Golden Coffee now doubles the cost of the next one, with a hard cap at 100</li>
+        <li><strong>Prestige Requirement:</strong> Prestige now requires collecting at least 1 Golden Coffee</li>
+        <li><strong>Clean Achievement UI:</strong> Removed all emojis from achievement packs and titles for a cleaner look</li>
+        <li><strong>Settings Panel:</strong> New Settings button and panel for future game options</li>
       </ul>
       <h3>Gameplay Tips</h3>
       <ul>
-        <li>Use bulk buy to quickly scale up your production</li>
-        <li>Sell buildings strategically to afford the next tier faster</li>
-        <li>Watch for new buildings to unlock as you earn more coffee</li>
-        <li>Achievement rewards now properly display "Claimed" instead of "Purchase"</li>
+        <li>Watch the coffee cup animation scale with your clicking speed and CPS</li>
+        <li>Use bulk selling to quickly convert buildings back to coffee when needed</li>
+        <li>Look for the green affordable indicators in the shop to see what you can buy</li>
+        <li>Building achievement packs unlock along with their respective buildings</li>
+        <li>Golden Coffee costs increase exponentially, plan your prestiges carefully</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.10 - A Whole Latte Trade</p>
+      <p><strong>Version:</strong> 1.11 - A Latte Noise</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/Coffee-Tycoon/" target="_blank">coffeetycoon.github.io/Coffee-Tycoon</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/CoffeeTycoon/Coffee-Tycoon" target="_blank">View Repository</a></p>
@@ -85,6 +91,7 @@
   <div class="header-buttons">
     <button class="help-btn" id="helpBtn" title="Help">?</button>
     <button class="info-btn" id="infoBtn" title="Info">i</button>
+    <button class="settings-btn" id="settingsBtn" title="Settings">⚙</button>
   </div>
   <h1>Coffee Tycoon</h1>
   <p>Brew coffee, earn rewards, and build your empire!</p>

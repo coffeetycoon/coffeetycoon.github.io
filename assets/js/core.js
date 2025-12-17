@@ -22,7 +22,8 @@ const gameState = {
   displayCPS: 0,
   targetCoffee: 0,
   targetCPS: 0,
-  buyMode: 1 // ×1, ×10, ×100
+  buyMode: 1, // ×1, ×10, ×100
+  sellMode: 1
 };
 
 // ═══ SHOP ITEMS ═══
@@ -43,7 +44,7 @@ const shopItems = [
   { id: 'country', name: 'Coffee Country', baseCost: 250000000000000, cps: 25000000000000, scale: 1.45 },
   { id: 'dimension', name: 'Coffee Dimension', baseCost: 5000000000000000, cps: 500000000000000, scale: 1.5 },
   { id: 'multiverse', name: 'Coffee Multiverse', baseCost: 100000000000000000, cps: 10000000000000000, scale: 1.5 }
-];
+].sort((a, b) => a.baseCost - b.baseCost);
 
 // Initialize items
 shopItems.forEach(item => {
@@ -200,7 +201,19 @@ const achievements = [
   }, percent: () => {
     const max = Math.max(...Object.values(gameState.items).map(i => i?.count ?? 0), 0);
     return Math.min(max / 5 * 100, 100) || 0;
-  }, reward: { type: 'coffee', value: 3 } }
+  }, reward: { type: 'coffee', value: 3 } },
+  // General Collection Achievements (total buildings)
+  { id: 'total_10', name: 'Small Collection', requirement: 'Own 10 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 10, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/10", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 100 } },
+  { id: 'total_50', name: 'Growing Empire', requirement: 'Own 50 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 50, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/50", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 50 * 100, 100) || 0, reward: { type: 'coffee', value: 500 } },
+  { id: 'total_100', name: 'Coffee Conglomerate', requirement: 'Own 100 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 100, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/100", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 100 * 100, 100) || 0, reward: { type: 'coffee', value: 1000 } },
+  { id: 'total_500', name: 'Brewing Baron', requirement: 'Own 500 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 500, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/500", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 500 * 100, 100) || 0, reward: { type: 'coffee', value: 5000 } },
+  { id: 'total_1000', name: 'Latte Lord', requirement: 'Own 1,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 1000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/1,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 1000 * 100, 100) || 0, reward: { type: 'coffee', value: 10000 } },
+  { id: 'total_5000', name: 'Espresso Emperor', requirement: 'Own 5,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 5000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/5,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 5000 * 100, 100) || 0, reward: { type: 'coffee', value: 50000 } },
+  { id: 'total_10000', name: 'Mocha Monarch', requirement: 'Own 10,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 10000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/10,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 10000 * 100, 100) || 0, reward: { type: 'coffee', value: 100000 } },
+  { id: 'total_50000', name: 'Cappuccino Conqueror', requirement: 'Own 50,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 50000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/50,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 50000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000 } },
+  { id: 'total_100000', name: 'Drip Drop Dominator', requirement: 'Own 100,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 100000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/100,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 100000 * 100, 100) || 0, reward: { type: 'coffee', value: 1000000 } },
+  { id: 'total_500000', name: 'Macchiato Mastermind', requirement: 'Own 500,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 500000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/500,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 500000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
+  { id: 'total_1000000', name: 'French Press Pharaoh', requirement: 'Own 1,000,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 1000000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/1,000,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 1000000 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } }
 ];
 
 // Generate item-specific milestones
@@ -368,7 +381,8 @@ function saveGame() {
     achievements: gameState.achievements.map(a => ({ id: a.id, earned: a.earned })),
     collapsedPacks: Array.from(gameState.collapsedPacks),
     unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
-    buyMode: gameState.buyMode
+    buyMode: gameState.buyMode,
+    sellMode: gameState.sellMode
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
 }
@@ -382,6 +396,7 @@ function loadGame() {
       gameState.totalCoffeeAllTime = data.totalCoffeeAllTime || 0;
       gameState.clickPower = data.clickPower || 1;
       gameState.goldenCoffee = data.goldenCoffee || 0;
+      if (gameState.goldenCoffee > 100) gameState.goldenCoffee = 100;
       gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
       gameState.items = data.items || {};
       gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
@@ -391,20 +406,21 @@ function loadGame() {
       gameState.collapsedPacks = new Set(data.collapsedPacks || []);
       gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
       gameState.buyMode = data.buyMode || 1;
-      
+      gameState.sellMode = data.sellMode || 1;
+
       shopItems.forEach(item => {
         if (!gameState.items[item.id]) {
           gameState.items[item.id] = { count: 0, cost: item.baseCost };
         }
       });
-      
+
       if (data.achievements) {
         data.achievements.forEach(savedAch => {
           const ach = gameState.achievements.find(a => a.id === savedAch.id);
           if (ach) ach.earned = savedAch.earned;
         });
       }
-      
+
       return true;
     } catch (e) {
       console.error('Error loading save:', e);
@@ -453,19 +469,24 @@ function buyItem(itemId) {
 function sellItem(itemId) {
   const shopItem = shopItems.find(i => i.id === itemId);
   if (!shopItem) return;
-  
+
   const itemState = gameState.items[itemId];
   if (!itemState || itemState.count <= 0) return;
-  
-  const refundValue = calculateSellValue(shopItem, itemState.count);
-  
-  gameState.coffee += refundValue;
-  itemState.count -= 1;
-  
+
+  const amountToSell = Math.min(gameState.sellMode, itemState.count);
+  let totalRefund = 0;
+  for (let i = 0; i < amountToSell; i++) {
+    const currentCount = itemState.count - i;
+    totalRefund += calculateSellValue(shopItem, currentCount);
+  }
+
+  gameState.coffee += totalRefund;
+  itemState.count -= amountToSell;
+
   itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
-  
-  showPurchaseNotification(`Sold 1× ${shopItem.name}`);
-  
+
+  showPurchaseNotification(`Sold ${amountToSell}× ${shopItem.name}`);
+
   saveGame();
   updateUI();
 }
@@ -493,22 +514,23 @@ function buyUpgrade(upgradeId) {
 }
 
 function doPrestige() {
-  const goldenCoffeeToGain = Math.floor(gameState.totalCoffeeAllTime / 10000000000);
-  if (goldenCoffeeToGain > gameState.goldenCoffee) {
+  const baseCost = 10000000000;
+  const goldenCoffeeToGain = Math.min(100, Math.floor(Math.log2(gameState.totalCoffeeAllTime / baseCost + 1)));
+  if (goldenCoffeeToGain > gameState.goldenCoffee && (gameState.goldenCoffee > 0 || goldenCoffeeToGain >= 1)) {
     const gained = goldenCoffeeToGain - gameState.goldenCoffee;
     if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All upgrades\n\nYou will keep:\n• Golden Coffee\n• ${(goldenCoffeeToGain * 10)}% production multiplier\n• All achievements`)) {
       gameState.goldenCoffee = goldenCoffeeToGain;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
-      
+
       gameState.coffee = 0;
       gameState.clickPower = 1;
       gameState.purchasedUpgrades = new Set();
       gameState.itemMultipliers = {};
-      
+
       shopItems.forEach(item => {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
       });
-      
+
       showPurchaseNotification(`Prestiged! Gained ${gained} Golden Coffee!`);
       saveGame();
       updateUI();
@@ -601,9 +623,8 @@ function getAchievementPacks() {
       id: 'coffee_milestones',
       title: 'Coffee Milestones',
       description: 'Achievements for brewing coffee',
-      icon: '☕',
-      achievements: achievements.filter(a => 
-        ['first', 'ten', 'hundred', 'thousand', 'tenk', 'hundredk', 
+      achievements: achievements.filter(a =>
+        ['first', 'ten', 'hundred', 'thousand', 'tenk', 'hundredk',
          'million', 'tenmill', 'hundredmill', 'billion', 'tenb', 'hundredb',
          'trillion', 'tentr', 'hundredtr', 'quadrillion', 'tenq', 'hundredq', 'quintillion'].includes(a.id)
       )
@@ -612,40 +633,37 @@ function getAchievementPacks() {
       id: 'cps_milestones',
       title: 'CPS Milestones',
       description: 'Achievements for coffee per second',
-      icon: '⚡',
       achievements: achievements.filter(a => a.id.startsWith('cps_'))
     },
     {
       id: 'general_collection',
       title: 'General Collection',
       description: 'Achievements for collecting any items',
-      icon: '📦',
-      achievements: achievements.filter(a => 
-        a.id.includes('_item') || 
-        a.id.includes('_any')
+      achievements: achievements.filter(a =>
+        a.id.includes('_item') ||
+        a.id.includes('_any') ||
+        a.id.startsWith('total_')
       )
     },
     {
       id: 'upgrade_collection',
       title: 'Upgrade Collection',
       description: 'Achievements for purchasing upgrades',
-      icon: '⬆️',
       achievements: achievements.filter(a => a.id.startsWith('upgrades_'))
     }
   ];
-  
+
   shopItems.forEach(item => {
     const itemAchievements = achievements.filter(a => a.id.startsWith(item.id + '_') && !a.id.includes('_any'));
-    if (itemAchievements.length > 0) {
+    if (itemAchievements.length > 0 && isItemUnlocked(item)) {
       packs.push({
         id: item.id + '_pack',
         title: `${item.name} Collection`,
         description: `Achievements for owning ${item.name}s`,
-        icon: '🏆',
         achievements: itemAchievements
       });
     }
   });
-  
+
   return packs;
 }
