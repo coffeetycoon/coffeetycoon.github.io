@@ -9,7 +9,7 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v110-a-whole-latte-trade)
+  - [Latest Version](#latest-version-v111-a-latte-noise)
   - [Last Major Update](#last-major-update-v110-a-whole-latte-trade)
   - [Last Major Build](#last-major-build-v10)
 - [Future Updates](#future-updates)
@@ -35,7 +35,27 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.10 – A Whole Latte Trade
+### Latest Version: v1.11 – A Latte Noise
+**Release Date:** Dec 16, 2025
+
+**Key Features**
+- Coffee cup animation reacts to clicks with intensity scaling based on CPS and clicking speed
+- Added sound effects for purchases and claims, preloaded and managed to prevent stacking
+- Sell options now available up to ×100 for quick refunds
+- All shop items vertically aligned for cleaner presentation
+- Clear visual indicators highlight shop items you can currently afford
+- Achievement packs appear in the shop screen even when locked, clearly marked as such
+- Building order adjusted by magnitude (smallest to largest), with Coffee Country and Universe before Planet
+- Building-related achievements not displayed until building is unlocked
+- New per-building achievement packs that unlock with their respective buildings
+- General collection achievements expanded up to 1,000,000 total buildings
+- Golden Coffee nerf: each doubles the cost of the next, hard cap at 100
+- Prestige requires collecting at least 1 Golden Coffee
+- Removed all emojis from achievement packs and titles
+
+---
+
+### Last Major Update: v1.10 – A Whole Latte Trade
 **Release Date:** Nov 17, 2025
 
 **Key Features**
@@ -51,37 +71,16 @@ A game where you brew coffee
 
 ---
 
-### Last Major Update: v1.10 – A Whole Latte Trade
-**Release Date:** Nov 17, 2025  
-*See details above*
-
----
-
 ### Last Major Build: v1.0
-**Release Date:** Aug 31, 2025  
+**Release Date:** Aug 31, 2025
 - Coffee Tycoon beta test concluded; full release live
 
 ---
 
 ## Future Updates
 
-### v1.11 – A Latte Noise
-- Coffee cup animation reacts to clicks and CPS output
-- Affordable upgrade/shop item notifications
-- Achievement packs of shop items not unlocked yet should show up
-- Add selling of up to 100x
-- Everything in shop is vertically aligned with each other (all sell blocks with sells etc.)
-- Coffee country and universe moved before planet, and everything adjusted in CPS to match new order (while keeping old progression)
-- Achievements for buildings that haven't been unlocked yet should not be displayed
-- New achievement pack, building unlocks, each achievement opens when the corresponding building is unlocked (it shows up in shop screen)
-- Golden Coffee nerf, where after getting one golden coffee the next one costs 2x as much, all existing golden coffee will be recalculated and if over 100 then deleted
-- general collection achievement pack expanded till 1 million buildings
-- Prestige will be allowed upon collecting one golden coffee
-- Remove the emojis shown on the achievement packs
-- Max golden coffee is 100
-
 ### v1.12 – Pick Your Brew
-- Settings button with toggles (notifications, music, SFX, quick keys, number display)
+- Settings button with toggles (notifications, SFX, quick keys, number display)
 - Export/import save system (based on strings of text with info)
 - Erase progress option
 - Add support for numbers up to trigintillion
