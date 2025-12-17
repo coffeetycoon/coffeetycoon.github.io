@@ -44,7 +44,7 @@ const shopItems = [
   { id: 'country', name: 'Coffee Country', baseCost: 250000000000000, cps: 25000000000000, scale: 1.45 },
   { id: 'dimension', name: 'Coffee Dimension', baseCost: 5000000000000000, cps: 500000000000000, scale: 1.5 },
   { id: 'multiverse', name: 'Coffee Multiverse', baseCost: 100000000000000000, cps: 10000000000000000, scale: 1.5 }
-].sort((a, b) => a.baseCost - b.baseCost);
+];
 
 // Initialize items
 shopItems.forEach(item => {

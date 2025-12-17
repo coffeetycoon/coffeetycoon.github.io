@@ -239,7 +239,7 @@ function renderShop() {
       <div class="item-actions">
         <div class="quantity-display">${currentCount}</div>
         <button class="sell-btn" ${!canSell ? 'disabled' : ''}>
-          SELL 1<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)})</span>
+          SELL ×${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
         </button>
         <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>
           BUY ${affordableAmount > 1 && affordableAmount < amount ? '×' + affordableAmount : amount > 1 ? '×' + amount : ''}
@@ -629,6 +629,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
+  // Sell mode selector
+  document.querySelectorAll('.sell-mode-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.sell-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      gameState.sellMode = parseInt(btn.dataset.mode);
+      saveGame();
+      renderShop();
+    };
+  });
+
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     const key = e.key;
@@ -707,6 +718,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update buy mode button display
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
     if (parseInt(btn.dataset.mode) === gameState.buyMode) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Update sell mode button display
+  document.querySelectorAll('.sell-mode-btn').forEach(btn => {
+    if (parseInt(btn.dataset.mode) === gameState.sellMode) {
       btn.classList.add('active');
     }
   });
