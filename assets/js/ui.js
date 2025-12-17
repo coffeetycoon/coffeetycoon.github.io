@@ -113,9 +113,10 @@ function showSellNotification(itemName, count) {
   notif.dataset.notifId = notifId;
   notif.dataset.itemName = itemName;
 
+  // New selling notification format - completely separate from purchasing
   notif.innerHTML = `
-    <div class="notification-title">Sell Complete</div>
-    <div class="notification-message">Sold x${count} ${itemName}</div>
+    <div class="notification-title">💰 Sale Completed</div>
+    <div class="notification-message">Converted ${count}x ${itemName} back to coffee</div>
   `;
 
   container.appendChild(notif);
@@ -263,18 +264,22 @@ function renderShop() {
       </div>
       <div class="item-actions">
         <div class="quantity-display">${currentCount}</div>
-        <button class="sell-btn" ${!canSell ? 'disabled' : ''}>
-          SELL ×${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
-        </button>
-        <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>
-          BUY ${affordableAmount > 1 && affordableAmount < amount ? '×' + affordableAmount : amount > 1 ? '×' + amount : ''}
-        </button>
-        <div class="cost-tile">☕ ${abbreviateNumber(totalCost)}</div>
+        <div class="sell-section">
+          <button class="sell-btn" ${!canSell ? 'disabled' : ''}>
+            SELL ×${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
+          </button>
+        </div>
+        <div class="buy-section">
+          <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>
+            BUY ${affordableAmount > 1 && affordableAmount < amount ? '×' + affordableAmount : amount > 1 ? '×' + amount : ''}
+          </button>
+          <div class="cost-tile">☕ ${abbreviateNumber(totalCost)}</div>
+        </div>
       </div>
     `;
 
-    div.querySelector('.buy-btn').onclick = () => buyItem(item.id);
-    div.querySelector('.sell-btn').onclick = () => sellItem(item.id);
+    div.querySelector('.buy-btn').onclick = () => buyItem(item.id, gameState.buyMode);
+    div.querySelector('.sell-btn').onclick = () => sellItem(item.id, gameState.sellMode);
     container.appendChild(div);
   });
 
