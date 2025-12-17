@@ -226,17 +226,16 @@
 }
 
 .shop-item {
-  display: grid;
-  grid-template-columns: 1fr 90px 140px 140px 160px;
-  grid-template-areas: "info quantity sell buy cost";
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  padding: 24px;
-  min-height: 80px;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
 }
 
 .item-info {
-  grid-area: info;
+  flex: 1;
   min-width: 200px;
 }
 
@@ -255,27 +254,31 @@
 }
 
 .item-actions {
-  display: contents;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .quantity-display {
-  grid-area: quantity;
-  justify-self: center;
-}
-
-.sell-section {
-  grid-area: sell;
-  justify-self: center;
-}
-
-.buy-section {
-  grid-area: buy;
-  justify-self: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
 }
 
 .cost-tile {
-  grid-area: cost;
-  justify-self: end;
+  background: rgba(212, 165, 116, 0.2);
+  border: 2px solid rgba(212, 165, 116, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #d4a574;
+  min-width: 120px;
+  text-align: center;
 }
 
 .sell-section {
