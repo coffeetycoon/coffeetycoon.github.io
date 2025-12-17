@@ -21,9 +21,7 @@ const gameState = {
   displayCoffee: 0,
   displayCPS: 0,
   targetCoffee: 0,
-  targetCPS: 0,
-  buyMode: 1, // ×1, ×10, ×100
-  sellMode: 1
+  targetCPS: 0
 };
 
 // ═══ SHOP ITEMS ═══
@@ -36,12 +34,12 @@ const shopItems = [
   { id: 'factory', name: 'Coffee Factory', baseCost: 1000000, cps: 30000, scale: 1.25 },
   { id: 'corporation', name: 'Coffee Corporation', baseCost: 8000000, cps: 400000, scale: 1.3 },
   { id: 'franchise', name: 'Coffee Franchise', baseCost: 50000000, cps: 5000000, scale: 1.3 },
-  { id: 'planet', name: 'Coffee Planet', baseCost: 500000000, cps: 50000000, scale: 1.35 },
-  { id: 'solarsystem', name: 'Coffee Solar System', baseCost: 5000000000, cps: 500000000, scale: 1.35 },
-  { id: 'galaxy', name: 'Coffee Galaxy', baseCost: 75000000000, cps: 7500000000, scale: 1.4 },
-  { id: 'universe', name: 'Coffee Universe', baseCost: 1000000000000, cps: 100000000000, scale: 1.4 },
-  { id: 'continent', name: 'Coffee Continent', baseCost: 15000000000000, cps: 1500000000000, scale: 1.45 },
-  { id: 'country', name: 'Coffee Country', baseCost: 250000000000000, cps: 25000000000000, scale: 1.45 },
+  { id: 'country', name: 'Coffee Country', baseCost: 500000000, cps: 50000000, scale: 1.35 },
+  { id: 'continent', name: 'Coffee Continent', baseCost: 5000000000, cps: 500000000, scale: 1.35 },
+  { id: 'planet', name: 'Coffee Planet', baseCost: 75000000000, cps: 7500000000, scale: 1.4 },
+  { id: 'solarsystem', name: 'Coffee Solar System', baseCost: 1000000000000, cps: 100000000000, scale: 1.4 },
+  { id: 'galaxy', name: 'Coffee Galaxy', baseCost: 15000000000000, cps: 1500000000000, scale: 1.45 },
+  { id: 'universe', name: 'Coffee Universe', baseCost: 250000000000000, cps: 25000000000000, scale: 1.45 },
   { id: 'dimension', name: 'Coffee Dimension', baseCost: 5000000000000000, cps: 500000000000000, scale: 1.5 },
   { id: 'multiverse', name: 'Coffee Multiverse', baseCost: 100000000000000000, cps: 10000000000000000, scale: 1.5 }
 ];
@@ -159,12 +157,12 @@ const upgradePacks = [
   { id: 'factory', name: 'Coffee Factory Upgrades', icon: '🏭', description: 'Amplify Coffee Factory performance' },
   { id: 'corporation', name: 'Coffee Corporation Upgrades', icon: '🏢', description: 'Expand Coffee Corporation reach' },
   { id: 'franchise', name: 'Coffee Franchise Upgrades', icon: '🌟', description: 'Scale Coffee Franchise operations' },
+  { id: 'country', name: 'Coffee Country Upgrades', icon: '🏳️', description: 'Boost Country production' },
+  { id: 'continent', name: 'Coffee Continent Upgrades', icon: '🗺️', description: 'Enhance Continent reach' },
   { id: 'planet', name: 'Coffee Planet Upgrades', icon: '🌍', description: 'Enhance Coffee Planet production' },
   { id: 'solarsystem', name: 'Solar System Upgrades', icon: '☀️', description: 'Boost Solar System output' },
   { id: 'galaxy', name: 'Coffee Galaxy Upgrades', icon: '🌌', description: 'Amplify Galaxy production' },
   { id: 'universe', name: 'Coffee Universe Upgrades', icon: '🌠', description: 'Maximize Universe efficiency' },
-  { id: 'continent', name: 'Coffee Continent Upgrades', icon: '🗺️', description: 'Enhance Continent reach' },
-  { id: 'country', name: 'Coffee Country Upgrades', icon: '🏳️', description: 'Boost Country production' },
   { id: 'dimension', name: 'Coffee Dimension Upgrades', icon: '🔮', description: 'Amplify Dimension power' },
   { id: 'multiverse', name: 'Coffee Multiverse Upgrades', icon: '♾️', description: 'Maximize Multiverse output' },
   { id: 'global', name: 'Global Upgrades', icon: '🌐', description: 'Universal production multipliers' }
@@ -380,9 +378,7 @@ function saveGame() {
     viewedAchievements: Array.from(gameState.viewedAchievements),
     achievements: gameState.achievements.map(a => ({ id: a.id, earned: a.earned })),
     collapsedPacks: Array.from(gameState.collapsedPacks),
-    unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
-    buyMode: gameState.buyMode,
-    sellMode: gameState.sellMode
+    unclaimedAchievements: Array.from(gameState.unclaimedAchievements)
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
 }
@@ -405,8 +401,6 @@ function loadGame() {
       gameState.viewedAchievements = new Set(data.viewedAchievements || []);
       gameState.collapsedPacks = new Set(data.collapsedPacks || []);
       gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
-      gameState.buyMode = data.buyMode || 1;
-      gameState.sellMode = data.sellMode || 1;
 
       shopItems.forEach(item => {
         if (!gameState.items[item.id]) {
@@ -431,49 +425,48 @@ function loadGame() {
 }
 
 // ═══ CORE GAME ACTIONS ═══
-function buyItem(itemId) {
+function buyItem(itemId, amount = 1) {
   const shopItem = shopItems.find(i => i.id === itemId);
   if (!shopItem) return;
-  
+
   if (!gameState.items[itemId]) {
     gameState.items[itemId] = { count: 0, cost: shopItem.baseCost };
   }
-  
+
   const itemState = gameState.items[itemId];
   const currentCount = itemState.count ?? 0;
-  const amount = gameState.buyMode;
-  
+
   const affordableAmount = calculateAffordableAmount(shopItem, currentCount, amount, gameState.coffee);
-  
+
   if (affordableAmount === 0) return;
-  
+
   const totalCost = calculateBulkCost(shopItem, currentCount, affordableAmount);
-  
+
   if (gameState.coffee >= totalCost) {
     gameState.coffee -= totalCost;
     itemState.count = currentCount + affordableAmount;
-    
+
     itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
-    
+
     if (affordableAmount > 1) {
       showPurchaseNotification(`Bought ${affordableAmount}× ${shopItem.name}`);
     } else {
       showPurchaseNotification(shopItem.name);
     }
-    
+
     saveGame();
     updateUI();
   }
 }
 
-function sellItem(itemId) {
+function sellItem(itemId, amount = 1) {
   const shopItem = shopItems.find(i => i.id === itemId);
   if (!shopItem) return;
 
   const itemState = gameState.items[itemId];
   if (!itemState || itemState.count <= 0) return;
 
-  const amountToSell = Math.min(gameState.sellMode, itemState.count);
+  const amountToSell = Math.min(amount, itemState.count);
   let totalRefund = 0;
   for (let i = 0; i < amountToSell; i++) {
     const currentCount = itemState.count - i;
