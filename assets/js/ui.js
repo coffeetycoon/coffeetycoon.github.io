@@ -450,8 +450,6 @@ function renderPrestige() {
         <p>• Each Golden Coffee gives +10% production (permanent!)</p>
         <p>• Prestiging resets coffee, items, and upgrades</p>
         <p>• Golden Coffee and multiplier are kept forever</p>
-        <p>• Sell items back for 50% of purchase price (×1, ×10, or ×100)</p>
-        <p>• Mix different buy/sell amounts independently for flexible management</p>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
