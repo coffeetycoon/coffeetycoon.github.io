@@ -624,23 +624,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-  // Buy mode selector
+  // Mode selector
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.buy-mode-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      gameState.buyMode = parseInt(btn.dataset.mode);
-      saveGame();
-      renderShop();
-    };
-  });
-
-  // Sell mode selector
-  document.querySelectorAll('.sell-mode-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.sell-mode-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      gameState.sellMode = parseInt(btn.dataset.mode);
+      if (btn.textContent.includes('Sell')) {
+        gameState.sellMode = parseInt(btn.dataset.mode);
+      } else {
+        gameState.buyMode = parseInt(btn.dataset.mode);
+      }
       saveGame();
       renderShop();
     };
@@ -723,16 +716,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═══ GAME INITIALIZATION ═══
   const hasExistingSave = loadGame();
 
-  // Update buy mode button display
+  // Update mode button display
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
-    if (parseInt(btn.dataset.mode) === gameState.buyMode) {
-      btn.classList.add('active');
-    }
-  });
-
-  // Update sell mode button display
-  document.querySelectorAll('.sell-mode-btn').forEach(btn => {
-    if (parseInt(btn.dataset.mode) === gameState.sellMode) {
+    if ((btn.textContent.includes('Sell') && parseInt(btn.dataset.mode) === gameState.sellMode) ||
+        (btn.textContent.includes('Buy') && parseInt(btn.dataset.mode) === gameState.buyMode)) {
       btn.classList.add('active');
     }
   });
