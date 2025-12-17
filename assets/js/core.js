@@ -21,7 +21,9 @@ const gameState = {
   displayCoffee: 0,
   displayCPS: 0,
   targetCoffee: 0,
-  targetCPS: 0
+  targetCPS: 0,
+  buyMode: 1, // ×1, ×10, ×100
+  sellMode: 1
 };
 
 // ═══ SHOP ITEMS ═══
@@ -378,7 +380,9 @@ function saveGame() {
     viewedAchievements: Array.from(gameState.viewedAchievements),
     achievements: gameState.achievements.map(a => ({ id: a.id, earned: a.earned })),
     collapsedPacks: Array.from(gameState.collapsedPacks),
-    unclaimedAchievements: Array.from(gameState.unclaimedAchievements)
+    unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
+    buyMode: gameState.buyMode,
+    sellMode: gameState.sellMode
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
 }
@@ -401,6 +405,8 @@ function loadGame() {
       gameState.viewedAchievements = new Set(data.viewedAchievements || []);
       gameState.collapsedPacks = new Set(data.collapsedPacks || []);
       gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
+      gameState.buyMode = data.buyMode || 1;
+      gameState.sellMode = data.sellMode || 1;
 
       shopItems.forEach(item => {
         if (!gameState.items[item.id]) {
