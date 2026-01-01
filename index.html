@@ -73,36 +73,6 @@
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
       <p><strong>Report a Bug:</strong> <a href="https://github.com/SPYPProjects/Website/issues" target="_blank">Bug Reporting</a></p>
-      <hr style="margin: 24px 0; border: none; border-top: 1px solid #d4a574;">
-      <h3>Previous Version: v1.11 — A Latte Noise</h3>
-      <ul>
-        <li><strong>Coffee Cup Animation:</strong> The coffee cup now reacts to clicks with intensity scaling based on CPS and clicking speed</li>
-        <li><strong>Sound Effects:</strong> Added sound effects for purchases and claims, preloaded and managed to prevent stacking</li>
-        <li><strong>Enhanced Selling:</strong> Sell options now available up to ×100 for quick refunds</li>
-        <li><strong>Shop Layout Improvements:</strong> All shop items are now vertically aligned for cleaner presentation</li>
-        <li><strong>Affordable Item Indicators:</strong> Clear visual indicators highlight shop items you can currently afford</li>
-        <li><strong>Achievement Pack Visibility:</strong> Achievement packs appear in the shop screen even when locked, clearly marked as such</li>
-        <li><strong>Building Order Adjustment:</strong> Coffee Country and Universe now appear before Planet with recalculated progression</li>
-        <li><strong>Building Achievement Packs:</strong> Each building now has its own achievement pack that unlocks with the building</li>
-        <li><strong>Expanded General Achievements:</strong> General collection achievements now go up to 1,000,000 total buildings</li>
-        <li><strong>Golden Coffee Nerf:</strong> Each Golden Coffee now doubles the cost of the next one, with a hard cap at 100</li>
-        <li><strong>Prestige Requirement:</strong> Prestige now requires collecting at least 1 Golden Coffee</li>
-        <li><strong>Clean Achievement UI:</strong> Removed all emojis from achievement packs and titles for a cleaner look</li>
-      </ul>
-      <h3>Gameplay Tips</h3>
-      <ul>
-        <li>Watch the coffee cup animation scale with your clicking speed and CPS</li>
-        <li>Use bulk selling to quickly convert buildings back to coffee when needed</li>
-        <li>Look for the green affordable indicators in the shop to see what you can buy</li>
-        <li>Building achievement packs unlock along with their respective buildings</li>
-        <li>Golden Coffee costs increase exponentially, plan your prestiges carefully</li>
-      </ul>
-      <h3>About</h3>
-      <p><strong>Version:</strong> 1.11 - A Latte Noise</p>
-      <p><strong>Created by:</strong> Sanchit P.</p>
-      <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/Coffee-Tycoon/" target="_blank">coffeetycoon.github.io/Coffee-Tycoon</a></p>
-      <p><strong>GitHub:</strong> <a href="https://github.com/CoffeeTycoon/Coffee-Tycoon" target="_blank">View Repository</a></p>
-      <p><strong>Report a Bug:</strong> <a href="https://github.com/coffeetycoon/Coffee-Tycoon/issues" target="_blank">Bug Reporting</a></p>
     </div>
   </div>
 </div>
@@ -186,12 +156,14 @@
         <h3>Display Options</h3>
         <div class="setting-item">
           <label for="numberDisplayToggle">Number Display:</label>
-          <div class="toggle-switch">
-            <input type="checkbox" id="numberDisplayToggle" checked>
-            <label for="numberDisplayToggle" class="toggle-slider">
-              <span class="toggle-text">Abbreviated</span>
-              <span class="toggle-text">Full</span>
-            </label>
+          <div class="toggle-container">
+            <span class="toggle-text">Abbreviated</span>
+            <div class="toggle-switch">
+              <input type="checkbox" id="numberDisplayToggle" checked>
+              <label for="numberDisplayToggle" class="toggle-slider">
+              </label>
+            </div>
+            <span class="toggle-text">Full</span>
           </div>
         </div>
       </div>
@@ -203,8 +175,6 @@
           <div class="toggle-switch">
             <input type="checkbox" id="notificationsToggle" checked>
             <label for="notificationsToggle" class="toggle-slider">
-              <span class="toggle-text">Off</span>
-              <span class="toggle-text">On</span>
             </label>
           </div>
         </div>
@@ -213,8 +183,6 @@
           <div class="toggle-switch">
             <input type="checkbox" id="quickKeysToggle" checked>
             <label for="quickKeysToggle" class="toggle-slider">
-              <span class="toggle-text">Off</span>
-              <span class="toggle-text">On</span>
             </label>
           </div>
         </div>
@@ -223,12 +191,12 @@
       <div class="setting-group">
         <h3>Save Management</h3>
         <div class="setting-item">
-          <button id="exportSaveBtn" class="settings-btn">Export Save</button>
+          <button id="exportSaveBtn" class="action-btn">Export Save</button>
           <p class="setting-description">Copy this string to backup your progress</p>
           <textarea id="exportTextarea" readonly placeholder="Click Export Save to generate"></textarea>
         </div>
         <div class="setting-item">
-          <button id="importSaveBtn" class="settings-btn">Import Save</button>
+          <button id="importSaveBtn" class="action-btn">Import Save</button>
           <p class="setting-description">Paste your save string here</p>
           <textarea id="importTextarea" placeholder="Paste your save string here"></textarea>
         </div>
@@ -237,7 +205,7 @@
       <div class="setting-group">
         <h3>Danger Zone</h3>
         <div class="setting-item">
-          <button id="eraseProgressBtn" class="settings-btn danger">Erase All Progress</button>
+          <button id="eraseProgressBtn" class="action-btn danger">Erase All Progress</button>
           <p class="setting-description danger">This will permanently delete all your progress. This cannot be undone!</p>
         </div>
       </div>
