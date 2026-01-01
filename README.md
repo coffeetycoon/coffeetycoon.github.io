@@ -69,7 +69,7 @@ See above.
 ## Future Updates
 
 ### v1.12 – Pick Your Brew
-- Settings button with toggles (notifications, SFX, quick keys, number display (full number or abbreviated), reset progress button with confirm to reset)
+- Settings button with toggles (notifications, quick keys custom, number display (full number or abbreviated), reset progress button with confirm to reset)
 - Export/import save system (based on strings of text with info)
 - Erase progress option
 - Add support for numbers up to trigintillion
