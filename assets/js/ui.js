@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.10 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.12 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -606,6 +606,22 @@ function closeInstructions() {
   document.getElementById('instructionsOverlay').classList.add('hidden');
 }
 
+function openSettingsModal() {
+  // Update toggle states
+  document.getElementById('numberDisplayToggle').checked = gameState.settings.numberDisplay === 'full';
+  document.getElementById('notificationsToggle').checked = gameState.settings.notifications;
+  document.getElementById('quickKeysToggle').checked = gameState.settings.quickKeys;
+
+  // Clear export textarea
+  document.getElementById('exportTextarea').value = '';
+
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
 // ═══ ANIMATION ═══
 function smoothAnimate() {
   const lerpFactor = 0.15;
@@ -688,9 +704,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Modal controls
   document.getElementById('helpBtn').onclick = openHelp;
   document.getElementById('infoBtn').onclick = openVersionInfo;
+  document.getElementById('settingsBtn').onclick = openSettingsModal;
   document.getElementById('startGameBtn').onclick = closeInstructions;
   document.getElementById('closeVersionModal').onclick = closeVersionInfo;
   document.getElementById('closeAchievementModal').onclick = closeAchievementModal;
+  document.getElementById('closeSettingsModal').onclick = closeSettingsModal;
 
   document.getElementById('achievementModal').onclick = (e) => {
     if (e.target.id === 'achievementModal') {
@@ -704,11 +722,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  document.getElementById('settingsModal').onclick = (e) => {
+    if (e.target.id === 'settingsModal') {
+      closeSettingsModal();
+    }
+  };
+
   document.getElementById('instructionsOverlay').onclick = (e) => {
     if (e.target.id === 'instructionsOverlay') {
       closeInstructions();
     }
   };
+
+  // Settings controls
+  document.getElementById('numberDisplayToggle').addEventListener('change', (e) => {
+    gameState.settings.numberDisplay = e.target.checked ? 'full' : 'abbreviated';
+    saveSettings();
+    updateUI();
+  });
+
+  document.getElementById('notificationsToggle').addEventListener('change', (e) => {
+    gameState.settings.notifications = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('quickKeysToggle').addEventListener('change', (e) => {
+    gameState.settings.quickKeys = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('exportSaveBtn').onclick = () => {
+    const saveString = exportSave();
+    document.getElementById('exportTextarea').value = saveString;
+    // Copy to clipboard if supported
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(saveString).catch(err => {
+        console.log('Failed to copy to clipboard:', err);
+      });
+    }
+  };
+
+  document.getElementById('importSaveBtn').onclick = () => {
+    const importString = document.getElementById('importTextarea').value.trim();
+    if (importString) {
+      if (importSave(importString)) {
+        alert('Save imported successfully!');
+        closeSettingsModal();
+      } else {
+        alert('Failed to import save. Please check the format.');
+      }
+    }
+  };
+
+  document.getElementById('eraseProgressBtn').onclick = eraseProgress;
 
   // ═══ GAME LOOP ═══
   let lastRenderTime = Date.now();
@@ -747,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ═══ GAME INITIALIZATION ═══
   const hasExistingSave = loadGame();
+  loadSettings();
 
   // Update mode button display
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {

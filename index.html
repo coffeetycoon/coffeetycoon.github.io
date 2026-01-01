@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.11</title>
+<title>Coffee Tycoon v1.12</title>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
 <link rel="stylesheet" href="assets/css/layout.css">
@@ -49,11 +49,32 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.11</div>
+      <div class="modal-title">Coffee Tycoon v1.12</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.11 — A Latte Noise</h3>
+      <h3>What's New in v1.12 — Pick Your Brew</h3>
+      <ul>
+        <li><strong>Settings Panel:</strong> New settings button with customizable options for notifications, quick keys, number display, and progress reset</li>
+        <li><strong>Save Export/Import:</strong> Export your game progress as a text string and import it on another device or browser</li>
+        <li><strong>Erase Progress:</strong> Option to completely reset your game progress with confirmation</li>
+        <li><strong>Extended Number Support:</strong> Number abbreviations now support up to trigintillion (10^96) for massive late-game progress</li>
+      </ul>
+      <h3>Gameplay Tips</h3>
+      <ul>
+        <li>Use the settings panel to customize your gameplay experience</li>
+        <li>Export your save regularly to backup your progress</li>
+        <li>The number display toggle lets you see full numbers if you prefer them over abbreviations</li>
+        <li>Quick keys can be customized in future updates</li>
+      </ul>
+      <h3>About</h3>
+      <p><strong>Version:</strong> 1.12 - Pick Your Brew</p>
+      <p><strong>Created by:</strong> Sanchit P.</p>
+      <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
+      <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
+      <p><strong>Report a Bug:</strong> <a href="https://github.com/SPYPProjects/Website/issues" target="_blank">Bug Reporting</a></p>
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #d4a574;">
+      <h3>Previous Version: v1.11 — A Latte Noise</h3>
       <ul>
         <li><strong>Coffee Cup Animation:</strong> The coffee cup now reacts to clicks with intensity scaling based on CPS and clicking speed</li>
         <li><strong>Sound Effects:</strong> Added sound effects for purchases and claims, preloaded and managed to prevent stacking</li>
@@ -89,6 +110,7 @@
 <header>
   <div class="header-buttons">
     <button class="help-btn" id="helpBtn" title="Help">?</button>
+    <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
     <button class="info-btn" id="infoBtn" title="Info">i</button>
   </div>
   <h1>Coffee Tycoon</h1>
@@ -150,6 +172,76 @@
       <button class="modal-close" id="closeAchievementModal">×</button>
     </div>
     <div class="modal-achievements" id="modalAchievements"></div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" id="closeSettingsModal">×</button>
+    </div>
+    <div class="settings-content">
+      <div class="setting-group">
+        <h3>Display Options</h3>
+        <div class="setting-item">
+          <label for="numberDisplayToggle">Number Display:</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="numberDisplayToggle" checked>
+            <label for="numberDisplayToggle" class="toggle-slider">
+              <span class="toggle-text">Abbreviated</span>
+              <span class="toggle-text">Full</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3>Gameplay Options</h3>
+        <div class="setting-item">
+          <label for="notificationsToggle">Notifications:</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="notificationsToggle" checked>
+            <label for="notificationsToggle" class="toggle-slider">
+              <span class="toggle-text">Off</span>
+              <span class="toggle-text">On</span>
+            </label>
+          </div>
+        </div>
+        <div class="setting-item">
+          <label for="quickKeysToggle">Quick Keys:</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="quickKeysToggle" checked>
+            <label for="quickKeysToggle" class="toggle-slider">
+              <span class="toggle-text">Off</span>
+              <span class="toggle-text">On</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3>Save Management</h3>
+        <div class="setting-item">
+          <button id="exportSaveBtn" class="settings-btn">Export Save</button>
+          <p class="setting-description">Copy this string to backup your progress</p>
+          <textarea id="exportTextarea" readonly placeholder="Click Export Save to generate"></textarea>
+        </div>
+        <div class="setting-item">
+          <button id="importSaveBtn" class="settings-btn">Import Save</button>
+          <p class="setting-description">Paste your save string here</p>
+          <textarea id="importTextarea" placeholder="Paste your save string here"></textarea>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3>Danger Zone</h3>
+        <div class="setting-item">
+          <button id="eraseProgressBtn" class="settings-btn danger">Erase All Progress</button>
+          <p class="setting-description danger">This will permanently delete all your progress. This cannot be undone!</p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

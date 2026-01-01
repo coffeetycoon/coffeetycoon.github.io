@@ -35,28 +35,19 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.11 – A Latte Noise
-**Release Date:** Dec 16, 2025
+### Latest Version: v1.12 – Pick Your Brew
+**Release Date:** Jan 1, 2026
 
 **Key Features**
-- Coffee cup animation reacts to clicks with intensity scaling based on CPS and clicking speed
-- Added sound effects for purchases and claims, preloaded and managed to prevent stacking
-- Sell options now available up to ×100 for quick refunds
-- All shop items vertically aligned for cleaner presentation
-- Clear visual indicators highlight shop items you can currently afford
-- Achievement packs appear in the shop screen even when locked, clearly marked as such
-- Building order adjusted by magnitude (smallest to largest), with Coffee Country and Universe before Planet
-- Building-related achievements not displayed until building is unlocked
-- New per-building achievement packs that unlock with their respective buildings
-- General collection achievements expanded up to 1,000,000 total buildings
-- Golden Coffee nerf: each doubles the cost of the next, hard cap at 100
-- Prestige requires collecting at least 1 Golden Coffee
-- Removed all emojis from achievement packs and titles
+- Settings Panel: New settings button with customizable options for notifications, quick keys, number display, and progress reset
+- Save Export/Import: Export your game progress as a text string and import it on another device or browser
+- Erase Progress: Option to completely reset your game progress with confirmation
+- Extended Number Support: Number abbreviations now support up to trigintillion (10^96) for massive late-game progress
 
 ---
 
-### Last Major Update: v1.11 – A Latte Noise
-**Release Date:** Dec 16, 2025
+### Last Major Update: v1.12 – Pick Your Brew
+**Release Date:** Jan 1, 2026
 See above.
 ---
 
@@ -67,12 +58,6 @@ See above.
 ---
 
 ## Future Updates
-
-### v1.12 – Pick Your Brew
-- Settings button with toggles (notifications, quick keys custom, number display (full number or abbreviated), reset progress button with confirm to reset)
-- Export/import save system (based on strings of text with info)
-- Erase progress option
-- Add support for numbers up to trigintillion
 
 ### v1.13 – Golden Gains
 - Golden Coffee unlocks permanent Golden Upgrades (does not reset after prestige)

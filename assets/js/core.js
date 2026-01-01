@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.10 - CORE GAME LOGIC
+   COFFEE TYCOON v1.12 - CORE GAME LOGIC
    Game State, Save System, Math, and Core Calculations
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -23,7 +23,12 @@ const gameState = {
   targetCoffee: 0,
   targetCPS: 0,
   buyMode: 1, // ×1, ×10, ×100
-  sellMode: 1
+  sellMode: 1,
+  settings: {
+    notifications: true,
+    quickKeys: true,
+    numberDisplay: 'abbreviated' // 'full' or 'abbreviated'
+  }
 };
 
 // ═══ SHOP ITEMS ═══
@@ -309,7 +314,33 @@ function abbreviateNumber(num) {
   if (num < 1000000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
   if (num < 1000000000000000) return (num / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T';
   if (num < 1000000000000000000) return (num / 1000000000000000).toFixed(1).replace(/\.0$/, '') + 'Q';
-  return (num / 1000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qi';
+  if (num < 1000000000000000000000) return (num / 1000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qi';
+  if (num < 1000000000000000000000000) return (num / 1000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sx';
+  if (num < 1000000000000000000000000000) return (num / 1000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sp';
+  if (num < 1000000000000000000000000000000) return (num / 1000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Oc';
+  if (num < 1000000000000000000000000000000000) return (num / 1000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'No';
+  if (num < 1000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Dc';
+  if (num < 1000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Un';
+  if (num < 1000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Du';
+  if (num < 1000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tr';
+  if (num < 1000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qa';
+  if (num < 1000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qi';
+  if (num < 1000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sx';
+  if (num < 1000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sp';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Oc';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'No';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Vg';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Uv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Dv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qt';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qn';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sx';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sp';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Oc';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'No';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
+  return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
 }
 
 function calculateTotalCPS() {
@@ -366,6 +397,95 @@ function isItemUnlocked(item) {
 }
 
 // ═══ SAVE/LOAD SYSTEM ═══
+function saveSettings() {
+  localStorage.setItem('coffeeTycoonSettings', JSON.stringify(gameState.settings));
+}
+
+function loadSettings() {
+  const saved = localStorage.getItem('coffeeTycoonSettings');
+  if (saved) {
+    try {
+      const settings = JSON.parse(saved);
+      gameState.settings = { ...gameState.settings, ...settings };
+    } catch (e) {
+      console.error('Error loading settings:', e);
+    }
+  }
+}
+
+function exportSave() {
+  const saveData = {
+    coffee: gameState.coffee,
+    totalCoffeeAllTime: gameState.totalCoffeeAllTime,
+    clickPower: gameState.clickPower,
+    goldenCoffee: gameState.goldenCoffee,
+    prestigeMultiplier: gameState.prestigeMultiplier,
+    items: gameState.items,
+    purchasedUpgrades: Array.from(gameState.purchasedUpgrades),
+    itemMultipliers: gameState.itemMultipliers,
+    viewedUpgrades: Array.from(gameState.viewedUpgrades),
+    viewedAchievements: Array.from(gameState.viewedAchievements),
+    achievements: gameState.achievements.map(a => ({ id: a.id, earned: a.earned })),
+    collapsedPacks: Array.from(gameState.collapsedPacks),
+    unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
+    buyMode: gameState.buyMode,
+    sellMode: gameState.sellMode,
+    settings: gameState.settings
+  };
+  return btoa(JSON.stringify(saveData));
+}
+
+function importSave(importString) {
+  try {
+    const data = JSON.parse(atob(importString));
+    gameState.coffee = data.coffee || 0;
+    gameState.totalCoffeeAllTime = data.totalCoffeeAllTime || 0;
+    gameState.clickPower = data.clickPower || 1;
+    gameState.goldenCoffee = data.goldenCoffee || 0;
+    if (gameState.goldenCoffee > 100) gameState.goldenCoffee = 100;
+    gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
+    gameState.items = data.items || {};
+    gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+    gameState.itemMultipliers = data.itemMultipliers || {};
+    gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
+    gameState.viewedAchievements = new Set(data.viewedAchievements || []);
+    gameState.collapsedPacks = new Set(data.collapsedPacks || []);
+    gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
+    gameState.buyMode = data.buyMode || 1;
+    gameState.sellMode = data.sellMode || 1;
+    if (data.settings) {
+      gameState.settings = { ...gameState.settings, ...data.settings };
+    }
+
+    shopItems.forEach(item => {
+      if (!gameState.items[item.id]) {
+        gameState.items[item.id] = { count: 0, cost: item.baseCost };
+      }
+    });
+
+    if (data.achievements) {
+      data.achievements.forEach(savedAch => {
+        const ach = gameState.achievements.find(a => a.id === savedAch.id);
+        if (ach) ach.earned = savedAch.earned;
+      });
+    }
+
+    saveGame();
+    updateUI();
+    return true;
+  } catch (e) {
+    console.error('Error importing save:', e);
+    return false;
+  }
+}
+
+function eraseProgress() {
+  if (confirm('Are you sure you want to erase ALL progress? This cannot be undone!')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
 function saveGame() {
   const saveData = {
     coffee: gameState.coffee,
@@ -382,7 +502,8 @@ function saveGame() {
     collapsedPacks: Array.from(gameState.collapsedPacks),
     unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
     buyMode: gameState.buyMode,
-    sellMode: gameState.sellMode
+    sellMode: gameState.sellMode,
+    settings: gameState.settings
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
 }
@@ -407,6 +528,9 @@ function loadGame() {
       gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
       gameState.buyMode = data.buyMode || 1;
       gameState.sellMode = data.sellMode || 1;
+      if (data.settings) {
+        gameState.settings = { ...gameState.settings, ...data.settings };
+      }
 
       shopItems.forEach(item => {
         if (!gameState.items[item.id]) {
