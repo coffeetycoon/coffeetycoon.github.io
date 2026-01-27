@@ -60,38 +60,30 @@ See above.
 
 ## Future Updates
 
-### v1.13 – Golden Gains
-- Golden Coffee unlocks permanent Golden Upgrades (does not reset after prestige)
-- Tab within tab design, inside upgrades tab, there will be a tab for golden upgrades and one for upgrades (golden upgrades button will be greyed out until unlocked), unlock cost is 1 golden coffee
-- Available upgrades
-  - Auto-buy upgrades/items
-  - Auto-claim achievements
-  - Permanent bonuses (+CPS, etc.)
-  - Mark all notifications as read
-  - Progress bar for golden coffee
-  - Spending golden coffee will reduce your default bonus
-
 ### v1.14 – Grab a Lab
-- Research Lab as Golden Upgrade
+- Research Lab as Golden Upgrade (new main tab)
 - Discover ~10 drink recipes with buffs/debuffs
 - Max 3 active drinks at a time
 - Swaps regenerate over time
 - Golden Upgrades for building
+- Offline CPS, takes the current time and the time you last played (saved in user data), and gives you the amount of coffee you should have (if you had been playing that whole time)
+- Coffee display change, it displays instant change in coffee every 0.1 sec, rather than delayed as it is now
 
 ### v1.15 – Roasters and Coasters
-- Roastery as Golden Upgrade
-- Buy and process beans into blends (Light, Medium, Dark)
+- Roastery as Golden Upgrade (new main tab)
+- Buy and process beans into blends (Light, Medium, Dark, French etc.)
 - Activate blends for temporary global boosts
 - Golden Upgrades for building
+- each bean starts as 1 billion cps cost, and scales by 1.15x depending on the number of beans you have purchased in a lifetime
 
-### v1.17 – Super Coffee
-- Randomly spawning Super Coffee with temporary bonuses
-- Occasional Golden Super Coffee with stronger buffs
+### v1.16 – Super Coffee
+- Randomly spawning Super Coffee with temporary bonuses (spawns as a button in a random spot on screen)
+- Occasional Golden Super Coffee (need to purchase with stronger buffs
 - Coffee storms temporarily boost all CPS 2×–5×
 - Achievements for collecting Super Coffees
 - Chance to spawn Mystery Coffee Beans for rare boosts
 
-### v1.18 – Stats Window
+### v1.17 – Stats Window
 - Stats button with tabs for total coffee, CPS, golden coffee
 - Graphs for each building and combined CPS
 - Historical coffee production timeline
