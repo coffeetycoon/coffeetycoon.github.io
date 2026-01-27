@@ -35,10 +35,11 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.12 – Pick Your Brew
-**Release Date:** Jan 1, 2026
+### Latest Version: v1.13 – Golden Gains
+**Release Date:** Jan 26, 2026
 
 **Key Features**
+- Golden Coffee System: Prestige to earn Golden Coffee for permanent production multipliers
 - Settings Panel: New settings button with customizable options for notifications, quick keys, number display, and progress reset
 - Save Export/Import: Export your game progress as a text string and import it on another device or browser
 - Erase Progress: Option to completely reset your game progress with confirmation
@@ -46,8 +47,8 @@ A game where you brew coffee
 
 ---
 
-### Last Major Update: v1.12 – Pick Your Brew
-**Release Date:** Jan 1, 2026
+### Last Major Update: v1.13 – Golden Gains
+**Release Date:** Jan 26, 2026
 See above.
 ---
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.12 - CORE GAME LOGIC
+   COFFEE TYCOON v1.13 - CORE GAME LOGIC
    Game State, Save System, Math, and Core Calculations
    ═══════════════════════════════════════════════════════════════════════════ */
 

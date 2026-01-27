@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.12 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.13 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
