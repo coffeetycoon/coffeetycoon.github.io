@@ -12,6 +12,7 @@ const gameState = {
   prestigeMultiplier: 1.0,
   items: {},
   purchasedUpgrades: new Set(),
+  purchasedGoldenUpgrades: new Set(),
   itemMultipliers: {},
   viewedUpgrades: new Set(),
   viewedAchievements: new Set(),
@@ -306,6 +307,96 @@ for (let i = 10; i <= 100; i += 10) {
 
 gameState.achievements = achievements;
 
+// ═══ GOLDEN UPGRADES ═══
+const goldenUpgrades = [
+  {
+    id: 'auto_buy_upgrades',
+    name: 'Auto-Buy Upgrades',
+    description: 'Automatically purchase affordable upgrades',
+    cost: 1,
+    effect: () => {
+      gameState.settings.autoBuyUpgrades = true;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 1,
+    type: 'toggle'
+  },
+  {
+    id: 'auto_buy_items',
+    name: 'Auto-Buy Items',
+    description: 'Automatically purchase affordable items',
+    cost: 2,
+    effect: () => {
+      gameState.settings.autoBuyItems = true;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 2,
+    type: 'toggle'
+  },
+  {
+    id: 'auto_claim_achievements',
+    name: 'Auto-Claim Achievements',
+    description: 'Automatically claim achievement rewards',
+    cost: 1,
+    effect: () => {
+      gameState.settings.autoClaimAchievements = true;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 1,
+    type: 'toggle'
+  },
+  {
+    id: 'mark_notifications_read',
+    name: 'Mark All Read',
+    description: 'Clear all notifications (one-time action)',
+    cost: 1,
+    effect: () => {
+      // Clear all active notifications
+      activeNotifications.forEach(n => removeNotificationNow(n));
+      // Clear unclaimed achievements
+      gameState.unclaimedAchievements.clear();
+      // Clear upgrade notifications
+      gameState.viewedUpgrades = new Set([...gameState.viewedUpgrades, ...upgrades.map(u => u.id)]);
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 1,
+    type: 'action'
+  },
+  {
+    id: 'permanent_cps_5',
+    name: 'Permanent +5% CPS',
+    description: 'Increase base CPS by 5% permanently',
+    cost: 5,
+    effect: () => {
+      // This will be handled in calculateTotalCPS
+      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.05;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 5,
+    type: 'bonus'
+  },
+  {
+    id: 'permanent_cps_10',
+    name: 'Permanent +10% CPS',
+    description: 'Increase base CPS by 10% permanently',
+    cost: 10,
+    effect: () => {
+      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.10;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 10,
+    type: 'bonus'
+  },
+  {
+    id: 'permanent_cps_20',
+    name: 'Permanent +20% CPS',
+    description: 'Increase base CPS by 20% permanently',
+    cost: 20,
+    effect: () => {
+      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.20;
+    },
+    unlockCondition: () => gameState.goldenCoffee >= 20,
+    type: 'bonus'
+  }
+];
+
+// Add permanentCPSBonus to gameState
+gameState.permanentCPSBonus = 1.0;
+
 // ═══ UTILITY FUNCTIONS ═══
 function abbreviateNumber(num) {
   if (num < 1000) return Math.floor(num).toString();
@@ -354,7 +445,7 @@ function calculateTotalCPS() {
     const count = itemState.count ?? 0;
     totalCPS += item.cps * count * multiplier;
   });
-  return totalCPS * gameState.prestigeMultiplier;
+  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1);
 }
 
 function calculateItemCPS(item) {
@@ -422,6 +513,7 @@ function exportSave() {
     prestigeMultiplier: gameState.prestigeMultiplier,
     items: gameState.items,
     purchasedUpgrades: Array.from(gameState.purchasedUpgrades),
+    purchasedGoldenUpgrades: Array.from(gameState.purchasedGoldenUpgrades),
     itemMultipliers: gameState.itemMultipliers,
     viewedUpgrades: Array.from(gameState.viewedUpgrades),
     viewedAchievements: Array.from(gameState.viewedAchievements),
@@ -430,7 +522,8 @@ function exportSave() {
     unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
     buyMode: gameState.buyMode,
     sellMode: gameState.sellMode,
-    settings: gameState.settings
+    settings: gameState.settings,
+    permanentCPSBonus: gameState.permanentCPSBonus
   };
   return btoa(JSON.stringify(saveData));
 }
@@ -446,6 +539,7 @@ function importSave(importString) {
     gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
     gameState.items = data.items || {};
     gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+    gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
     gameState.itemMultipliers = data.itemMultipliers || {};
     gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
     gameState.viewedAchievements = new Set(data.viewedAchievements || []);
@@ -455,6 +549,9 @@ function importSave(importString) {
     gameState.sellMode = data.sellMode || 1;
     if (data.settings) {
       gameState.settings = { ...gameState.settings, ...data.settings };
+    }
+    if (data.permanentCPSBonus) {
+      gameState.permanentCPSBonus = data.permanentCPSBonus;
     }
 
     shopItems.forEach(item => {
@@ -469,6 +566,14 @@ function importSave(importString) {
         if (ach) ach.earned = savedAch.earned;
       });
     }
+
+    // Apply golden upgrades effects
+    gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
+      const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
+      if (upgrade) {
+        upgrade.effect();
+      }
+    });
 
     saveGame();
     updateUI();
@@ -521,6 +626,7 @@ function loadGame() {
       gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
       gameState.items = data.items || {};
       gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+      gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
       gameState.itemMultipliers = data.itemMultipliers || {};
       gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
       gameState.viewedAchievements = new Set(data.viewedAchievements || []);
@@ -530,6 +636,9 @@ function loadGame() {
       gameState.sellMode = data.sellMode || 1;
       if (data.settings) {
         gameState.settings = { ...gameState.settings, ...data.settings };
+      }
+      if (data.permanentCPSBonus) {
+        gameState.permanentCPSBonus = data.permanentCPSBonus;
       }
 
       shopItems.forEach(item => {
@@ -544,6 +653,14 @@ function loadGame() {
           if (ach) ach.earned = savedAch.earned;
         });
       }
+
+      // Apply golden upgrades effects
+      gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
+        const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
+        if (upgrade) {
+          upgrade.effect();
+        }
+      });
 
       return true;
     } catch (e) {
@@ -628,6 +745,22 @@ function buyUpgrade(upgradeId) {
     if (packId) {
       removeNotificationsByPack(packId);
     }
+    
+    showPurchaseNotification(upgrade.name);
+    
+    saveGame();
+    updateUI();
+  }
+}
+
+function buyGoldenUpgrade(upgradeId) {
+  const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
+  if (!upgrade || gameState.purchasedGoldenUpgrades.has(upgradeId)) return;
+  
+  if (gameState.goldenCoffee >= upgrade.cost) {
+    gameState.goldenCoffee -= upgrade.cost;
+    gameState.purchasedGoldenUpgrades.add(upgradeId);
+    upgrade.effect();
     
     showPurchaseNotification(upgrade.name);
     
@@ -790,3 +923,59 @@ function getAchievementPacks() {
 
   return packs;
 }
+
+// ═══ AUTOMATION SYSTEM ═══
+function runAutomation() {
+  // Auto-buy upgrades
+  if (gameState.settings.autoBuyUpgrades) {
+    upgrades.forEach(upgrade => {
+      if (!gameState.purchasedUpgrades.has(upgrade.id) && !gameState.viewedUpgrades.has(upgrade.id)) {
+        if (gameState.coffee >= upgrade.cost && upgrade.unlockCondition()) {
+          buyUpgrade(upgrade.id);
+        }
+      }
+    });
+  }
+
+  // Auto-buy items
+  if (gameState.settings.autoBuyItems) {
+    shopItems.forEach(item => {
+      if (isItemUnlocked(item)) {
+        const itemState = gameState.items[item.id];
+        const currentCount = itemState.count ?? 0;
+        const affordableAmount = calculateAffordableAmount(item, currentCount, 1, gameState.coffee);
+        if (affordableAmount > 0) {
+          buyItem(item.id, affordableAmount);
+        }
+      }
+    });
+  }
+
+  // Auto-claim achievements
+  if (gameState.settings.autoClaimAchievements) {
+    gameState.achievements.forEach(achievement => {
+      if (achievement.earned && gameState.unclaimedAchievements.has(achievement.id)) {
+        claimAchievementReward(achievement);
+      }
+    });
+  }
+}
+
+// Add automation to the main game loop
+let lastAutomationTime = 0;
+function updateGameLoop() {
+  const now = Date.now();
+  
+  // Run automation every 500ms
+  if (now - lastAutomationTime > 500) {
+    runAutomation();
+    lastAutomationTime = now;
+  }
+  
+  // Continue with existing game loop logic
+  updateUI();
+  requestAnimationFrame(updateGameLoop);
+}
+
+// Start the game loop
+updateGameLoop();

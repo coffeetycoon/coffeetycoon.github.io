@@ -10,9 +10,6 @@ A game where you brew coffee
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
   - [Latest Version](#latest-version-v111-a-latte-noise)
-  - [Last Major Update](#last-major-update-v111-a-latte-noise)
-  - [Last Major Build](#last-major-build-v10)
-- [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
 
 ---
@@ -35,26 +32,17 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.13 – Golden Gains
-**Release Date:** Jan 26, 2026
+### Latest Version: v1.13.1 – Golden Gains
+**Release Date:** Jan 29, 2026
 
 **Key Features**
 - Golden Coffee System: Prestige to earn Golden Coffee for permanent production multipliers
+- Golden Upgrades: Permanent upgrades that don't reset after prestige, including automation features
+- Offline Coffee Calculation: Earn coffee while away from the game (5+ minute threshold)
 - Settings Panel: New settings button with customizable options for notifications, quick keys, number display, and progress reset
 - Save Export/Import: Export your game progress as a text string and import it on another device or browser
 - Erase Progress: Option to completely reset your game progress with confirmation
 - Extended Number Support: Number abbreviations now support up to trigintillion (10^96) for massive late-game progress
-
----
-
-### Last Major Update: v1.13 – Golden Gains
-**Release Date:** Jan 26, 2026
-See above.
----
-
-### Last Major Build: v1.0
-**Release Date:** Aug 31, 2025
-- Coffee Tycoon beta test concluded; full release live
 
 ---
 

@@ -1,4 +1,133 @@
-<!-- UPGRADES TAB CONTENT -->
-<!-- This file contains the HTML structure for the Upgrades tab -->
-<h2 style="margin-top: 0; color: #d4a574;">Upgrades</h2>
-<div id="upgradesList" class="achievements-grid"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Tycoon - Upgrades</title>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="upgrades.css">
+    <link rel="icon" href="../Images/Download.png" type="image/x-icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="brand">
+                <img src="../Images/Download.png" alt="Coffee Tycoon Logo" class="brand-icon">
+                <h1>Coffee Tycoon</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='../index.html'">
+                    <span class="icon">🏠</span> Home
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='../brew/brew.html'">
+                    <span class="icon">☕</span> Brew
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='../shop/shop.html'">
+                    <span class="icon">🛒</span> Shop
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='../prestige/prestige.html'">
+                    <span class="icon">🌟</span> Prestige
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='../achievements/achievements.html'">
+                    <span class="icon">🏆</span> Achievements
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Status Bar -->
+        <div class="status-bar" id="status-bar">
+            <div class="status-item">
+                <span class="status-label">Coffee:</span>
+                <span class="status-value" id="coffee-display">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">CPS:</span>
+                <span class="status-value" id="cps-display">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Golden Coffee:</span>
+                <span class="status-value" id="golden-coffee-display">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Prestige Multiplier:</span>
+                <span class="status-value" id="prestige-multiplier-display">1.0x</span>
+            </div>
+        </div>
+
+        <!-- Golden Coffee Progress Bar -->
+        <div class="golden-coffee-progress">
+            <div class="progress-header">
+                <h3>Golden Coffee Progress</h3>
+                <span id="golden-coffee-progress-text">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="golden-coffee-progress-fill"></div>
+            </div>
+            <div class="progress-info">
+                Brew <span id="next-golden-threshold">10B</span> more coffee to earn another Golden Coffee
+            </div>
+        </div>
+
+        <!-- Upgrade Navigation -->
+        <div class="upgrade-navigation">
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="regular">Regular Upgrades</button>
+                <button class="tab-btn" data-tab="golden">Golden Upgrades</button>
+            </div>
+        </div>
+
+        <!-- Regular Upgrades Content -->
+        <div id="regular-upgrades-content" class="upgrades-content active">
+            <!-- Buy Mode Controls -->
+            <div class="buy-mode-controls">
+                <label class="buy-mode-label">Buy Mode:</label>
+                <div class="buy-mode-buttons">
+                    <button class="btn-buy-mode active" data-mode="1">×1</button>
+                    <button class="btn-buy-mode" data-mode="10">×10</button>
+                    <button class="btn-buy-mode" data-mode="100">×100</button>
+                </div>
+            </div>
+
+            <!-- Upgrade Packs -->
+            <div class="upgrade-packs" id="upgrade-packs">
+                <!-- Packs will be generated here -->
+            </div>
+        </div>
+
+        <!-- Golden Upgrades Content -->
+        <div id="golden-upgrades-content" class="upgrades-content">
+            <div class="golden-upgrades-grid" id="golden-upgrades-grid">
+                <!-- Golden Upgrades will be generated here -->
+            </div>
+        </div>
+
+        <!-- Notifications Area -->
+        <div class="notifications-area" id="notifications-area">
+            <!-- Notifications will appear here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Coffee Tycoon. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#" onclick="showSettings()">Settings</a>
+                <a href="#" onclick="showStats()">Stats</a>
+                <a href="#" onclick="showHelp()">Help</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/core.js"></script>
+    <script src="../assets/js/ui.js"></script>
+    <script src="upgrades.js"></script>
+</body>
+</html>
