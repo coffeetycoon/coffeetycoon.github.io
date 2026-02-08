@@ -32,8 +32,8 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.13.1 – Golden Gains
-**Release Date:** Jan 29, 2026
+### Latest Version: v1.13.2 – Golden Gains
+**Release Date:** Feb 8, 2026
 
 **Key Features**
 - Golden Coffee System: Prestige to earn Golden Coffee for permanent production multipliers

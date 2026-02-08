@@ -434,6 +434,12 @@ function renderPrestige() {
   const newMultiplier = 1 + ((gameState.goldenCoffee + goldenCoffeeToGain) * 0.1);
   const canPrestige = goldenCoffeeToGain > 0;
   
+  // Calculate progress toward next Golden Coffee
+  const currentGoldenCoffee = gameState.goldenCoffee;
+  const nextThreshold = baseCost * Math.pow(2, currentGoldenCoffee);
+  const progress = Math.min((gameState.totalCoffeeAllTime / nextThreshold) * 100, 100);
+  const coffeeNeeded = nextThreshold - gameState.totalCoffeeAllTime;
+  
   container.innerHTML = `
     <div class="prestige-container">
       <div class="prestige-info">
@@ -443,6 +449,27 @@ function renderPrestige() {
           Current Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
         </div>
       </div>
+      
+      <!-- Golden Coffee Progress Bar -->
+      <div class="golden-coffee-progress" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255, 215, 0, 0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="color: #fff; margin: 0; font-size: 18px; font-weight: 600;">🎯 Next Golden Coffee Progress</h3>
+          <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
+        </div>
+        <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.3);">
+          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #ffd700, #ffed4e); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
+        </div>
+        <div style="color: rgba(255, 255, 255, 0.9); font-size: 14px; text-align: center;">
+          ${canPrestige ? 
+            '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige! Next threshold: ' + abbreviateNumber(baseCost * Math.pow(2, currentGoldenCoffee + 1)) + '</span>' : 
+            '<span>Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
+          }
+        </div>
+        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-align: center; margin-top: 4px;">
+          Next threshold: ${abbreviateNumber(nextThreshold)}
+        </div>
+      </div>
+      
       <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
         <p><strong>How it works:</strong></p>
         <p>• Every 10B total coffees = 1 Golden Coffee (base cost)</p>
