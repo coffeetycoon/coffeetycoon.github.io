@@ -290,9 +290,19 @@ function renderShop() {
 
 // ═══ UPGRADES RENDERING ═══
 let previouslyUnlockedUpgrades = new Set();
+let currentUpgradeTab = 'regular';
 
 function renderUpgrades() {
+  // Render regular upgrades
+  renderRegularUpgrades();
+  // Render golden upgrades
+  renderGoldenUpgrades();
+}
+
+function renderRegularUpgrades() {
   const container = document.getElementById('upgradesList');
+  if (!container) return;
+  
   container.innerHTML = '';
   container.className = 'achievements-grid';
   
@@ -412,6 +422,116 @@ function renderUpgrades() {
   
   if (container.children.length === 0) {
     container.innerHTML = '<div class="empty-state">No upgrades available yet. Keep brewing coffee and purchasing items to unlock upgrades!</div>';
+  }
+}
+
+function renderGoldenUpgrades() {
+  const container = document.getElementById('goldenUpgradesList');
+  const progressContainer = document.getElementById('goldenCoffeeProgressContainer');
+  if (!container || !progressContainer) return;
+  
+  container.innerHTML = '';
+  
+  // Render Golden Coffee progress
+  const baseCost = 10000000000;
+  const currentGoldenCoffee = gameState.goldenCoffee;
+  const nextThreshold = baseCost * Math.pow(2, currentGoldenCoffee);
+  const progress = Math.min((gameState.totalCoffeeAllTime / nextThreshold) * 100, 100);
+  const coffeeNeeded = nextThreshold - gameState.totalCoffeeAllTime;
+  const canPrestige = progress >= 100 && gameState.goldenCoffee < 100;
+  
+  progressContainer.innerHTML = `
+    <div class="golden-coffee-progress" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255, 215, 0, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: #fff; margin: 0; font-size: 18px; font-weight: 600;">🌟 Golden Coffee Progress</h3>
+        <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
+      </div>
+      <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.3);">
+        <div style="height: 100%; background: linear-gradient(90deg, #ffd700, #ffed4e); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></div>
+      </div>
+      <div style="color: rgba(255, 255, 255, 0.9); font-size: 14px; text-align: center;">
+        ${canPrestige ? 
+          '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige for more Golden Coffee!</span>' : 
+          gameState.goldenCoffee >= 100 ?
+          '<span>Maximum Golden Coffee reached (100)</span>' :
+          '<span>Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
+        }
+      </div>
+      <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-align: center; margin-top: 8px;">
+        Current: ${gameState.goldenCoffee} Golden Coffee | Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
+      </div>
+    </div>
+  `;
+  
+  // Render Golden Upgrades
+  const unlockedGoldenUpgrades = goldenUpgrades.filter(u => u.unlockCondition());
+  
+  if (unlockedGoldenUpgrades.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px; color: #888;">No Golden Upgrades unlocked yet. Earn more Golden Coffee by prestiging to unlock powerful permanent upgrades!</div>';
+    return;
+  }
+  
+  unlockedGoldenUpgrades.forEach(upgrade => {
+    const purchased = gameState.purchasedGoldenUpgrades.has(upgrade.id);
+    const canAfford = gameState.goldenCoffee >= upgrade.cost && !purchased;
+    const isLocked = !upgrade.unlockCondition();
+    
+    const upgradeDiv = document.createElement('div');
+    upgradeDiv.className = 'upgrade-pack';
+    upgradeDiv.style.background = purchased ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 215, 0, 0.05)';
+    upgradeDiv.style.border = purchased ? '1px solid #4CAF50' : '1px solid rgba(255, 215, 0, 0.3)';
+    
+    upgradeDiv.innerHTML = `
+      <div class="upgrade-pack-header" style="justify-content: space-between;">
+        <div class="upgrade-pack-title">
+          <span style="color: ${purchased ? '#4CAF50' : '#ffd700'};">${purchased ? '✓' : '🌟'} ${upgrade.name}</span>
+        </div>
+        <div style="color: #ffd700; font-weight: 600; font-size: 14px;">
+          ${upgrade.cost} Golden Coffee
+        </div>
+      </div>
+      <div class="upgrade-pack-description">${upgrade.description}</div>
+      ${upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">✓ Active</div>' : ''}
+      ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">🔒 Locked - Need more Golden Coffee</div>' : ''}
+      <div style="margin-top: 12px;">
+        <button class="upgrade-buy-btn" 
+                style="width: 100%; padding: 10px; background: ${purchased ? '#4CAF50' : (canAfford ? '#ffd700' : '#666')}; color: ${purchased ? '#fff' : '#1a1a2e'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${purchased || !canAfford ? 'not-allowed' : 'pointer'};" 
+                ${!canAfford || purchased ? 'disabled' : ''}>
+          ${purchased ? 'PURCHASED' : (canAfford ? 'BUY UPGRADE' : 'NOT ENOUGH GOLDEN COFFEE')}
+        </button>
+      </div>
+    `;
+    
+    if (!purchased && canAfford) {
+      upgradeDiv.querySelector('.upgrade-buy-btn').onclick = () => {
+        buyGoldenUpgrade(upgrade.id);
+      };
+    }
+    
+    container.appendChild(upgradeDiv);
+  });
+}
+
+function switchUpgradeTab(tab) {
+  currentUpgradeTab = tab;
+  
+  // Update button styles
+  document.querySelectorAll('.upgrade-tab-btn').forEach(btn => {
+    const isActive = btn.dataset.upgradeTab === tab;
+    btn.classList.toggle('active', isActive);
+    btn.style.background = isActive ? '#d4a574' : 'rgba(212, 165, 116, 0.2)';
+    btn.style.color = isActive ? '#1a1a2e' : '#d4a574';
+  });
+  
+  // Show/hide content
+  document.getElementById('regularUpgradesContent').style.display = tab === 'regular' ? 'block' : 'none';
+  document.getElementById('goldenUpgradesContent').style.display = tab === 'golden' ? 'block' : 'none';
+  
+  // Re-render
+  if (tab === 'regular') {
+    renderRegularUpgrades();
+  } else {
+    renderGoldenUpgrades();
   }
 }
 
@@ -714,7 +834,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-
+  // Upgrade tab switching
+  document.querySelectorAll('.upgrade-tab-btn').forEach(btn => {
+    btn.onclick = () => {
+      const tab = btn.dataset.upgradeTab;
+      switchUpgradeTab(tab);
+    };
+  });
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {

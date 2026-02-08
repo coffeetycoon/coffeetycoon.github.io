@@ -125,7 +125,17 @@
     </div>
     <div id="upgradesTab" class="tab-content">
       <h2 style="margin-top: 0; color: #d4a574;">Upgrades</h2>
-      <div id="upgradesList" class="achievements-grid"></div>
+      <div class="upgrade-tabs" style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <button class="upgrade-tab-btn active" data-upgrade-tab="regular" style="flex: 1; padding: 12px; background: #d4a574; color: #1a1a2e; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Regular Upgrades</button>
+        <button class="upgrade-tab-btn" data-upgrade-tab="golden" style="flex: 1; padding: 12px; background: rgba(212, 165, 116, 0.2); color: #d4a574; border: 2px solid #d4a574; border-radius: 8px; font-weight: 600; cursor: pointer;">🌟 Golden Upgrades</button>
+      </div>
+      <div id="regularUpgradesContent">
+        <div id="upgradesList" class="achievements-grid"></div>
+      </div>
+      <div id="goldenUpgradesContent" style="display: none;">
+        <div id="goldenCoffeeProgressContainer"></div>
+        <div id="goldenUpgradesList" class="achievements-grid"></div>
+      </div>
     </div>
     <div id="prestigeTab" class="tab-content">
       <h2 style="margin-top: 0; color: #d4a574;">Prestige</h2>
