@@ -313,7 +313,7 @@ const goldenUpgrades = [
     id: 'auto_buy_upgrades',
     name: 'Auto-Buy Upgrades',
     description: 'Automatically purchase affordable upgrades',
-    cost: 1,
+    cost: 2,
     effect: () => {
       gameState.settings.autoBuyUpgrades = true;
     },
@@ -324,7 +324,7 @@ const goldenUpgrades = [
     id: 'auto_buy_items',
     name: 'Auto-Buy Items',
     description: 'Automatically purchase affordable items',
-    cost: 2,
+    cost: 4,
     effect: () => {
       gameState.settings.autoBuyItems = true;
     },
@@ -335,7 +335,7 @@ const goldenUpgrades = [
     id: 'auto_claim_achievements',
     name: 'Auto-Claim Achievements',
     description: 'Automatically claim achievement rewards',
-    cost: 1,
+    cost: 2,
     effect: () => {
       gameState.settings.autoClaimAchievements = true;
     },
@@ -346,7 +346,7 @@ const goldenUpgrades = [
     id: 'mark_notifications_read',
     name: 'Mark All Read',
     description: 'Clear all notifications (one-time action)',
-    cost: 1,
+    cost: 2,
     effect: () => {
       // Clear all active notifications
       activeNotifications.forEach(n => removeNotificationNow(n));
@@ -362,7 +362,7 @@ const goldenUpgrades = [
     id: 'permanent_cps_5',
     name: 'Permanent +5% CPS',
     description: 'Increase base CPS by 5% permanently',
-    cost: 5,
+    cost: 10,
     effect: () => {
       // This will be handled in calculateTotalCPS
       gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.05;
@@ -374,7 +374,7 @@ const goldenUpgrades = [
     id: 'permanent_cps_10',
     name: 'Permanent +10% CPS',
     description: 'Increase base CPS by 10% permanently',
-    cost: 10,
+    cost: 20,
     effect: () => {
       gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.10;
     },
@@ -385,7 +385,7 @@ const goldenUpgrades = [
     id: 'permanent_cps_20',
     name: 'Permanent +20% CPS',
     description: 'Increase base CPS by 20% permanently',
-    cost: 20,
+    cost: 40,
     effect: () => {
       gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.20;
     },
