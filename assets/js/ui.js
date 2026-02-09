@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.13 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.13.3 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -217,8 +217,9 @@ function updateNotificationBadges() {
 }
 
 function updateUI() {
-  document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.displayCoffee);
-  document.getElementById('cpsDisplay').textContent = abbreviateNumber(gameState.displayCPS);
+  // Instant updates - no animation
+  document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.coffee);
+  document.getElementById('cpsDisplay').textContent = abbreviateNumber(calculateTotalCPS());
   document.getElementById('goldenCoffeeDisplay').textContent = gameState.goldenCoffee;
   document.getElementById('clickPowerDisplay').textContent = gameState.clickPower;
   
@@ -447,7 +448,7 @@ function renderGoldenUpgrades() {
         <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
       </div>
       <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
-        <div style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4);"></div>
+        <div style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4);"></div>
       </div>
       <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
         ${canPrestige ? 
@@ -577,7 +578,7 @@ function renderPrestige() {
           <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
         </div>
         <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
-          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
+          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
         </div>
         <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
           ${canPrestige ? 
@@ -770,22 +771,11 @@ function closeSettingsModal() {
 }
 
 // ═══ ANIMATION ═══
+// Removed smooth animation - all updates are now instant
 function smoothAnimate() {
-  const lerpFactor = 0.15;
-  
-  const coffeeDiff = gameState.targetCoffee - gameState.displayCoffee;
-  if (Math.abs(coffeeDiff) > 0.01) {
-    gameState.displayCoffee += coffeeDiff * lerpFactor;
-  } else {
-    gameState.displayCoffee = gameState.targetCoffee;
-  }
-  
-  const cpsDiff = gameState.targetCPS - gameState.displayCPS;
-  if (Math.abs(cpsDiff) > 0.01) {
-    gameState.displayCPS += cpsDiff * lerpFactor;
-  } else {
-    gameState.displayCPS = gameState.targetCPS;
-  }
+  // Instant updates - no animation
+  gameState.displayCoffee = gameState.targetCoffee;
+  gameState.displayCPS = gameState.targetCPS;
 }
 
 // ═══ EVENT LISTENERS ═══
@@ -932,7 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═══ GAME LOOP ═══
   let lastRenderTime = Date.now();
 
-  // Main game tick (10 times per second)
+  // Main game tick (10 times per second) - INSTANT UPDATES
   setInterval(() => {
     const totalCPS = calculateTotalCPS();
     const coffeePerTick = totalCPS / 10;
@@ -944,14 +934,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     gameState.targetCPS = totalCPS;
-    smoothAnimate();
     
-    const now = Date.now();
-    if (now - lastRenderTime > 16) {
-      document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.displayCoffee);
-      document.getElementById('cpsDisplay').textContent = abbreviateNumber(gameState.displayCPS);
-      lastRenderTime = now;
-    }
+    // Instant display updates - no animation
+    document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.coffee);
+    document.getElementById('cpsDisplay').textContent = abbreviateNumber(totalCPS);
   }, 100);
 
   // UI update (once per second)

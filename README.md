@@ -32,7 +32,16 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.13.2 – Golden Gains
+### Latest Version: v1.13.3 – Instant Brew
+**Release Date:** Feb 8, 2026
+
+**Key Features**
+- Instant Number Updates: All numbers now update instantly without delay or animation
+- Golden Coffee Spending: Multiplier and Golden Coffee displays update immediately when spending
+- Progress Bar Updates: Prestige and Golden Upgrade progress bars now update instantly
+- Smoother UI Experience: Removed animation delays for a more responsive game feel
+
+### Previous Version: v1.13.2 – Golden Gains
 **Release Date:** Feb 8, 2026
 
 **Key Features**
