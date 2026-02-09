@@ -1,5 +1,7 @@
 # Coffee Tycoon
 
+<img src="Images/logo.jpg" alt="Coffee Tycoon Logo" width="200" style="border-radius: 50%;">
+
 A game where you brew coffee
 
 ---
