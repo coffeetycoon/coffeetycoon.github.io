@@ -441,23 +441,23 @@ function renderGoldenUpgrades() {
   const canPrestige = progress >= 100 && gameState.goldenCoffee < 100;
   
   progressContainer.innerHTML = `
-    <div class="golden-coffee-progress" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255, 215, 0, 0.3);">
+    <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="color: #fff; margin: 0; font-size: 18px; font-weight: 600;">🌟 Golden Coffee Progress</h3>
+        <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">🌟 Golden Coffee Progress</h3>
         <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
       </div>
-      <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.3);">
-        <div style="height: 100%; background: linear-gradient(90deg, #ffd700, #ffed4e); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></div>
+      <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
+        <div style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4);"></div>
       </div>
-      <div style="color: rgba(255, 255, 255, 0.9); font-size: 14px; text-align: center;">
+      <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
         ${canPrestige ? 
           '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige for more Golden Coffee!</span>' : 
           gameState.goldenCoffee >= 100 ?
-          '<span>Maximum Golden Coffee reached (100)</span>' :
-          '<span>Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
+          '<span style="color: #d4a574;">Maximum Golden Coffee reached (100)</span>' :
+          '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
         }
       </div>
-      <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-align: center; margin-top: 8px;">
+      <div style="color: rgba(212, 165, 116, 0.9); font-size: 12px; text-align: center; margin-top: 8px;">
         Current: ${gameState.goldenCoffee} Golden Coffee | Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
       </div>
     </div>
@@ -571,21 +571,21 @@ function renderPrestige() {
       </div>
       
       <!-- Golden Coffee Progress Bar -->
-      <div class="golden-coffee-progress" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3); border: 1px solid rgba(255, 215, 0, 0.3);">
+      <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #fff; margin: 0; font-size: 18px; font-weight: 600;">🎯 Next Golden Coffee Progress</h3>
+          <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">🎯 Next Golden Coffee Progress</h3>
           <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
         </div>
-        <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.3);">
-          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #ffd700, #ffed4e); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
+        <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
+          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; transition: width 0.3s ease; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
         </div>
-        <div style="color: rgba(255, 255, 255, 0.9); font-size: 14px; text-align: center;">
+        <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
           ${canPrestige ? 
             '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige! Next threshold: ' + abbreviateNumber(baseCost * Math.pow(2, currentGoldenCoffee + 1)) + '</span>' : 
-            '<span>Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
+            '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
           }
         </div>
-        <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; text-align: center; margin-top: 4px;">
+        <div style="color: rgba(212, 165, 116, 0.9); font-size: 12px; text-align: center; margin-top: 4px;">
           Next threshold: ${abbreviateNumber(nextThreshold)}
         </div>
       </div>
