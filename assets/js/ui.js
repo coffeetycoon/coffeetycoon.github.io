@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.13.3 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.13.4 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -113,9 +113,8 @@ function showSellNotification(itemName, count) {
   notif.dataset.notifId = notifId;
   notif.dataset.itemName = itemName;
 
-  // New selling notification format - completely separate from purchasing
   notif.innerHTML = `
-    <div class="notification-title">💰 Sale Completed</div>
+    <div class="notification-title">Sale Completed</div>
     <div class="notification-message">Converted ${count}x ${itemName} back to coffee</div>
   `;
 
@@ -267,14 +266,14 @@ function renderShop() {
         <div class="quantity-display">${currentCount}</div>
         <div class="sell-section">
           <button class="sell-btn" ${!canSell ? 'disabled' : ''}>
-            SELL ×${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
+            SELL x${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
           </button>
         </div>
         <div class="buy-section">
           <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>
-            BUY ${affordableAmount > 1 && affordableAmount < amount ? '×' + affordableAmount : amount > 1 ? '×' + amount : ''}
+            BUY ${affordableAmount > 1 && affordableAmount < amount ? 'x' + affordableAmount : amount > 1 ? 'x' + amount : ''}
           </button>
-          <div class="cost-tile">☕ ${abbreviateNumber(totalCost)}</div>
+          <div class="cost-tile">${abbreviateNumber(totalCost)} coffee</div>
         </div>
       </div>
     `;
@@ -367,7 +366,7 @@ function renderRegularUpgrades() {
         ${previewUpgrades.map(u => {
           const purchased = gameState.purchasedUpgrades.has(u.id);
           const affordable = !purchased && gameState.coffee >= u.cost && u.unlockCondition();
-          return `<span class="upgrade-pack-badge" ${affordable ? 'title="Affordable" aria-label="Affordable"' : ''}>${purchased ? '✓' : (affordable ? '!' : '○')}</span>`;
+          return `<span class="upgrade-pack-badge" ${affordable ? 'title="Affordable" aria-label="Affordable"' : ''}>${purchased ? '[x]' : (affordable ? '[!]' : '[ ]')}</span>`;
         }).join('')}
         ${unlockedUpgrades.length > 8 ? '<span style="opacity: 0.6;">...</span>' : ''}
       </div>
@@ -396,11 +395,11 @@ function renderRegularUpgrades() {
       upgradeDiv.innerHTML = `
         <div class="upgrade-header">
           <div class="upgrade-name">${upgrade.name}</div>
-          <div class="upgrade-status">${purchased ? '✓ OWNED' : ''}</div>
+          <div class="upgrade-status">${purchased ? '[OWNED]' : ''}</div>
         </div>
         <div class="upgrade-description">${upgrade.description}</div>
         <div class="upgrade-footer">
-          <div class="cost-tile">☕ ${abbreviateNumber(upgrade.cost)}</div>
+          <div class="cost-tile">${abbreviateNumber(upgrade.cost)} coffee</div>
           <button class="upgrade-buy-btn" ${!canAfford || purchased ? 'disabled' : ''}>
             ${purchased ? 'PURCHASED' : 'BUY UPGRADE'}
           </button>
@@ -444,7 +443,7 @@ function renderGoldenUpgrades() {
   progressContainer.innerHTML = `
     <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">🌟 Golden Coffee Progress</h3>
+        <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">Golden Coffee Progress</h3>
         <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
       </div>
       <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
@@ -452,7 +451,7 @@ function renderGoldenUpgrades() {
       </div>
       <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
         ${canPrestige ? 
-          '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige for more Golden Coffee!</span>' : 
+          '<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige for more Golden Coffee!</span>' : 
           gameState.goldenCoffee >= 100 ?
           '<span style="color: #d4a574;">Maximum Golden Coffee reached (100)</span>' :
           '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
@@ -464,15 +463,8 @@ function renderGoldenUpgrades() {
     </div>
   `;
   
-  // Render Golden Upgrades
-  const unlockedGoldenUpgrades = goldenUpgrades.filter(u => u.unlockCondition());
-  
-  if (unlockedGoldenUpgrades.length === 0) {
-    container.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px; color: #888;">No Golden Upgrades unlocked yet. Earn more Golden Coffee by prestiging to unlock powerful permanent upgrades!</div>';
-    return;
-  }
-  
-  unlockedGoldenUpgrades.forEach(upgrade => {
+  // Render ALL Golden Upgrades (always visible, regardless of unlock status)
+  goldenUpgrades.forEach(upgrade => {
     const purchased = gameState.purchasedGoldenUpgrades.has(upgrade.id);
     const canAfford = gameState.goldenCoffee >= upgrade.cost && !purchased;
     const isLocked = !upgrade.unlockCondition();
@@ -485,15 +477,15 @@ function renderGoldenUpgrades() {
     upgradeDiv.innerHTML = `
       <div class="upgrade-pack-header" style="justify-content: space-between;">
         <div class="upgrade-pack-title">
-          <span style="color: ${purchased ? '#4CAF50' : '#ffd700'};">${purchased ? '✓' : '🌟'} ${upgrade.name}</span>
+          <span style="color: ${purchased ? '#4CAF50' : '#ffd700'};">${purchased ? '[x]' : '[*]'} ${upgrade.name}</span>
         </div>
         <div style="color: #ffd700; font-weight: 600; font-size: 14px;">
           ${upgrade.cost} Golden Coffee
         </div>
       </div>
       <div class="upgrade-pack-description">${upgrade.description}</div>
-      ${upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">✓ Active</div>' : ''}
-      ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">🔒 Locked - Need more Golden Coffee</div>' : ''}
+      ${upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">[x] Active</div>' : ''}
+      ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">[Locked] Need more Golden Coffee</div>' : ''}
       <div style="margin-top: 12px;">
         <button class="upgrade-buy-btn" 
                 style="width: 100%; padding: 10px; background: ${purchased ? '#4CAF50' : (canAfford ? '#ffd700' : '#666')}; color: ${purchased ? '#fff' : '#1a1a2e'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${purchased || !canAfford ? 'not-allowed' : 'pointer'};" 
@@ -574,7 +566,7 @@ function renderPrestige() {
       <!-- Golden Coffee Progress Bar -->
       <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">🎯 Next Golden Coffee Progress</h3>
+          <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">Next Golden Coffee Progress</h3>
           <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
         </div>
         <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
@@ -582,7 +574,7 @@ function renderPrestige() {
         </div>
         <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
           ${canPrestige ? 
-            '<span style="color: #4CAF50; font-weight: 600;">✓ Ready to prestige! Next threshold: ' + abbreviateNumber(baseCost * Math.pow(2, currentGoldenCoffee + 1)) + '</span>' : 
+            '<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige! Next threshold: ' + abbreviateNumber(baseCost * Math.pow(2, currentGoldenCoffee + 1)) + '</span>' : 
             '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
           }
         </div>
@@ -673,7 +665,7 @@ function renderAchievements() {
       <div class="pack-preview">
         ${visibleAchievements.slice(0, 8).map(a => {
           const isUnclaimed = gameState.unclaimedAchievements.has(a.id);
-          return `<span class="pack-badge">${a.earned ? (isUnclaimed ? '!' : '✓') : '○'}</span>`;
+          return `<span class="pack-badge">${a.earned ? (isUnclaimed ? '[!]' : '[x]') : '[ ]'}</span>`;
         }).join('')}
         ${visibleAchievements.length > 8 ? '<span style="opacity: 0.6;">...</span>' : ''}
       </div>
@@ -711,7 +703,7 @@ function openAchievementModal(pack) {
     
     div.innerHTML = `
       <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">
-        ${a.earned ? (isUnclaimed ? '!' : '✓') : '○'} ${a.name}
+        ${a.earned ? (isUnclaimed ? '[!]' : '[x]') : '[ ]'} ${a.name}
       </div>
       <div style="opacity: 0.9; margin-bottom: 8px; font-size: 0.9rem;">${a.requirement}</div>
       ${a.reward ? `<div class="achievement-reward">${getRewardText(a.reward)}${isUnclaimed ? ' - Click to claim!' : ''}</div>` : ''}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.13.3</title>
+<title>Coffee Tycoon v1.13.4</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
@@ -50,11 +50,16 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.13.2</div>
+      <div class="modal-title">Coffee Tycoon v1.13.4</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.13 — Golden Gains</h3>
+      <h3>What's New in v1.13.4</h3>
+      <ul>
+        <li><strong>Golden Upgrades Always Visible:</strong> All golden upgrades are now always shown, with locked ones displayed in gray</li>
+        <li><strong>Bug Fixes:</strong> Fixed issue where golden upgrades would disappear after prestige</li>
+      </ul>
+      <h3>v1.13 - Golden Gains</h3>
       <ul>
         <li><strong>Golden Coffee System:</strong> Prestige to earn Golden Coffee for permanent production multipliers</li>
         <li><strong>Settings Panel:</strong> New settings button with customizable options for notifications, quick keys, number display, and progress reset</li>
@@ -72,7 +77,7 @@
         <li>Manage your golden coffee carefully as spending it affects your base bonus</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.13.2 - Golden Gains</p>
+      <p><strong>Version:</strong> 1.13.4</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -107,8 +112,8 @@
   <div class="content-area">
     <div id="brewTab" class="tab-content active">
       <div style="text-align: center;">
-        <button id="coffeeButton">☕</button>
-        <div style="font-size: 1.2rem; margin-top: 16px;">Click the cup to brew coffee!</div>
+        <button id="coffeeButton">BREW</button>
+        <div style="font-size: 1.2rem; margin-top: 16px;">Click the button to brew coffee!</div>
         <div style="margin-top: 12px; opacity: 0.8;">Each click: +<span id="clickPowerDisplay">1</span> Coffee</div>
       </div>
     </div>
@@ -128,7 +133,7 @@
       <h2 style="margin-top: 0; color: #d4a574;">Upgrades</h2>
       <div class="upgrade-tabs" style="display: flex; gap: 8px; margin-bottom: 20px;">
         <button class="upgrade-tab-btn active" data-upgrade-tab="regular" style="flex: 1; padding: 12px; background: #d4a574; color: #1a1a2e; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Regular Upgrades</button>
-        <button class="upgrade-tab-btn" data-upgrade-tab="golden" style="flex: 1; padding: 12px; background: rgba(212, 165, 116, 0.2); color: #d4a574; border: 2px solid #d4a574; border-radius: 8px; font-weight: 600; cursor: pointer;">🌟 Golden Upgrades</button>
+        <button class="upgrade-tab-btn" data-upgrade-tab="golden" style="flex: 1; padding: 12px; background: rgba(212, 165, 116, 0.2); color: #d4a574; border: 2px solid #d4a574; border-radius: 8px; font-weight: 600; cursor: pointer;">Golden Upgrades</button>
       </div>
       <div id="regularUpgradesContent">
         <div id="upgradesList" class="achievements-grid"></div>
