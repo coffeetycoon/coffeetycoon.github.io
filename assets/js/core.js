@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.13.3 - CORE GAME LOGIC
+   COFFEE TYCOON v1.14 - CORE GAME LOGIC
    Game State, Save System, Math, and Core Calculations
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -504,6 +504,32 @@ function loadSettings() {
   }
 }
 
+// ═══ OFFLINE EARNINGS ═══
+let pendingOfflineEarnings = null;
+const OFFLINE_EARNINGS_THRESHOLD_MS = 5 * 60 * 1000; // Only count after 5+ minutes away
+
+function applyOfflineEarnings(lastPlayed) {
+  if (!lastPlayed) return;
+
+  const elapsedMs = Date.now() - lastPlayed;
+  if (elapsedMs < OFFLINE_EARNINGS_THRESHOLD_MS) return;
+
+  const elapsedSeconds = elapsedMs / 1000;
+  const cps = calculateTotalCPS();
+  if (cps <= 0) return;
+
+  const earnings = cps * elapsedSeconds;
+
+  gameState.coffee += earnings;
+  gameState.totalCoffeeAllTime += earnings;
+
+  pendingOfflineEarnings = {
+    seconds: elapsedSeconds,
+    earnings: earnings,
+    cps: cps
+  };
+}
+
 function exportSave() {
   const saveData = {
     coffee: gameState.coffee,
@@ -523,7 +549,8 @@ function exportSave() {
     buyMode: gameState.buyMode,
     sellMode: gameState.sellMode,
     settings: gameState.settings,
-    permanentCPSBonus: gameState.permanentCPSBonus
+    permanentCPSBonus: gameState.permanentCPSBonus,
+    lastPlayed: Date.now()
   };
   return btoa(JSON.stringify(saveData));
 }
@@ -608,7 +635,10 @@ function saveGame() {
     unclaimedAchievements: Array.from(gameState.unclaimedAchievements),
     buyMode: gameState.buyMode,
     sellMode: gameState.sellMode,
-    settings: gameState.settings
+    settings: gameState.settings,
+    purchasedGoldenUpgrades: Array.from(gameState.purchasedGoldenUpgrades),
+    permanentCPSBonus: gameState.permanentCPSBonus,
+    lastPlayed: Date.now()
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
 }
@@ -661,6 +691,12 @@ function loadGame() {
           upgrade.effect();
         }
       });
+
+      // Award coffee earned while away from the game
+      applyOfflineEarnings(data.lastPlayed || 0);
+      if (pendingOfflineEarnings) {
+        saveGame();
+      }
 
       return true;
     } catch (e) {

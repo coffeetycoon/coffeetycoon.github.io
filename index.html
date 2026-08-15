@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.13.4</title>
+<title>Coffee Tycoon v1.14</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
@@ -50,14 +50,16 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.13.4</div>
+      <div class="modal-title">Coffee Tycoon v1.14</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.13.4</h3>
+      <h3>What's New in v1.14</h3>
       <ul>
-        <li><strong>Golden Upgrades Always Visible:</strong> All golden upgrades are now always shown, with locked ones displayed in gray</li>
-        <li><strong>Bug Fixes:</strong> Fixed issue where golden upgrades would disappear after prestige</li>
+        <li><strong>Offline CPS:</strong> Earn coffee while you're away — you're credited your CPS for the time since you last played (5+ minute threshold)</li>
+        <li><strong>Welcome Back Modal:</strong> See how long you were gone and how much coffee you earned while away</li>
+        <li><strong>Save on Exit:</strong> Progress is saved the moment you leave, keeping offline earnings accurate</li>
+        <li><strong>Bug Fixes:</strong> Golden Upgrades and permanent CPS bonuses now persist correctly when saving</li>
       </ul>
       <h3>v1.13 - Golden Gains</h3>
       <ul>
@@ -77,7 +79,7 @@
         <li>Manage your golden coffee carefully as spending it affects your base bonus</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.13.4</p>
+      <p><strong>Version:</strong> 1.14</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -161,6 +163,24 @@
       <button class="modal-close" id="closeAchievementModal">×</button>
     </div>
     <div class="modal-achievements" id="modalAchievements"></div>
+  </div>
+</div>
+
+<div id="offlineModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Welcome Back!</div>
+      <button class="modal-close" id="closeOfflineModal">×</button>
+    </div>
+    <div class="version-content" style="text-align: center;">
+      <h3 style="margin-top: 0;">While You Were Away...</h3>
+      <p style="font-size: 1.1rem;">Your empire kept brewing for <strong><span id="offlineDuration"></span></strong>.</p>
+      <div style="font-size: 2rem; font-weight: 700; color: #ffd700; margin: 20px 0;">
+        +<span id="offlineEarnings">0</span> Coffee
+      </div>
+      <p style="opacity: 0.8;">Production rate: <span id="offlineCPS">0</span> coffee per second</p>
+      <button class="start-btn" id="offlineContinueBtn" style="margin-top: 20px;">Collect Coffee</button>
+    </div>
   </div>
 </div>
 

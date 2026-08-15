@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.13.4 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.14 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -730,6 +730,32 @@ function closeAchievementModal() {
   document.getElementById('achievementModal').classList.add('hidden');
 }
 
+function formatDuration(totalSeconds) {
+  const seconds = Math.floor(totalSeconds);
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const parts = [];
+  if (days > 0) parts.push(days + (days === 1 ? ' day' : ' days'));
+  if (hours > 0) parts.push(hours + (hours === 1 ? ' hour' : ' hours'));
+  if (minutes > 0) parts.push(minutes + (minutes === 1 ? ' minute' : ' minutes'));
+  if (secs > 0 || parts.length === 0) parts.push(secs + (secs === 1 ? ' second' : ' seconds'));
+  return parts.join(', ');
+}
+
+function showOfflineModal(info) {
+  document.getElementById('offlineDuration').textContent = formatDuration(info.seconds);
+  document.getElementById('offlineEarnings').textContent = abbreviateNumber(info.earnings);
+  document.getElementById('offlineCPS').textContent = abbreviateNumber(info.cps);
+  document.getElementById('offlineModal').classList.remove('hidden');
+}
+
+function closeOfflineModal() {
+  document.getElementById('offlineModal').classList.add('hidden');
+}
+
 function openVersionInfo() {
   document.getElementById('versionModal').classList.remove('hidden');
 }
@@ -844,6 +870,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeVersionModal').onclick = closeVersionInfo;
   document.getElementById('closeAchievementModal').onclick = closeAchievementModal;
   document.getElementById('closeSettingsModal').onclick = closeSettingsModal;
+  document.getElementById('closeOfflineModal').onclick = closeOfflineModal;
+  document.getElementById('offlineContinueBtn').onclick = closeOfflineModal;
+
+  document.getElementById('offlineModal').onclick = (e) => {
+    if (e.target.id === 'offlineModal') {
+      closeOfflineModal();
+    }
+  };
 
   document.getElementById('achievementModal').onclick = (e) => {
     if (e.target.id === 'achievementModal') {
@@ -942,9 +976,21 @@ document.addEventListener('DOMContentLoaded', () => {
     saveGame();
   }, 30000);
 
+  // Save the moment the player leaves so offline earnings are accurate
+  window.addEventListener('beforeunload', saveGame);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveGame();
+  });
+
   // ═══ GAME INITIALIZATION ═══
   const hasExistingSave = loadGame();
   loadSettings();
+
+  // Show offline earnings earned while the game was closed
+  if (pendingOfflineEarnings) {
+    showOfflineModal(pendingOfflineEarnings);
+    pendingOfflineEarnings = null;
+  }
 
   // Update mode button display
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {

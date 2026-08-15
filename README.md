@@ -34,7 +34,16 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.13.3 – Instant Brew
+### Latest Version: v1.14 – Offline CPS
+**Release Date:** Aug 14, 2026
+
+**Key Features**
+- Offline CPS: Earn coffee while away — credited your CPS for the time since you last played (5+ minute threshold)
+- Welcome Back Modal: Shows how long you were gone and how much coffee you earned
+- Save on Exit: Last-played time is saved the moment you leave for accurate offline earnings
+- Bug Fixes: Golden Upgrades and permanent CPS bonuses now save correctly
+
+### Previous Version: v1.13.3 – Instant Brew
 **Release Date:** Feb 8, 2026
 
 **Key Features**
@@ -65,7 +74,6 @@ A game where you brew coffee
 - Max 3 active drinks at a time
 - Swaps regenerate over time
 - Golden Upgrades for building
-- Offline CPS, takes the current time and the time you last played (saved in user data), and gives you the amount of coffee you should have (if you had been playing that whole time)
 - Coffee display change, it displays instant change in coffee every 0.1 sec, rather than delayed as it is now
 
 ### v1.15 – Roasters and Coasters
