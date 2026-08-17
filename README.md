@@ -11,7 +11,7 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v111-a-latte-noise)
+  - [Latest Version](#latest-version-v114-offline-cps)
 - [Undecided Additions](#undecided-additions)
 
 ---
@@ -42,27 +42,6 @@ A game where you brew coffee
 - Welcome Back Modal: Shows how long you were gone and how much coffee you earned
 - Save on Exit: Last-played time is saved the moment you leave for accurate offline earnings
 - Bug Fixes: Golden Upgrades and permanent CPS bonuses now save correctly
-
-### Previous Version: v1.13.3 – Instant Brew
-**Release Date:** Feb 8, 2026
-
-**Key Features**
-- Instant Number Updates: All numbers now update instantly without delay or animation
-- Golden Coffee Spending: Multiplier and Golden Coffee displays update immediately when spending
-- Progress Bar Updates: Prestige and Golden Upgrade progress bars now update instantly
-- Smoother UI Experience: Removed animation delays for a more responsive game feel
-
-### Previous Version: v1.13.2 – Golden Gains
-**Release Date:** Feb 8, 2026
-
-**Key Features**
-- Golden Coffee System: Prestige to earn Golden Coffee for permanent production multipliers
-- Golden Upgrades: Permanent upgrades that don't reset after prestige, including automation features
-- Offline Coffee Calculation: Earn coffee while away from the game (5+ minute threshold)
-- Settings Panel: New settings button with customizable options for notifications, quick keys, number display, and progress reset
-- Save Export/Import: Export your game progress as a text string and import it on another device or browser
-- Erase Progress: Option to completely reset your game progress with confirmation
-- Extended Number Support: Number abbreviations now support up to trigintillion (10^96) for massive late-game progress
 
 ---
 
