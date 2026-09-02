@@ -35,3 +35,8 @@ body {
   0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
   50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
 }
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

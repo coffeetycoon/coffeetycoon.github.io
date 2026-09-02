@@ -19,15 +19,12 @@ const gameState = {
   achievements: [],
   collapsedPacks: new Set(),
   unclaimedAchievements: new Set(),
-  displayCoffee: 0,
-  displayCPS: 0,
-  targetCoffee: 0,
-  targetCPS: 0,
   buyMode: 1, // ×1, ×10, ×100
   sellMode: 1,
   settings: {
     notifications: true,
     quickKeys: true,
+    sound: true,
     numberDisplay: 'abbreviated' // 'full' or 'abbreviated'
   }
 };
@@ -271,7 +268,7 @@ cpsMilestones.forEach((milestone) => {
     requirement: `Reach ${abbreviateNumber(milestone.value)} CPS`,
     condition: () => calculateTotalCPS() >= milestone.value,
     earned: false,
-    progress: () => abbreviateNumber(calculateTotalCPS()) + "/" + abbreviateNumber(milestone.value),
+    progress: () => formatNumber(calculateTotalCPS()) + "/" + formatNumber(milestone.value),
     percent: () => Math.min(calculateTotalCPS() / milestone.value * 100, 100) || 0,
     reward: { type: 'coffee', value: milestone.value * 100 }
   });
@@ -364,8 +361,8 @@ const goldenUpgrades = [
     description: 'Increase base CPS by 5% permanently',
     cost: 10,
     effect: () => {
-      // This will be handled in calculateTotalCPS
-      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.05;
+      gameState.cpsBonus5Count++;
+      recalculatePermanentCPSBonus();
     },
     unlockCondition: () => gameState.goldenCoffee >= 5,
     type: 'bonus'
@@ -376,7 +373,8 @@ const goldenUpgrades = [
     description: 'Increase base CPS by 10% permanently',
     cost: 20,
     effect: () => {
-      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.10;
+      gameState.cpsBonus10Count++;
+      recalculatePermanentCPSBonus();
     },
     unlockCondition: () => gameState.goldenCoffee >= 10,
     type: 'bonus'
@@ -387,15 +385,44 @@ const goldenUpgrades = [
     description: 'Increase base CPS by 20% permanently',
     cost: 40,
     effect: () => {
-      gameState.permanentCPSBonus = (gameState.permanentCPSBonus || 1) * 1.20;
+      gameState.cpsBonus20Count++;
+      recalculatePermanentCPSBonus();
     },
     unlockCondition: () => gameState.goldenCoffee >= 20,
     type: 'bonus'
   }
 ];
 
-// Add permanentCPSBonus to gameState
+// Permanent CPS bonus — derived from purchase counts so it can be rebuilt
+// on load without re-applying (and compounding) the upgrade effects
 gameState.permanentCPSBonus = 1.0;
+gameState.cpsBonus5Count = 0;
+gameState.cpsBonus10Count = 0;
+gameState.cpsBonus20Count = 0;
+
+function recalculatePermanentCPSBonus() {
+  gameState.permanentCPSBonus =
+    Math.pow(1.05, gameState.cpsBonus5Count || 0) *
+    Math.pow(1.10, gameState.cpsBonus10Count || 0) *
+    Math.pow(1.20, gameState.cpsBonus20Count || 0);
+}
+
+// ═══ PRESTIGE MATH (single source of truth for all prestige UI/logic) ═══
+const PRESTIGE_BASE_COST = 10000000000;
+const MAX_GOLDEN_COFFEE = 100;
+
+function goldenCoffeeForTotal(totalCoffee) {
+  return Math.min(MAX_GOLDEN_COFFEE, Math.floor(Math.log2(totalCoffee / PRESTIGE_BASE_COST + 1)));
+}
+
+function prestigeGain() {
+  return Math.max(0, goldenCoffeeForTotal(gameState.totalCoffeeAllTime) - gameState.goldenCoffee);
+}
+
+// Total lifetime coffee needed to earn the next Golden Coffee
+function nextGoldenThreshold() {
+  return PRESTIGE_BASE_COST * (Math.pow(2, gameState.goldenCoffee + 1) - 1);
+}
 
 // ═══ UTILITY FUNCTIONS ═══
 function abbreviateNumber(num) {
@@ -434,6 +461,14 @@ function abbreviateNumber(num) {
   return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
 }
 
+// Display formatting: abbreviated (default) or full with thousands separators
+function formatNumber(num) {
+  if (gameState.settings.numberDisplay === 'full') {
+    return Math.floor(num).toLocaleString('en-US');
+  }
+  return abbreviateNumber(num);
+}
+
 function calculateTotalCPS() {
   let totalCPS = 0;
   shopItems.forEach(item => {
@@ -450,7 +485,7 @@ function calculateTotalCPS() {
 
 function calculateItemCPS(item) {
   const multiplier = gameState.itemMultipliers[item.id] || 1;
-  return item.cps * multiplier * gameState.prestigeMultiplier;
+  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1);
 }
 
 function calculateBulkCost(item, currentCount, amount) {
@@ -504,9 +539,50 @@ function loadSettings() {
   }
 }
 
+function notificationsEnabled() {
+  return gameState.settings.notifications !== false;
+}
+
+// ═══ SOUND EFFECTS ═══
+// Files live in sfx/ (buttonclick.mp3, purchaseorclaim.mp3). Pools of clones
+// per file let rapid clicks overlap without cutting each other off.
+const sfxSounds = {};
+const sfxPools = {};
+const SFX_POOL_SIZE = 5;
+
+function initSfx() {
+  if (typeof Audio === 'undefined') return;
+  ['buttonclick', 'purchaseorclaim'].forEach(name => {
+    try {
+      const base = new Audio(`sfx/${name}.mp3`);
+      base.preload = 'auto';
+      sfxSounds[name] = base;
+      sfxPools[name] = Array.from({ length: SFX_POOL_SIZE }, () => base.cloneNode());
+    } catch (e) {
+      // Audio unavailable (or blocked): game continues silently
+    }
+  });
+}
+
+function playSfx(name) {
+  if (!gameState.settings.sound) return;
+  const pool = sfxPools[name];
+  if (!pool) return;
+  // Find a clone that has finished playing; fall back to the first one
+  const sound = pool.find(s => s.paused || s.ended) || pool[0];
+  try {
+    sound.currentTime = 0;
+    sound.play().catch(() => {}); // autoplay policies may block until first user gesture
+  } catch (e) {
+    // Ignore playback errors
+  }
+}
+
 // ═══ OFFLINE EARNINGS ═══
 let pendingOfflineEarnings = null;
 const OFFLINE_EARNINGS_THRESHOLD_MS = 5 * 60 * 1000; // Only count after 5+ minutes away
+
+const MAX_OFFLINE_SECONDS = 24 * 60 * 60; // Cap offline credit at 24 hours
 
 function applyOfflineEarnings(lastPlayed) {
   if (!lastPlayed) return;
@@ -514,7 +590,7 @@ function applyOfflineEarnings(lastPlayed) {
   const elapsedMs = Date.now() - lastPlayed;
   if (elapsedMs < OFFLINE_EARNINGS_THRESHOLD_MS) return;
 
-  const elapsedSeconds = elapsedMs / 1000;
+  const elapsedSeconds = Math.min(elapsedMs / 1000, MAX_OFFLINE_SECONDS);
   const cps = calculateTotalCPS();
   if (cps <= 0) return;
 
@@ -555,53 +631,75 @@ function exportSave() {
   return btoa(JSON.stringify(saveData));
 }
 
+// Shared by loadGame and importSave so both restore state identically
+function applySaveData(data) {
+  gameState.coffee = data.coffee || 0;
+  gameState.totalCoffeeAllTime = data.totalCoffeeAllTime || 0;
+  gameState.clickPower = data.clickPower || 1;
+  gameState.goldenCoffee = data.goldenCoffee || 0;
+  if (gameState.goldenCoffee > MAX_GOLDEN_COFFEE) gameState.goldenCoffee = MAX_GOLDEN_COFFEE;
+  gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
+  gameState.items = data.items || {};
+  gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
+  gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
+  gameState.itemMultipliers = data.itemMultipliers || {};
+  gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
+  gameState.viewedAchievements = new Set(data.viewedAchievements || []);
+  gameState.collapsedPacks = new Set(data.collapsedPacks || []);
+  gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
+  gameState.buyMode = data.buyMode || 1;
+  gameState.sellMode = data.sellMode || 1;
+  if (data.settings) {
+    gameState.settings = { ...gameState.settings, ...data.settings };
+  }
+
+  restoreCPSBonus(data);
+
+  shopItems.forEach(item => {
+    if (!gameState.items[item.id]) {
+      gameState.items[item.id] = { count: 0, cost: item.baseCost };
+    }
+  });
+
+  if (data.achievements) {
+    data.achievements.forEach(savedAch => {
+      const ach = gameState.achievements.find(a => a.id === savedAch.id);
+      if (ach) ach.earned = savedAch.earned;
+    });
+  }
+
+  // Only re-apply toggle effects (auto-buy flags). Bonus effects are derived
+  // from purchase counts, and one-time actions must never re-run on load.
+  gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
+    const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
+    if (upgrade && upgrade.type === 'toggle') {
+      upgrade.effect();
+    }
+  });
+}
+
+// Restore the permanent CPS bonus without re-applying effects. Each permanent
+// upgrade is a one-time purchase, so counts are derived from the purchased set
+// — this also heals legacy saves whose stored bonus got double-applied.
+function restoreCPSBonus(data) {
+  gameState.cpsBonus5Count = gameState.purchasedGoldenUpgrades.has('permanent_cps_5') ? 1 : 0;
+  gameState.cpsBonus10Count = gameState.purchasedGoldenUpgrades.has('permanent_cps_10') ? 1 : 0;
+  gameState.cpsBonus20Count = gameState.purchasedGoldenUpgrades.has('permanent_cps_20') ? 1 : 0;
+
+  if (gameState.cpsBonus5Count || gameState.cpsBonus10Count || gameState.cpsBonus20Count) {
+    recalculatePermanentCPSBonus();
+  } else if (typeof data.permanentCPSBonus === 'number' && data.permanentCPSBonus > 1) {
+    // Very old saves kept the bonus value but not the purchase set
+    gameState.permanentCPSBonus = data.permanentCPSBonus;
+  } else {
+    recalculatePermanentCPSBonus();
+  }
+}
+
 function importSave(importString) {
   try {
     const data = JSON.parse(atob(importString));
-    gameState.coffee = data.coffee || 0;
-    gameState.totalCoffeeAllTime = data.totalCoffeeAllTime || 0;
-    gameState.clickPower = data.clickPower || 1;
-    gameState.goldenCoffee = data.goldenCoffee || 0;
-    if (gameState.goldenCoffee > 100) gameState.goldenCoffee = 100;
-    gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
-    gameState.items = data.items || {};
-    gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
-    gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
-    gameState.itemMultipliers = data.itemMultipliers || {};
-    gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
-    gameState.viewedAchievements = new Set(data.viewedAchievements || []);
-    gameState.collapsedPacks = new Set(data.collapsedPacks || []);
-    gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
-    gameState.buyMode = data.buyMode || 1;
-    gameState.sellMode = data.sellMode || 1;
-    if (data.settings) {
-      gameState.settings = { ...gameState.settings, ...data.settings };
-    }
-    if (data.permanentCPSBonus) {
-      gameState.permanentCPSBonus = data.permanentCPSBonus;
-    }
-
-    shopItems.forEach(item => {
-      if (!gameState.items[item.id]) {
-        gameState.items[item.id] = { count: 0, cost: item.baseCost };
-      }
-    });
-
-    if (data.achievements) {
-      data.achievements.forEach(savedAch => {
-        const ach = gameState.achievements.find(a => a.id === savedAch.id);
-        if (ach) ach.earned = savedAch.earned;
-      });
-    }
-
-    // Apply golden upgrades effects
-    gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
-      const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
-      if (upgrade) {
-        upgrade.effect();
-      }
-    });
-
+    applySaveData(data);
     saveGame();
     updateUI();
     return true;
@@ -648,55 +746,13 @@ function loadGame() {
   if (saved) {
     try {
       const data = JSON.parse(saved);
-      gameState.coffee = data.coffee || 0;
-      gameState.totalCoffeeAllTime = data.totalCoffeeAllTime || 0;
-      gameState.clickPower = data.clickPower || 1;
-      gameState.goldenCoffee = data.goldenCoffee || 0;
-      if (gameState.goldenCoffee > 100) gameState.goldenCoffee = 100;
-      gameState.prestigeMultiplier = data.prestigeMultiplier || 1.0;
-      gameState.items = data.items || {};
-      gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
-      gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
-      gameState.itemMultipliers = data.itemMultipliers || {};
-      gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
-      gameState.viewedAchievements = new Set(data.viewedAchievements || []);
-      gameState.collapsedPacks = new Set(data.collapsedPacks || []);
-      gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
-      gameState.buyMode = data.buyMode || 1;
-      gameState.sellMode = data.sellMode || 1;
-      if (data.settings) {
-        gameState.settings = { ...gameState.settings, ...data.settings };
-      }
-      if (data.permanentCPSBonus) {
-        gameState.permanentCPSBonus = data.permanentCPSBonus;
-      }
-
-      shopItems.forEach(item => {
-        if (!gameState.items[item.id]) {
-          gameState.items[item.id] = { count: 0, cost: item.baseCost };
-        }
-      });
-
-      if (data.achievements) {
-        data.achievements.forEach(savedAch => {
-          const ach = gameState.achievements.find(a => a.id === savedAch.id);
-          if (ach) ach.earned = savedAch.earned;
-        });
-      }
-
-      // Apply golden upgrades effects
-      gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
-        const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
-        if (upgrade) {
-          upgrade.effect();
-        }
-      });
+      applySaveData(data);
 
       // Award coffee earned while away from the game
       applyOfflineEarnings(data.lastPlayed || 0);
-      if (pendingOfflineEarnings) {
-        saveGame();
-      }
+      // Persist immediately: heals legacy bonus values and records lastPlayed
+      // so the next session's offline earnings stay accurate
+      saveGame();
 
       return true;
     } catch (e) {
@@ -731,11 +787,8 @@ function buyItem(itemId, amount = 1) {
 
     itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
 
-    if (affordableAmount > 1) {
-      showPurchaseNotification(`Bought ${affordableAmount}× ${shopItem.name}`);
-    } else {
-      showPurchaseNotification(shopItem.name);
-    }
+    showPurchaseNotification(shopItem.name, affordableAmount);
+    playSfx('purchaseorclaim');
 
     saveGame();
     updateUI();
@@ -762,6 +815,7 @@ function sellItem(itemId, amount = 1) {
   itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
 
   showSellNotification(shopItem.name, amountToSell);
+  playSfx('purchaseorclaim');
 
   saveGame();
   updateUI();
@@ -783,6 +837,7 @@ function buyUpgrade(upgradeId) {
     }
     
     showPurchaseNotification(upgrade.name);
+    playSfx('purchaseorclaim');
     
     saveGame();
     updateUI();
@@ -799,6 +854,7 @@ function buyGoldenUpgrade(upgradeId) {
     upgrade.effect();
     
     showPurchaseNotification(upgrade.name);
+    playSfx('purchaseorclaim');
     
     saveGame();
     updateUI();
@@ -806,12 +862,10 @@ function buyGoldenUpgrade(upgradeId) {
 }
 
 function doPrestige() {
-  const baseCost = 10000000000;
-  const goldenCoffeeToGain = Math.min(100, Math.floor(Math.log2(gameState.totalCoffeeAllTime / baseCost + 1)));
-  if (goldenCoffeeToGain > gameState.goldenCoffee && (gameState.goldenCoffee > 0 || goldenCoffeeToGain >= 1)) {
-    const gained = goldenCoffeeToGain - gameState.goldenCoffee;
-    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All upgrades\n\nYou will keep:\n• Golden Coffee\n• ${(goldenCoffeeToGain * 10)}% production multiplier\n• All achievements`)) {
-      gameState.goldenCoffee = goldenCoffeeToGain;
+  const gained = prestigeGain();
+  if (gained > 0) {
+    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• All achievements`)) {
+      gameState.goldenCoffee += gained;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
 
       gameState.coffee = 0;
@@ -823,7 +877,8 @@ function doPrestige() {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
       });
 
-      showPurchaseNotification(`Prestiged! Gained ${gained} Golden Coffee!`);
+      showNotification('Prestige Complete!', `Gained ${gained} Golden Coffee — multiplier now ${gameState.prestigeMultiplier.toFixed(1)}x`, 'default');
+      playSfx('purchaseorclaim');
       saveGame();
       updateUI();
     }
@@ -861,13 +916,13 @@ function claimAchievementReward(achievement) {
   removeNotificationsByAchievement(achievement.id);
   
   showClaimNotification(achievement.name);
+  playSfx('purchaseorclaim');
   
   if (achievement.reward.type === 'coffee') {
     gameState.coffee += achievement.reward.value;
-    gameState.targetCoffee = gameState.coffee;
     saveGame();
     updateUI();
-    return ` (+${abbreviateNumber(achievement.reward.value)} coffee!)`;
+    return ` (+${formatNumber(achievement.reward.value)} coffee!)`;
   } else if (achievement.reward.type === 'multiplier') {
     const itemId = achievement.reward.itemId;
     gameState.itemMultipliers[itemId] = (gameState.itemMultipliers[itemId] || 1) * achievement.reward.value;
@@ -883,7 +938,7 @@ function claimAchievementReward(achievement) {
 
 function getRewardText(reward) {
   if (reward.type === 'coffee') {
-    return `Reward: ${abbreviateNumber(reward.value)} Coffee`;
+    return `Reward: ${formatNumber(reward.value)} Coffee`;
   } else if (reward.type === 'multiplier') {
     const itemName = shopItems.find(i => i.id === reward.itemId)?.name;
     const multiplierPercent = ((reward.value - 1) * 100).toFixed(1);
@@ -965,7 +1020,7 @@ function runAutomation() {
   // Auto-buy upgrades
   if (gameState.settings.autoBuyUpgrades) {
     upgrades.forEach(upgrade => {
-      if (!gameState.purchasedUpgrades.has(upgrade.id) && !gameState.viewedUpgrades.has(upgrade.id)) {
+      if (!gameState.purchasedUpgrades.has(upgrade.id)) {
         if (gameState.coffee >= upgrade.cost && upgrade.unlockCondition()) {
           buyUpgrade(upgrade.id);
         }
@@ -997,21 +1052,5 @@ function runAutomation() {
   }
 }
 
-// Add automation to the main game loop
-let lastAutomationTime = 0;
-function updateGameLoop() {
-  const now = Date.now();
-  
-  // Run automation every 500ms
-  if (now - lastAutomationTime > 500) {
-    runAutomation();
-    lastAutomationTime = now;
-  }
-  
-  // Continue with existing game loop logic
-  updateUI();
-  requestAnimationFrame(updateGameLoop);
-}
-
-// Start the game loop
-updateGameLoop();
+// Automation and rendering are driven by the game loop intervals in ui.js
+// (core.js loads before ui.js, so it must not start any loops itself).

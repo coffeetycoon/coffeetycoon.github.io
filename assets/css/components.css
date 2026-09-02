@@ -321,27 +321,6 @@
   gap: 8px;
 }
 
-.quantity-display {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  min-width: 40px;
-  text-align: center;
-}
-
-.cost-tile {
-  background: rgba(212, 165, 116, 0.2);
-  border: 2px solid rgba(212, 165, 116, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #d4a574;
-  min-width: 120px;
-  text-align: center;
-}
-
 /* Upgrades */
 .upgrade-item.purchased {
   border-color: rgba(255, 215, 0, 0.5);
@@ -988,29 +967,6 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
   transform: translateY(-50%) translateX(34px);
-}
-
-.toggle-text {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #666;
-  transition: color 0.4s;
-}
-
-input:checked + .toggle-slider .toggle-text:first-child {
-  color: #666;
-}
-
-input:checked + .toggle-slider .toggle-text:last-child {
-  color: #fff;
-}
-
-input:not(:checked) + .toggle-slider .toggle-text:first-child {
-  color: #fff;
-}
-
-input:not(:checked) + .toggle-slider .toggle-text:last-child {
-  color: #666;
 }
 
 /* Textarea for save import/export */

@@ -11,7 +11,8 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v114-offline-cps)
+  - [Latest Version](#latest-version-v114--offline-cps)
+- [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
 
 ---
@@ -19,13 +20,13 @@ A game where you brew coffee
 ## How to Download and Play
 
 ### Option 1: File
-1 Download the **coffeetycoon.html** file  
+1. Download the **index.html** file  
    <img src="Images/Open.png" alt="Open" width="500">
-2 Save the file to your computer  
+2. Save the file to your computer  
    <img src="Images/Download.png" alt="Download" width="500">
-3 Open the HTML file in any modern browser (Chrome, Edge, Firefox, Opera, etc.)  
+3. Open the HTML file in any modern browser (Chrome, Edge, Firefox, Opera, etc.)  
    <img src="Images/Files.png" alt="Files" width="500">
-4 Enjoy brewing your coffee empire
+4. Enjoy brewing your coffee empire
 
 ### Option 2: Link
 - Play directly in your browser: [Coffee Tycoon Online](https://coffeetycoon.github.io/)
@@ -39,37 +40,37 @@ A game where you brew coffee
 
 **Key Features**
 - Offline CPS: Earn coffee while away — credited your CPS for the time since you last played (5+ minute threshold)
-- Welcome Back Modal: Shows how long you were gone and how much coffee you earned
-- Save on Exit: Last-played time is saved the moment you leave for accurate offline earnings
+- Welcome Back modal: shows how long you were gone and how much coffee you earned
+- Save on Exit: last-played time is saved the moment you leave, for accurate offline earnings
 - Bug Fixes: Golden Upgrades and permanent CPS bonuses now save correctly
 
 ---
 
 ## Future Updates
 
-### v1.14 – Grab a Lab
+### v1.15 – Grab a Lab
 - Research Lab as Golden Upgrade (new main tab)
 - Discover ~10 drink recipes with buffs/debuffs
 - Max 3 active drinks at a time
 - Swaps regenerate over time
 - Golden Upgrades for building
-- Coffee display change, it displays instant change in coffee every 0.1 sec, rather than delayed as it is now
+- Coffee display change: it displays instant change in coffee every 0.1 sec, rather than delayed as it is now
 
-### v1.15 – Roasters and Coasters
+### v1.16 – Roasters and Coasters
 - Roastery as Golden Upgrade (new main tab)
 - Buy and process beans into blends (Light, Medium, Dark, French etc.)
 - Activate blends for temporary global boosts
 - Golden Upgrades for building
-- each bean starts as 1 billion cps cost, and scales by 1.15x depending on the number of beans you have purchased in a lifetime
+- Each bean starts as 1 billion CPS cost, and scales by 1.15x depending on the number of beans you have purchased in a lifetime
 
-### v1.16 – Super Coffee
+### v1.17 – Super Coffee
 - Randomly spawning Super Coffee with temporary bonuses (spawns as a button in a random spot on screen)
-- Occasional Golden Super Coffee (need to purchase with stronger buffs
+- Occasional Golden Super Coffee (need to purchase with stronger buffs)
 - Coffee storms temporarily boost all CPS 2×–5×
 - Achievements for collecting Super Coffees
 - Chance to spawn Mystery Coffee Beans for rare boosts
 
-### v1.17 – Stats Window
+### v1.18 – Stats Window
 - Stats button with tabs for total coffee, CPS, golden coffee
 - Graphs for each building and combined CPS
 - Historical coffee production timeline

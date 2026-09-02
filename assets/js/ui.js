@@ -9,6 +9,7 @@ let notificationIdCounter = 0;
 let notificationTimers = new Map();
 
 function showNotification(title, message, type = 'default', metadata = {}) {
+  if (!notificationsEnabled()) return;
   const container = document.getElementById('notificationContainer');
   const notifId = notificationIdCounter++;
   
@@ -42,13 +43,11 @@ function showNotification(title, message, type = 'default', metadata = {}) {
   return notifId;
 }
 
-function updateNotificationPositions() {
-  activeNotifications.forEach((notif, i) => {
-    notif.style.transform = `translateY(${i * 10}px)`;
-  });
-}
+// Stacking is handled by flex gap in CSS; only the exit animation needs a transform
+function updateNotificationPositions() {}
 
-function showPurchaseNotification(itemName) {
+function showPurchaseNotification(itemName, count = 1) {
+  if (!notificationsEnabled()) return;
   const container = document.getElementById('notificationContainer');
 
   const existing = activeNotifications.find(n =>
@@ -57,12 +56,10 @@ function showPurchaseNotification(itemName) {
   );
 
   if (existing) {
-    const messageEl = existing.querySelector('.notification-message');
-    const match = messageEl.textContent.match(/x(\d+)/);
-    const count = match ? parseInt(match[1]) + 1 : 2;
-
-    messageEl.textContent = `Purchased x${count} ${itemName}`;
-    existing.dataset.count = count;
+    const newCount = (parseInt(existing.dataset.count) || 1) + count;
+    existing.dataset.count = newCount;
+    existing.querySelector('.notification-message').textContent =
+      newCount > 1 ? `Purchased x${newCount} ${itemName}` : itemName;
 
     const oldTimer = notificationTimers.get(existing);
     if (oldTimer) clearTimeout(oldTimer);
@@ -71,13 +68,6 @@ function showPurchaseNotification(itemName) {
       removeNotificationNow(existing);
     }, 4000);
     notificationTimers.set(existing, newTimer);
-
-    existing.style.transform = 'scale(1.02)';
-    setTimeout(() => {
-      existing.style.transform = '';
-      updateNotificationPositions();
-    }, 150);
-
     return;
   }
 
@@ -86,11 +76,11 @@ function showPurchaseNotification(itemName) {
   notif.className = 'notification purchase-notif';
   notif.dataset.notifId = notifId;
   notif.dataset.itemName = itemName;
-  notif.dataset.count = 1;
+  notif.dataset.count = count;
 
   notif.innerHTML = `
     <div class="notification-title">Purchase Complete</div>
-    <div class="notification-message">${itemName}</div>
+    <div class="notification-message">${count > 1 ? `Purchased x${count} ${itemName}` : itemName}</div>
   `;
 
   container.appendChild(notif);
@@ -105,6 +95,7 @@ function showPurchaseNotification(itemName) {
 }
 
 function showSellNotification(itemName, count) {
+  if (!notificationsEnabled()) return;
   const container = document.getElementById('notificationContainer');
 
   const notifId = notificationIdCounter++;
@@ -130,6 +121,7 @@ function showSellNotification(itemName, count) {
 }
 
 function showClaimNotification(achievementName) {
+  if (!notificationsEnabled()) return;
   const container = document.getElementById('notificationContainer');
   
   const notifId = notificationIdCounter++;
@@ -186,6 +178,38 @@ function removeNotificationsByPack(packId) {
   toRemove.forEach(n => removeNotificationNow(n));
 }
 
+// ═══ SHARED PRESTIGE / PROGRESS RENDERING ═══
+function renderGoldenCoffeeProgressCard() {
+  const threshold = nextGoldenThreshold();
+  const progress = Math.min((gameState.totalCoffeeAllTime / threshold) * 100, 100);
+  const coffeeNeeded = Math.max(0, threshold - gameState.totalCoffeeAllTime);
+  const atMax = gameState.goldenCoffee >= MAX_GOLDEN_COFFEE;
+  const gain = prestigeGain();
+  const ready = gain > 0;
+
+  const statusText = ready
+    ? `<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige for ${gain} more Golden Coffee!</span>`
+    : atMax
+      ? '<span style="color: #d4a574;">Maximum Golden Coffee reached (100)</span>'
+      : `<span style="color: rgba(245, 245, 245, 0.8);">Need ${formatNumber(coffeeNeeded)} more total coffee for next Golden Coffee</span>`;
+
+  return `
+    <div style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">Golden Coffee Progress</h3>
+        <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
+      </div>
+      <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
+        <div style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4);"></div>
+      </div>
+      <div style="color: #f5f5f5; font-size: 14px; text-align: center;">${statusText}</div>
+      <div style="color: rgba(212, 165, 116, 0.9); font-size: 12px; text-align: center; margin-top: 8px;">
+        Current: ${gameState.goldenCoffee} Golden Coffee | Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
+      </div>
+    </div>
+  `;
+}
+
 // ═══ UI UPDATE FUNCTIONS ═══
 function updateNotificationBadges() {
   const availableUpgrades = upgrades.filter(u => 
@@ -194,6 +218,7 @@ function updateNotificationBadges() {
     !gameState.viewedUpgrades.has(u.id)
   );
   const upgradesBtn = document.querySelector('[data-tab="upgrades"]');
+  if (!upgradesBtn) return;
   let upgradeBadge = upgradesBtn.querySelector('.notification-badge');
   if (availableUpgrades.length > 0 && !upgradeBadge) {
     upgradeBadge = document.createElement('div');
@@ -205,6 +230,7 @@ function updateNotificationBadges() {
   
   const unclaimedCount = gameState.unclaimedAchievements.size;
   const achievementsBtn = document.querySelector('[data-tab="achievements"]');
+  if (!achievementsBtn) return;
   let achievementBadge = achievementsBtn.querySelector('.notification-badge');
   if (unclaimedCount > 0 && !achievementBadge) {
     achievementBadge = document.createElement('div');
@@ -215,24 +241,27 @@ function updateNotificationBadges() {
   }
 }
 
-function updateUI() {
-  // Instant updates - no animation
-  document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.coffee);
-  document.getElementById('cpsDisplay').textContent = abbreviateNumber(calculateTotalCPS());
+// `force` re-renders hidden tabs too (used on init, import and tab switches)
+function updateUI(force = false) {
+  document.getElementById('coffeeDisplay').textContent = formatNumber(gameState.coffee);
+  document.getElementById('cpsDisplay').textContent = formatNumber(calculateTotalCPS());
   document.getElementById('goldenCoffeeDisplay').textContent = gameState.goldenCoffee;
   document.getElementById('clickPowerDisplay').textContent = gameState.clickPower;
-  
+
+  const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'brew';
+
   updateNotificationBadges();
-  renderShop();
-  renderUpgrades();
-  renderPrestige();
-  renderAchievements();
   checkAchievements();
+  if (force || activeTab === 'shop') renderShop();
+  if (force || activeTab === 'upgrades') renderUpgrades();
+  if (force || activeTab === 'prestige') renderPrestige();
+  if (force || activeTab === 'achievements') renderAchievements();
 }
 
 // ═══ SHOP RENDERING ═══
 function renderShop() {
   const container = document.getElementById('shopList');
+  if (!container) return;
   container.innerHTML = '';
 
   shopItems.forEach(item => {
@@ -247,8 +276,9 @@ function renderShop() {
     const amount = gameState.buyMode;
 
     const affordableAmount = calculateAffordableAmount(item, currentCount, amount, gameState.coffee);
-    const totalCost = affordableAmount > 0 ? calculateBulkCost(item, currentCount, affordableAmount) :
-                      calculateBulkCost(item, currentCount, amount);
+    // Buy button purchases what is affordable, so its cost tile must match it
+    const buyAmount = affordableAmount > 0 ? affordableAmount : amount;
+    const totalCost = calculateBulkCost(item, currentCount, buyAmount);
     const canAfford = affordableAmount > 0;
 
     const itemCPS = calculateItemCPS(item);
@@ -260,20 +290,20 @@ function renderShop() {
     div.innerHTML = `
       <div class="item-info">
         <div class="item-name">${item.name}</div>
-        <div class="item-effect">Effect: +${abbreviateNumber(itemCPS)} CPS each</div>
+        <div class="item-effect">Effect: +${formatNumber(itemCPS)} CPS each</div>
       </div>
       <div class="item-actions">
         <div class="quantity-display">${currentCount}</div>
         <div class="sell-section">
-          <button class="sell-btn" ${!canSell ? 'disabled' : ''}>
-            SELL x${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${abbreviateNumber(sellValue)} each)</span>
+          <button class="sell-btn" data-item-id="${item.id}" ${!canSell ? 'disabled' : ''}>
+            SELL x${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${formatNumber(sellValue)} each)</span>
           </button>
         </div>
         <div class="buy-section">
-          <button class="buy-btn" ${!canAfford ? 'disabled' : ''}>
-            BUY ${affordableAmount > 1 && affordableAmount < amount ? 'x' + affordableAmount : amount > 1 ? 'x' + amount : ''}
+          <button class="buy-btn" data-item-id="${item.id}" ${!canAfford ? 'disabled' : ''}>
+            BUY ${buyAmount > 1 ? 'x' + buyAmount : ''}
           </button>
-          <div class="cost-tile">${abbreviateNumber(totalCost)} coffee</div>
+          <div class="cost-tile">${formatNumber(totalCost)} coffee</div>
         </div>
       </div>
     `;
@@ -289,68 +319,52 @@ function renderShop() {
 }
 
 // ═══ UPGRADES RENDERING ═══
-let previouslyUnlockedUpgrades = new Set();
 let currentUpgradeTab = 'regular';
 
 function renderUpgrades() {
-  // Render regular upgrades
   renderRegularUpgrades();
-  // Render golden upgrades
   renderGoldenUpgrades();
 }
 
 function renderRegularUpgrades() {
   const container = document.getElementById('upgradesList');
   if (!container) return;
-  
+
   container.innerHTML = '';
   container.className = 'achievements-grid';
-  
-  const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab;
-  
+
+  const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+  const onUpgradesTab = activeTab === 'upgrades';
+
   upgradePacks.forEach(pack => {
     const packUpgrades = upgrades.filter(u => u.pack === pack.id);
     if (packUpgrades.length === 0) return;
-    
+
     const unlockedUpgrades = packUpgrades.filter(u => u.unlockCondition());
     if (unlockedUpgrades.length === 0) return;
-    
-    const newlyUnlocked = unlockedUpgrades.filter(u => 
-      !previouslyUnlockedUpgrades.has(u.id) && 
-      !gameState.purchasedUpgrades.has(u.id)
-    );
-    
-    if (newlyUnlocked.length > 0 && currentTab !== 'upgrades') {
-      showNotification(
-        'New Upgrades Available!',
-        `${pack.name}: ${newlyUnlocked.length} upgrade${newlyUnlocked.length > 1 ? 's' : ''} unlocked`,
-        'upgrade',
-        { packId: pack.id }
-      );
-    }
-    
-    newlyUnlocked.forEach(u => previouslyUnlockedUpgrades.add(u.id));
-    
-    const purchasedUpgrades = packUpgrades.filter(u => gameState.purchasedUpgrades.has(u.id));
-    const affordableUpgrades = unlockedUpgrades.filter(u => 
-      !gameState.purchasedUpgrades.has(u.id) && 
-      gameState.coffee >= u.cost
-    );
-    
-    if (currentTab === 'upgrades') {
+
+    // Viewing the tab marks upgrades as seen; the tab badge (in
+    // updateNotificationBadges) is what signals "new upgrades available"
+    if (onUpgradesTab) {
       unlockedUpgrades.forEach(u => {
         if (!gameState.purchasedUpgrades.has(u.id)) {
           gameState.viewedUpgrades.add(u.id);
         }
       });
     }
-    
+
+    const purchasedUpgrades = packUpgrades.filter(u => gameState.purchasedUpgrades.has(u.id));
+    const affordableUpgrades = unlockedUpgrades.filter(u =>
+      !gameState.purchasedUpgrades.has(u.id) &&
+      gameState.coffee >= u.cost
+    );
+
     const isCollapsed = gameState.collapsedPacks.has(pack.id);
     const progressPercent = packUpgrades.length > 0 ? Math.round((purchasedUpgrades.length / packUpgrades.length) * 100) : 0;
-    
+
     const packDiv = document.createElement('div');
     packDiv.className = 'upgrade-pack';
-    
+
     const previewUpgrades = unlockedUpgrades.slice(0, 8);
     packDiv.innerHTML = `
       <div class="upgrade-pack-header">
@@ -373,25 +387,25 @@ function renderRegularUpgrades() {
       ${affordableUpgrades.length > 0 ? `<div style="color: #4CAF50; font-weight: 600; font-size: 0.9rem; margin-top: 8px;">${affordableUpgrades.length} affordable upgrade${affordableUpgrades.length !== 1 ? 's' : ''}</div>` : ''}
       <div class="upgrade-pack-toggle">${isCollapsed ? '▼ Click to expand' : '▲ Click to collapse'}</div>
     `;
-    
+
     packDiv.onclick = (e) => {
       if (!e.target.closest('.upgrade-buy-btn')) {
         toggleUpgradePack(pack.id);
       }
     };
-    
+
     const contentDiv = document.createElement('div');
     contentDiv.className = `upgrade-pack-content ${isCollapsed ? 'collapsed' : ''}`;
-    
+
     unlockedUpgrades.forEach(upgrade => {
       const purchased = gameState.purchasedUpgrades.has(upgrade.id);
       const canAfford = gameState.coffee >= upgrade.cost && !purchased;
-      
+
       const upgradeDiv = document.createElement('div');
       upgradeDiv.className = 'upgrade-item';
       if (canAfford) upgradeDiv.classList.add('affordable');
       if (purchased) upgradeDiv.classList.add('purchased');
-      
+
       upgradeDiv.innerHTML = `
         <div class="upgrade-header">
           <div class="upgrade-name">${upgrade.name}</div>
@@ -399,27 +413,27 @@ function renderRegularUpgrades() {
         </div>
         <div class="upgrade-description">${upgrade.description}</div>
         <div class="upgrade-footer">
-          <div class="cost-tile">${abbreviateNumber(upgrade.cost)} coffee</div>
+          <div class="cost-tile">${formatNumber(upgrade.cost)} coffee</div>
           <button class="upgrade-buy-btn" ${!canAfford || purchased ? 'disabled' : ''}>
             ${purchased ? 'PURCHASED' : 'BUY UPGRADE'}
           </button>
         </div>
       `;
-      
+
       if (!purchased) {
         upgradeDiv.querySelector('.upgrade-buy-btn').onclick = (e) => {
           e.stopPropagation();
           buyUpgrade(upgrade.id);
         };
       }
-      
+
       contentDiv.appendChild(upgradeDiv);
     });
-    
+
     packDiv.appendChild(contentDiv);
     container.appendChild(packDiv);
   });
-  
+
   if (container.children.length === 0) {
     container.innerHTML = '<div class="empty-state">No upgrades available yet. Keep brewing coffee and purchasing items to unlock upgrades!</div>';
   }
@@ -429,40 +443,10 @@ function renderGoldenUpgrades() {
   const container = document.getElementById('goldenUpgradesList');
   const progressContainer = document.getElementById('goldenCoffeeProgressContainer');
   if (!container || !progressContainer) return;
-  
+
   container.innerHTML = '';
-  
-  // Render Golden Coffee progress
-  const baseCost = 10000000000;
-  const currentGoldenCoffee = gameState.goldenCoffee;
-  const nextThreshold = baseCost * Math.pow(2, currentGoldenCoffee);
-  const progress = Math.min((gameState.totalCoffeeAllTime / nextThreshold) * 100, 100);
-  const coffeeNeeded = nextThreshold - gameState.totalCoffeeAllTime;
-  const canPrestige = progress >= 100 && gameState.goldenCoffee < 100;
-  
-  progressContainer.innerHTML = `
-    <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">Golden Coffee Progress</h3>
-        <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
-      </div>
-      <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
-        <div style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4);"></div>
-      </div>
-      <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
-        ${canPrestige ? 
-          '<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige for more Golden Coffee!</span>' : 
-          gameState.goldenCoffee >= 100 ?
-          '<span style="color: #d4a574;">Maximum Golden Coffee reached (100)</span>' :
-          '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
-        }
-      </div>
-      <div style="color: rgba(212, 165, 116, 0.9); font-size: 12px; text-align: center; margin-top: 8px;">
-        Current: ${gameState.goldenCoffee} Golden Coffee | Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
-      </div>
-    </div>
-  `;
-  
+  progressContainer.innerHTML = renderGoldenCoffeeProgressCard();
+
   // Render ALL Golden Upgrades (always visible, regardless of unlock status)
   goldenUpgrades.forEach(upgrade => {
     const purchased = gameState.purchasedGoldenUpgrades.has(upgrade.id);
@@ -541,18 +525,11 @@ function toggleUpgradePack(packId) {
 // ═══ PRESTIGE RENDERING ═══
 function renderPrestige() {
   const container = document.getElementById('prestigeContent');
-  const baseCost = 10000000000;
-  const rawGain = Math.floor(Math.log2(gameState.totalCoffeeAllTime / baseCost + 1));
-  const goldenCoffeeToGain = gameState.goldenCoffee >= 100 ? 0 : Math.min(100 - gameState.goldenCoffee, rawGain);
+  if (!container) return;
+  const goldenCoffeeToGain = prestigeGain();
   const newMultiplier = 1 + ((gameState.goldenCoffee + goldenCoffeeToGain) * 0.1);
   const canPrestige = goldenCoffeeToGain > 0;
-  
-  // Calculate progress toward next Golden Coffee
-  const currentGoldenCoffee = gameState.goldenCoffee;
-  const nextThreshold = baseCost * Math.pow(2, currentGoldenCoffee);
-  const progress = Math.min((gameState.totalCoffeeAllTime / nextThreshold) * 100, 100);
-  const coffeeNeeded = nextThreshold - gameState.totalCoffeeAllTime;
-  
+
   container.innerHTML = `
     <div class="prestige-container">
       <div class="prestige-info">
@@ -562,39 +539,21 @@ function renderPrestige() {
           Current Multiplier: ${gameState.prestigeMultiplier.toFixed(1)}x
         </div>
       </div>
-      
-      <!-- Golden Coffee Progress Bar -->
-      <div class="golden-coffee-progress" style="background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(212, 165, 116, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="color: #d4a574; margin: 0; font-size: 18px; font-weight: 600;">Next Golden Coffee Progress</h3>
-          <span style="color: #ffd700; font-weight: bold; font-size: 16px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${progress.toFixed(1)}%</span>
-        </div>
-        <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(212, 165, 116, 0.2);">
-          <div id="golden-coffee-progress-fill" style="height: 100%; background: linear-gradient(90deg, #d4a574, #ffd700); width: ${progress}%; box-shadow: 0 0 10px rgba(212, 165, 116, 0.4); ${progress >= 100 ? 'animation: pulse-gold 2s infinite;' : ''}"></div>
-        </div>
-        <div style="color: #f5f5f5; font-size: 14px; text-align: center;">
-          ${canPrestige ? 
-            '<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige! Next threshold: ' + abbreviateNumber(baseCost * Math.pow(2, currentGoldenCoffee + 1)) + '</span>' : 
-            '<span style="color: rgba(245, 245, 245, 0.8);">Need ' + abbreviateNumber(coffeeNeeded) + ' more coffee for next Golden Coffee</span>'
-          }
-        </div>
-        <div style="color: rgba(212, 165, 116, 0.9); font-size: 12px; text-align: center; margin-top: 4px;">
-          Next threshold: ${abbreviateNumber(nextThreshold)}
-        </div>
-      </div>
-      
+
+      ${renderGoldenCoffeeProgressCard()}
+
       <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
         <p><strong>How it works:</strong></p>
-        <p>• Every 10B total coffees = 1 Golden Coffee (base cost)</p>
-        <p>• Golden Coffee cost doubles with each prestige (exponential scaling)</p>
+        <p>• Every ${formatNumber(PRESTIGE_BASE_COST)} total coffee brewed = 1 Golden Coffee</p>
+        <p>• The requirement for each additional Golden Coffee doubles (exponential scaling)</p>
         <p>• Each Golden Coffee gives +10% production (permanent!)</p>
         <p>• Prestiging resets coffee, items, and upgrades</p>
-        <p>• Golden Coffee and multiplier are kept forever</p>
+        <p>• Golden Coffee, multiplier, and permanent CPS bonuses are kept forever</p>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
           <div style="opacity: 0.8; margin-bottom: 8px;">Total Coffee Brewed</div>
-          <div style="font-size: 1.8rem; font-weight: 700; color: #ffd700;">${abbreviateNumber(gameState.totalCoffeeAllTime)}</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: #ffd700;">${formatNumber(gameState.totalCoffeeAllTime)}</div>
         </div>
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
           <div style="opacity: 0.8; margin-bottom: 8px;">Golden Coffee to Gain</div>
@@ -608,14 +567,14 @@ function renderPrestige() {
         <div style="text-align: center; font-size: 1.2rem; color: #4CAF50; font-weight: 600; margin: 12px 0;">
           New Multiplier: ${newMultiplier.toFixed(1)}x (from ${gameState.prestigeMultiplier.toFixed(1)}x)
         </div>
-      ` : gameState.goldenCoffee >= 100 ? `
+      ` : gameState.goldenCoffee >= MAX_GOLDEN_COFFEE ? `
         <div style="text-align: center; margin: 20px 0; font-size: 1.1rem; opacity: 0.8;">
-          Maximum Golden Coffee reached (100)
+          Maximum Golden Coffee reached (${MAX_GOLDEN_COFFEE})
         </div>
       ` : `
         <div style="text-align: center; margin: 20px 0; font-size: 1.1rem; opacity: 0.8;">
-          Need ${abbreviateNumber((gameState.goldenCoffee + 1) * 10000000000)} total coffees to prestige
-          <br>Current: ${abbreviateNumber(gameState.totalCoffeeAllTime)}
+          Need ${formatNumber(nextGoldenThreshold())} total coffees to prestige
+          <br>Current: ${formatNumber(gameState.totalCoffeeAllTime)}
         </div>
       `}
       <button class="prestige-button" ${!canPrestige ? 'disabled' : ''}>
@@ -623,9 +582,9 @@ function renderPrestige() {
       </button>
     </div>
   `;
-  
+
   const btn = container.querySelector('.prestige-button');
-  if (canPrestige) {
+  if (canPrestige && btn) {
     btn.onclick = doPrestige;
   }
 }
@@ -633,6 +592,7 @@ function renderPrestige() {
 // ═══ ACHIEVEMENTS RENDERING ═══
 function renderAchievements() {
   const container = document.getElementById('achievementsList');
+  if (!container) return;
   container.innerHTML = '';
   container.className = 'achievements-grid';
   
@@ -715,8 +675,9 @@ function openAchievementModal(pack) {
     if (isUnclaimed) {
       div.onclick = () => {
         claimAchievementReward(a);
-        openAchievementModal(pack);
         renderAchievements();
+        updateNotificationBadges();
+        openAchievementModal(pack);
       };
     }
     
@@ -737,18 +698,20 @@ function formatDuration(totalSeconds) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
 
+  // Always show the two most significant units so short durations stay readable
   const parts = [];
   if (days > 0) parts.push(days + (days === 1 ? ' day' : ' days'));
   if (hours > 0) parts.push(hours + (hours === 1 ? ' hour' : ' hours'));
   if (minutes > 0) parts.push(minutes + (minutes === 1 ? ' minute' : ' minutes'));
-  if (secs > 0 || parts.length === 0) parts.push(secs + (secs === 1 ? ' second' : ' seconds'));
-  return parts.join(', ');
+  if (parts.length < 2 && secs > 0) parts.push(secs + (secs === 1 ? ' second' : ' seconds'));
+  if (parts.length === 0) return '0 seconds';
+  return parts.slice(0, 2).join(', ');
 }
 
 function showOfflineModal(info) {
   document.getElementById('offlineDuration').textContent = formatDuration(info.seconds);
-  document.getElementById('offlineEarnings').textContent = abbreviateNumber(info.earnings);
-  document.getElementById('offlineCPS').textContent = abbreviateNumber(info.cps);
+  document.getElementById('offlineEarnings').textContent = formatNumber(info.earnings);
+  document.getElementById('offlineCPS').textContent = formatNumber(info.cps);
   document.getElementById('offlineModal').classList.remove('hidden');
 }
 
@@ -777,6 +740,7 @@ function openSettingsModal() {
   document.getElementById('numberDisplayToggle').checked = gameState.settings.numberDisplay === 'full';
   document.getElementById('notificationsToggle').checked = gameState.settings.notifications;
   document.getElementById('quickKeysToggle').checked = gameState.settings.quickKeys;
+  document.getElementById('soundToggle').checked = gameState.settings.sound;
 
   // Clear export textarea
   document.getElementById('exportTextarea').value = '';
@@ -788,14 +752,6 @@ function closeSettingsModal() {
   document.getElementById('settingsModal').classList.add('hidden');
 }
 
-// ═══ ANIMATION ═══
-// Removed smooth animation - all updates are now instant
-function smoothAnimate() {
-  // Instant updates - no animation
-  gameState.displayCoffee = gameState.targetCoffee;
-  gameState.displayCPS = gameState.targetCPS;
-}
-
 // ═══ EVENT LISTENERS ═══
 document.addEventListener('DOMContentLoaded', () => {
   // Coffee button click
@@ -803,9 +759,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const earned = gameState.clickPower * gameState.prestigeMultiplier;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
-    
-    gameState.targetCoffee = gameState.coffee;
-    
+
+    playSfx('buttonclick');
+
     const btn = document.getElementById('coffeeButton');
     btn.style.transform = 'scale(0.9)';
     setTimeout(() => btn.style.transform = 'scale(1)', 100);
@@ -821,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabId = btn.dataset.tab + 'Tab';
       document.getElementById(tabId).classList.add('active');
 
-      updateUI();
+      updateUI(true);
       saveGame();
     };
   });
@@ -850,12 +806,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (only when quick keys are enabled and the user is
+  // not typing in a text field)
   document.addEventListener('keydown', (e) => {
-    const key = e.key;
+    if (!gameState.settings.quickKeys) return;
+    const target = e.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
     const tabs = ['brew', 'shop', 'upgrades', 'prestige', 'achievements'];
-    const index = parseInt(key) - 1;
-    
+    const index = parseInt(e.key) - 1;
+
     if (index >= 0 && index < tabs.length) {
       const btn = document.querySelector(`[data-tab="${tabs[index]}"]`);
       if (btn) btn.click();
@@ -920,6 +881,11 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettings();
   });
 
+  document.getElementById('soundToggle').addEventListener('change', (e) => {
+    gameState.settings.sound = e.target.checked;
+    saveSettings();
+  });
+
   document.getElementById('exportSaveBtn').onclick = () => {
     const saveString = exportSave();
     document.getElementById('exportTextarea').value = saveString;
@@ -935,8 +901,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const importString = document.getElementById('importTextarea').value.trim();
     if (importString) {
       if (importSave(importString)) {
+        document.getElementById('importTextarea').value = '';
         alert('Save imported successfully!');
         closeSettingsModal();
+        updateUI(true);
       } else {
         alert('Failed to import save. Please check the format.');
       }
@@ -946,28 +914,35 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('eraseProgressBtn').onclick = eraseProgress;
 
   // ═══ GAME LOOP ═══
-  let lastRenderTime = Date.now();
+  // Coffee accrues from real elapsed time, so throttled background tabs and
+  // missed ticks never under-credit production.
+  let lastTickTime = Date.now();
 
-  // Main game tick (10 times per second) - INSTANT UPDATES
   setInterval(() => {
+    const now = Date.now();
+    const elapsedSeconds = Math.min((now - lastTickTime) / 1000, 60); // clamp huge pauses
+    lastTickTime = now;
+
     const totalCPS = calculateTotalCPS();
-    const coffeePerTick = totalCPS / 10;
-    
-    if (totalCPS > 0) {
-      gameState.coffee += coffeePerTick;
-      gameState.totalCoffeeAllTime += coffeePerTick;
-      gameState.targetCoffee = gameState.coffee;
+    if (totalCPS > 0 && elapsedSeconds > 0) {
+      const earned = totalCPS * elapsedSeconds;
+      gameState.coffee += earned;
+      gameState.totalCoffeeAllTime += earned;
     }
-    
-    gameState.targetCPS = totalCPS;
-    
-    // Instant display updates - no animation
-    document.getElementById('coffeeDisplay').textContent = abbreviateNumber(gameState.coffee);
-    document.getElementById('cpsDisplay').textContent = abbreviateNumber(totalCPS);
+
+    // Fast, cheap status readout every tick
+    document.getElementById('coffeeDisplay').textContent = formatNumber(gameState.coffee);
+    document.getElementById('cpsDisplay').textContent = formatNumber(totalCPS);
   }, 100);
 
-  // UI update (once per second)
+  // Automation + full UI refresh (once per second)
+  let lastAutomationTime = 0;
   setInterval(() => {
+    const now = Date.now();
+    if (now - lastAutomationTime >= 500) {
+      runAutomation();
+      lastAutomationTime = now;
+    }
     updateUI();
   }, 1000);
 
@@ -985,6 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ═══ GAME INITIALIZATION ═══
   const hasExistingSave = loadGame();
   loadSettings();
+  initSfx();
 
   // Show offline earnings earned while the game was closed
   if (pendingOfflineEarnings) {
@@ -1004,16 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!hasExistingSave) {
     document.getElementById('instructionsOverlay').classList.remove('hidden');
-  } else {
-    document.getElementById('instructionsOverlay').classList.add('hidden');
   }
 
-  document.getElementById('versionModal').classList.add('hidden');
-
-  gameState.targetCoffee = gameState.coffee;
-  gameState.displayCoffee = gameState.coffee;
-  gameState.targetCPS = calculateTotalCPS();
-  gameState.displayCPS = gameState.targetCPS;
-
-  updateUI();
+  updateUI(true);
 });
