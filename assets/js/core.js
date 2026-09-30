@@ -23,6 +23,12 @@ const gameState = {
   activeDrinks: [], // drink recipe ids currently active (max 3, 4 with Extra Thermos)
   swapCharges: 3, // drink swap charges; regenerate over real time
   lastSwapRegen: null, // timestamp used to regenerate swap charges
+  beans: 0, // green beans in stock (Roastery)
+  lifetimeBeans: 0, // lifetime beans purchased (drives bean cost scaling)
+  blends: {}, // roasted blend inventory { blendId: count }
+  activeBlend: null, // { id, expiresAt } — one active blend at a time
+  lifetimeBlendsRoasted: 0,
+  lifetimeBlendsActivated: 0,
   buyMode: 1, // ×1, ×10, ×100
   sellMode: 1,
   settings: {
@@ -222,7 +228,9 @@ const achievements = [
   { id: 'total_500000', name: 'Macchiato Mastermind', requirement: 'Own 500,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 500000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/500,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 500000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
   { id: 'total_1000000', name: 'French Press Pharaoh', requirement: 'Own 1,000,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 1000000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/1,000,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 1000000 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } },
   { id: 'lab_rat', name: 'Lab Rat', requirement: 'Discover 1 drink recipe in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 1, earned: false, progress: () => gameState.discoveredDrinks.size + "/1", percent: () => Math.min(gameState.discoveredDrinks.size / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 250 } },
-  { id: 'master_brewer', name: 'Master Brewer', requirement: 'Discover all 10 drink recipes in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 10, earned: false, progress: () => gameState.discoveredDrinks.size + "/10", percent: () => Math.min(gameState.discoveredDrinks.size / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000 } }
+  { id: 'master_brewer', name: 'Master Brewer', requirement: 'Discover all 10 drink recipes in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 10, earned: false, progress: () => gameState.discoveredDrinks.size + "/10", percent: () => Math.min(gameState.discoveredDrinks.size / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000 } },
+  { id: 'bean_100', name: 'Bean Counter', requirement: 'Buy 100 green beans in the Roastery', condition: () => gameState.lifetimeBeans >= 100, earned: false, progress: () => gameState.lifetimeBeans + "/100", percent: () => Math.min(gameState.lifetimeBeans / 100 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
+  { id: 'blend_10', name: 'Blend Connoisseur', requirement: 'Activate 10 blends in the Roastery', condition: () => gameState.lifetimeBlendsActivated >= 10, earned: false, progress: () => gameState.lifetimeBlendsActivated + "/10", percent: () => Math.min(gameState.lifetimeBlendsActivated / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } }
 ];
 
 // Generate item-specific milestones
@@ -438,6 +446,43 @@ const goldenUpgrades = [
     effect: () => {},
     unlockCondition: () => gameState.purchasedGoldenUpgrades.has('research_lab'),
     type: 'building'
+  },
+  // ── Roastery building (v1.16) ──
+  {
+    id: 'roastery',
+    name: 'Roastery',
+    description: 'Unlock the Roastery tab: buy green beans, roast them into blends, and activate blends for temporary global boosts',
+    cost: 8,
+    effect: () => {},
+    unlockCondition: () => gameState.goldenCoffee >= 5,
+    type: 'building'
+  },
+  {
+    id: 'master_roaster',
+    name: 'Master Roaster',
+    description: 'Roastery: roasting costs 25% fewer green beans',
+    cost: 10,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
+    type: 'building'
+  },
+  {
+    id: 'blend_mastery',
+    name: 'Blend Mastery',
+    description: 'Roastery: active blends last 50% longer',
+    cost: 10,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
+    type: 'building'
+  },
+  {
+    id: 'double_batch',
+    name: 'Double Batch',
+    description: 'Roastery: each roast produces 2 blends instead of 1',
+    cost: 12,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
+    type: 'building'
   }
 ];
 
@@ -551,6 +596,159 @@ function setDrinkActive(drinkId, active, quiet = false) {
   return true;
 }
 
+// ═══ ROASTERY (v1.16) ═══
+// Buy green beans (1B coffee base, 1.15x per lifetime bean), roast them into
+// blends, and activate one blend at a time for temporary global boosts.
+const BEAN_BASE_COST = 1e9;
+const BEAN_SCALE = 1.15;
+
+const blendRecipes = [
+  {
+    id: 'light',
+    name: 'Light Roast',
+    description: 'Bright, lively, and quick to roast.',
+    beanCost: 10,
+    durationMs: 5 * 60 * 1000,
+    effect: { cps: 1.25 }
+  },
+  {
+    id: 'medium',
+    name: 'Medium Roast',
+    description: 'Balanced and smooth, a little of everything.',
+    beanCost: 25,
+    durationMs: 5 * 60 * 1000,
+    effect: { cps: 1.15, click: 1.15 }
+  },
+  {
+    id: 'dark',
+    name: 'Dark Roast',
+    description: 'Bold and intense production surge.',
+    beanCost: 50,
+    durationMs: 3 * 60 * 1000,
+    effect: { cps: 1.5 }
+  },
+  {
+    id: 'french',
+    name: 'French Roast',
+    description: 'Dark, smoky, enormously powerful — but brief.',
+    beanCost: 100,
+    durationMs: 2 * 60 * 1000,
+    effect: { cps: 2.0 }
+  },
+  {
+    id: 'italian',
+    name: 'Italian Roast',
+    description: 'For night owls: stronger clicks and better offline hauls.',
+    beanCost: 150,
+    durationMs: 5 * 60 * 1000,
+    effect: { click: 2.0, offline: 1.25 }
+  }
+];
+
+// Cost of buying `count` beans: geometric series over lifetime purchases.
+function beanCost(count = 1) {
+  const first = BEAN_BASE_COST * Math.pow(BEAN_SCALE, gameState.lifetimeBeans);
+  return Math.floor(first * (Math.pow(BEAN_SCALE, count) - 1) / (BEAN_SCALE - 1));
+}
+
+function buyBeans(count = 1) {
+  const cost = beanCost(count);
+  if (gameState.coffee < cost) {
+    showNotification('Not Enough Coffee', `Need ${formatNumber(cost)} coffee for ${count} bean${count !== 1 ? 's' : ''}.`, 'info');
+    return false;
+  }
+  gameState.coffee -= cost;
+  gameState.beans += count;
+  gameState.lifetimeBeans += count;
+  showPurchaseNotification(count === 1 ? 'Green Coffee Beans' : `${count}x Green Coffee Beans`, count);
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+  return true;
+}
+
+function roastBeanCost(blend) {
+  const discount = gameState.purchasedGoldenUpgrades.has('master_roaster') ? 0.75 : 1;
+  return Math.max(1, Math.ceil(blend.beanCost * discount));
+}
+
+function roastBlend(blendId) {
+  const blend = blendRecipes.find(b => b.id === blendId);
+  if (!blend) return false;
+  const cost = roastBeanCost(blend);
+  if (gameState.beans < cost) {
+    showNotification('Not Enough Beans', `Roasting ${blend.name} needs ${cost} green beans.`, 'info');
+    return false;
+  }
+  gameState.beans -= cost;
+  const batch = gameState.purchasedGoldenUpgrades.has('double_batch') ? 2 : 1;
+  gameState.blends[blendId] = (gameState.blends[blendId] || 0) + batch;
+  gameState.lifetimeBlendsRoasted += batch;
+  showPurchaseNotification(batch === 1 ? blend.name : `${batch}x ${blend.name}`, batch);
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+  return true;
+}
+
+function blendDurationMs(blend) {
+  const longer = gameState.purchasedGoldenUpgrades.has('blend_mastery') ? 1.5 : 1;
+  return Math.floor(blend.durationMs * longer);
+}
+
+// Multipliers from the currently active blend (stacks multiplicatively with
+// everything else). Expired blends contribute nothing; the game loop clears
+// them via tickBlendExpiry().
+function getBlendMultipliers() {
+  const mults = { cps: 1, click: 1, offline: 1 };
+  const active = gameState.activeBlend;
+  if (!active) return mults;
+  if (Date.now() >= active.expiresAt) return mults;
+  const blend = blendRecipes.find(b => b.id === active.id);
+  if (!blend) return mults;
+  for (const key of Object.keys(mults)) {
+    mults[key] *= (blend.effect[key] || 1);
+  }
+  return mults;
+}
+
+// Activating a blend consumes one from inventory and replaces any active blend.
+function activateBlend(blendId) {
+  const blend = blendRecipes.find(b => b.id === blendId);
+  if (!blend) return false;
+  if ((gameState.blends[blendId] || 0) < 1) {
+    showNotification('No Blends Ready', `Roast ${blend.name} first, then activate it.`, 'info');
+    return false;
+  }
+  gameState.blends[blendId] -= 1;
+  gameState.activeBlend = { id: blendId, expiresAt: Date.now() + blendDurationMs(blend) };
+  gameState.lifetimeBlendsActivated += 1;
+  showNotification(`${blend.name} Activated!`, describeBlendEffect(blend), 'default');
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+  return true;
+}
+
+function describeBlendEffect(blend) {
+  const parts = [];
+  if (blend.effect.cps) parts.push(`+${Math.round((blend.effect.cps - 1) * 100)}% CPS`);
+  if (blend.effect.click) parts.push(`+${Math.round((blend.effect.click - 1) * 100)}% click power`);
+  if (blend.effect.offline) parts.push(`+${Math.round((blend.effect.offline - 1) * 100)}% offline earnings`);
+  const mins = Math.round(blendDurationMs(blend) / 60000);
+  return `${parts.join(', ')} for ${mins} min`;
+}
+
+// Called by the per-second game loop: clears an expired active blend.
+function tickBlendExpiry() {
+  if (gameState.activeBlend && Date.now() >= gameState.activeBlend.expiresAt) {
+    const blend = blendRecipes.find(b => b.id === gameState.activeBlend.id);
+    gameState.activeBlend = null;
+    showNotification('Blend Wore Off', `${blend ? blend.name : 'Active blend'} has worn off.`, 'info');
+    saveGame();
+  }
+}
+
 function recalculatePermanentCPSBonus() {
   gameState.permanentCPSBonus =
     Math.pow(1.05, gameState.cpsBonus5Count || 0) *
@@ -632,12 +830,12 @@ function calculateTotalCPS() {
     const count = itemState.count ?? 0;
     totalCPS += item.cps * count * multiplier;
   });
-  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps;
+  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps;
 }
 
 function calculateItemCPS(item) {
   const multiplier = gameState.itemMultipliers[item.id] || 1;
-  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps;
+  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps;
 }
 
 function calculateBulkCost(item, currentCount, amount) {
@@ -746,7 +944,7 @@ function applyOfflineEarnings(lastPlayed) {
   const cps = calculateTotalCPS();
   if (cps <= 0) return;
 
-  const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline;
+  const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline * getBlendMultipliers().offline;
 
   gameState.coffee += earnings;
   gameState.totalCoffeeAllTime += earnings;
@@ -782,6 +980,12 @@ function exportSave() {
     activeDrinks: gameState.activeDrinks,
     swapCharges: gameState.swapCharges,
     lastSwapRegen: gameState.lastSwapRegen,
+    beans: gameState.beans,
+    lifetimeBeans: gameState.lifetimeBeans,
+    blends: gameState.blends,
+    activeBlend: gameState.activeBlend,
+    lifetimeBlendsRoasted: gameState.lifetimeBlendsRoasted,
+    lifetimeBlendsActivated: gameState.lifetimeBlendsActivated,
     lastPlayed: Date.now()
   };
   return btoa(JSON.stringify(saveData));
@@ -807,6 +1011,13 @@ function applySaveData(data) {
   gameState.activeDrinks = Array.isArray(data.activeDrinks) ? data.activeDrinks.filter(id => gameState.discoveredDrinks.has(id)) : [];
   gameState.swapCharges = typeof data.swapCharges === 'number' ? Math.min(Math.max(data.swapCharges, 0), SWAP_MAX_CHARGES) : SWAP_MAX_CHARGES;
   gameState.lastSwapRegen = data.lastSwapRegen || null;
+  gameState.beans = data.beans || 0;
+  gameState.lifetimeBeans = data.lifetimeBeans || 0;
+  gameState.blends = data.blends || {};
+  // An active blend from a previous session has expired while away — don't restore it
+  gameState.activeBlend = (data.activeBlend && typeof data.activeBlend.expiresAt === 'number' && data.activeBlend.expiresAt > Date.now() && blendRecipes.some(b => b.id === data.activeBlend.id)) ? data.activeBlend : null;
+  gameState.lifetimeBlendsRoasted = data.lifetimeBlendsRoasted || 0;
+  gameState.lifetimeBlendsActivated = data.lifetimeBlendsActivated || 0;
   // Regenerate swaps that accrued while away
   regenSwaps();
   gameState.buyMode = data.buyMode || 1;
@@ -927,6 +1138,12 @@ function saveGame() {
     activeDrinks: gameState.activeDrinks,
     swapCharges: gameState.swapCharges,
     lastSwapRegen: gameState.lastSwapRegen,
+    beans: gameState.beans,
+    lifetimeBeans: gameState.lifetimeBeans,
+    blends: gameState.blends,
+    activeBlend: gameState.activeBlend,
+    lifetimeBlendsRoasted: gameState.lifetimeBlendsRoasted,
+    lifetimeBlendsActivated: gameState.lifetimeBlendsActivated,
     lastPlayed: Date.now()
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
@@ -1063,7 +1280,7 @@ function buyGoldenUpgrade(upgradeId) {
 function doPrestige() {
   const gained = prestigeGain();
   if (gained > 0) {
-    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• All achievements and their claimed rewards`)) {
+    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• Research Lab drinks and discoveries\n• Roastery beans and roasted blends (active blend ends)\n• All achievements and their claimed rewards`)) {
       gameState.goldenCoffee += gained;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
 
@@ -1071,6 +1288,8 @@ function doPrestige() {
       gameState.clickPower = 1;
       gameState.purchasedUpgrades = new Set();
       // Claimed achievement multipliers are permanent rewards — keep them.
+      // Roastery: beans and roasted blends persist; the temporary active blend ends.
+      gameState.activeBlend = null;
 
       shopItems.forEach(item => {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
@@ -1205,6 +1424,18 @@ function getAchievementPacks() {
       title: 'Upgrade Collection',
       description: 'Achievements for purchasing upgrades',
       achievements: achievements.filter(a => a.id.startsWith('upgrades_'))
+    },
+    {
+      id: 'lab_collection',
+      title: 'Lab Collection',
+      description: 'Achievements for research in the Research Lab',
+      achievements: achievements.filter(a => a.id === 'lab_rat' || a.id === 'master_brewer')
+    },
+    {
+      id: 'roastery_collection',
+      title: 'Roastery Collection',
+      description: 'Achievements for roasting in the Roastery',
+      achievements: achievements.filter(a => a.id === 'bean_100' || a.id === 'blend_10')
     }
   ];
 
