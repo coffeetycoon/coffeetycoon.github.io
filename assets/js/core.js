@@ -315,7 +315,8 @@ const goldenUpgrades = [
       gameState.settings.autoBuyUpgrades = true;
     },
     unlockCondition: () => gameState.goldenCoffee >= 1,
-    type: 'toggle'
+    type: 'toggle',
+    setting: 'autoBuyUpgrades'
   },
   {
     id: 'auto_buy_items',
@@ -326,7 +327,8 @@ const goldenUpgrades = [
       gameState.settings.autoBuyItems = true;
     },
     unlockCondition: () => gameState.goldenCoffee >= 2,
-    type: 'toggle'
+    type: 'toggle',
+    setting: 'autoBuyItems'
   },
   {
     id: 'auto_claim_achievements',
@@ -337,7 +339,8 @@ const goldenUpgrades = [
       gameState.settings.autoClaimAchievements = true;
     },
     unlockCondition: () => gameState.goldenCoffee >= 1,
-    type: 'toggle'
+    type: 'toggle',
+    setting: 'autoClaimAchievements'
   },
   {
     id: 'mark_notifications_read',
@@ -672,7 +675,9 @@ function applySaveData(data) {
   // from purchase counts, and one-time actions must never re-run on load.
   gameState.purchasedGoldenUpgrades.forEach(upgradeId => {
     const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
-    if (upgrade && upgrade.type === 'toggle') {
+    // Only re-apply the toggle effect if the player never set it explicitly.
+    // An explicit OFF (false) saved in settings must survive reloads.
+    if (upgrade && upgrade.type === 'toggle' && upgrade.setting && gameState.settings[upgrade.setting] === undefined) {
       upgrade.effect();
     }
   });

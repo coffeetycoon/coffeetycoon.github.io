@@ -452,6 +452,8 @@ function renderGoldenUpgrades() {
     const purchased = gameState.purchasedGoldenUpgrades.has(upgrade.id);
     const canAfford = gameState.goldenCoffee >= upgrade.cost && !purchased;
     const isLocked = !upgrade.unlockCondition();
+    const isToggle = upgrade.type === 'toggle' && upgrade.setting;
+    const toggleOn = isToggle ? gameState.settings[upgrade.setting] !== false : false;
     
     const upgradeDiv = document.createElement('div');
     upgradeDiv.className = 'upgrade-pack';
@@ -468,18 +470,36 @@ function renderGoldenUpgrades() {
         </div>
       </div>
       <div class="upgrade-pack-description">${upgrade.description}</div>
-      ${upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">[x] Active</div>' : ''}
+      ${isToggle && purchased ? `
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+          <span style="color: ${toggleOn ? '#4CAF50' : '#888'}; font-size: 12px; font-weight: 600;">${toggleOn ? 'ON' : 'OFF'}</span>
+          <label class="switch" style="position: relative; display: inline-block; width: 46px; height: 24px;">
+            <input type="checkbox" id="golden-toggle-${upgrade.id}" ${toggleOn ? 'checked' : ''} style="opacity: 0; width: 0; height: 0;">
+            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${toggleOn ? '#4CAF50' : '#666'}; border-radius: 24px; transition: 0.2s;"></span>
+          </label>
+        </div>` : (upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">[x] Active</div>' : '')}
       ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">[Locked] Need more Golden Coffee</div>' : ''}
+      ${isToggle && purchased ? '' : `
       <div style="margin-top: 12px;">
         <button class="upgrade-buy-btn" 
                 style="width: 100%; padding: 10px; background: ${purchased ? '#4CAF50' : (canAfford ? '#ffd700' : '#666')}; color: ${purchased ? '#fff' : '#1a1a2e'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${purchased || !canAfford ? 'not-allowed' : 'pointer'};" 
                 ${!canAfford || purchased ? 'disabled' : ''}>
           ${purchased ? 'PURCHASED' : (canAfford ? 'BUY UPGRADE' : 'NOT ENOUGH GOLDEN COFFEE')}
         </button>
-      </div>
+      </div>`}
     `;
     
-    if (!purchased && canAfford) {
+    if (isToggle && purchased) {
+      const toggle = upgradeDiv.querySelector(`#golden-toggle-${upgrade.id}`);
+      if (toggle) {
+        toggle.onchange = () => {
+          gameState.settings[upgrade.setting] = toggle.checked;
+          saveSettings();
+          saveGame();
+          renderGoldenUpgrades();
+        };
+      }
+    } else if (!purchased && canAfford) {
       upgradeDiv.querySelector('.upgrade-buy-btn').onclick = () => {
         buyGoldenUpgrade(upgrade.id);
       };
