@@ -56,7 +56,7 @@
     <div class="version-content">
       <h3>What's New in v1.14</h3>
       <ul>
-        <li><strong>Offline CPS:</strong> Earn coffee while you're away — you're credited your CPS for the time since you last played (5+ minute threshold)</li>
+        <li><strong>Offline CPS:</strong> Earn coffee while you're away — you're credited your CPS for the time since you last played (5+ minute threshold, capped at 24 hours)</li>
         <li><strong>Welcome Back Modal:</strong> See how long you were gone and how much coffee you earned while away</li>
         <li><strong>Save on Exit:</strong> Progress is saved the moment you leave, keeping offline earnings accurate</li>
         <li><strong>Bug Fixes:</strong> Golden Upgrades and permanent CPS bonuses now persist correctly when saving</li>
@@ -162,7 +162,8 @@
         +<span id="offlineEarnings">0</span> Coffee
       </div>
       <p style="opacity: 0.8;">Production rate: <span id="offlineCPS">0</span> coffee per second</p>
-      <button class="start-btn" id="offlineContinueBtn" style="margin-top: 20px;">Collect Coffee</button>
+      <p style="opacity: 0.7; font-size: 0.9rem;">Already added to your coffee balance.</p>
+      <button class="start-btn" id="offlineContinueBtn" style="margin-top: 20px;">Continue</button>
     </div>
   </div>
 </div>

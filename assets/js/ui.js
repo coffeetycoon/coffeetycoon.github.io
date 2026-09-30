@@ -217,14 +217,20 @@ function updateNotificationBadges() {
     !gameState.purchasedUpgrades.has(u.id) && 
     !gameState.viewedUpgrades.has(u.id)
   );
+  // Golden upgrades live on the same tab: badge when one is unlocked AND affordable
+  const availableGolden = goldenUpgrades.filter(u =>
+    u.unlockCondition() &&
+    !gameState.purchasedGoldenUpgrades.has(u.id) &&
+    gameState.goldenCoffee >= u.cost
+  );
   const upgradesBtn = document.querySelector('[data-tab="upgrades"]');
   if (!upgradesBtn) return;
   let upgradeBadge = upgradesBtn.querySelector('.notification-badge');
-  if (availableUpgrades.length > 0 && !upgradeBadge) {
+  if ((availableUpgrades.length > 0 || availableGolden.length > 0) && !upgradeBadge) {
     upgradeBadge = document.createElement('div');
     upgradeBadge.className = 'notification-badge';
     upgradesBtn.appendChild(upgradeBadge);
-  } else if (availableUpgrades.length === 0 && upgradeBadge) {
+  } else if (availableUpgrades.length === 0 && availableGolden.length === 0 && upgradeBadge) {
     upgradeBadge.remove();
   }
   
@@ -252,13 +258,38 @@ function updateUI(force = false) {
 
   updateNotificationBadges();
   checkAchievements();
-  if (force || activeTab === 'shop') renderShop();
+  if (force || activeTab === 'shop') {
+    const sig = shopSignature();
+    if (force || sig !== lastShopSignature) {
+      renderShop();
+      lastShopSignature = sig;
+    }
+  }
   if (force || activeTab === 'upgrades') renderUpgrades();
   if (force || activeTab === 'prestige') renderPrestige();
   if (force || activeTab === 'achievements') renderAchievements();
 }
 
 // ═══ SHOP RENDERING ═══
+// Signature of everything renderShop() displays. Rebuilding the shop DOM every
+// second replaces the buy/sell buttons under the player's finger and swallows
+// rapid (or mobile) taps, so updateUI() only re-renders when this changes.
+let lastShopSignature = null;
+function shopSignature() {
+  const parts = [gameState.buyMode, gameState.sellMode];
+  shopItems.forEach(item => {
+    if (!isItemUnlocked(item)) return;
+    const itemState = gameState.items[item.id] || { count: 0, cost: item.baseCost };
+    const currentCount = itemState.count ?? 0;
+    const affordableAmount = calculateAffordableAmount(item, currentCount, gameState.buyMode, gameState.coffee);
+    const buyAmount = affordableAmount > 0 ? affordableAmount : gameState.buyMode;
+    const totalCost = calculateBulkCost(item, currentCount, buyAmount);
+    parts.push(item.id, currentCount, Math.floor(itemState.cost ?? item.baseCost),
+      affordableAmount > 0, buyAmount, Math.floor(totalCost), currentCount > 0);
+  });
+  return parts.join('|');
+}
+
 function renderShop() {
   const container = document.getElementById('shopList');
   if (!container) return;
@@ -567,8 +598,8 @@ function renderPrestige() {
         <p>• Every ${formatNumber(PRESTIGE_BASE_COST)} total coffee brewed = 1 Golden Coffee</p>
         <p>• The requirement for each additional Golden Coffee doubles (exponential scaling)</p>
         <p>• Each Golden Coffee gives +10% production (permanent!)</p>
-        <p>• Prestiging resets coffee, items, and upgrades</p>
-        <p>• Golden Coffee, multiplier, and permanent CPS bonuses are kept forever</p>
+        <p>• Prestiging resets coffee, items, and regular upgrades</p>
+        <p>• Golden Coffee, multiplier, permanent CPS bonuses, golden upgrades and their automations are kept forever</p>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
@@ -593,7 +624,7 @@ function renderPrestige() {
         </div>
       ` : `
         <div style="text-align: center; margin: 20px 0; font-size: 1.1rem; opacity: 0.8;">
-          Need ${formatNumber(nextGoldenThreshold())} total coffees to prestige
+          Need ${formatNumber(Math.max(0, nextGoldenThreshold() - gameState.totalCoffeeAllTime))} more total coffee to prestige
           <br>Current: ${formatNumber(gameState.totalCoffeeAllTime)}
         </div>
       `}
@@ -815,6 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       saveGame();
       renderShop();
+      lastShopSignature = shopSignature();
     };
   });
 
@@ -937,9 +969,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Coffee accrues from real elapsed time, so throttled background tabs and
   // missed ticks never under-credit production.
   let lastTickTime = Date.now();
+  let hiddenStartTime = null;
 
   setInterval(() => {
     const now = Date.now();
+    // While hidden, production pauses here and is credited in full on return
+    // (see the visibilitychange handler). Throttled background ticks must not
+    // dribble out partial, clamped credit for the hidden period.
+    if (document.hidden) {
+      lastTickTime = now;
+      return;
+    }
     const elapsedSeconds = Math.min((now - lastTickTime) / 1000, 60); // clamp huge pauses
     lastTickTime = now;
 
@@ -974,12 +1014,72 @@ document.addEventListener('DOMContentLoaded', () => {
   // Save the moment the player leaves so offline earnings are accurate
   window.addEventListener('beforeunload', saveGame);
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveGame();
+    if (document.visibilityState === 'hidden') {
+      hiddenStartTime = Date.now();
+      saveGame();
+    } else if (document.visibilityState === 'visible') {
+      // Credit the hidden period like offline earnings (capped at 24h).
+      // The game loop paused production while hidden, so nothing double-counts.
+      if (hiddenStartTime !== null) {
+        const elapsedSeconds = Math.min((Date.now() - hiddenStartTime) / 1000, MAX_OFFLINE_SECONDS);
+        hiddenStartTime = null;
+        const cps = calculateTotalCPS();
+        if (elapsedSeconds >= 1 && cps > 0) {
+          const earnings = cps * elapsedSeconds;
+          gameState.coffee += earnings;
+          gameState.totalCoffeeAllTime += earnings;
+          if (elapsedSeconds >= 60) {
+            showNotification('Welcome Back!', `+${formatNumber(earnings)} coffee earned while away`, 'default');
+          }
+          saveGame();
+          updateUI();
+        }
+      }
+    }
   });
+
+  // ═══ MULTI-TAB SESSION ═══
+  // The newest tab wins: it claims the session key, and any older tab that sees
+  // the claim stands down (stops saving) so it can't overwrite real progress.
+  const TAB_SESSION_ID = 'tab-' + Math.random().toString(36).slice(2) + '-' + Date.now();
+  const TAB_SESSION_KEY = 'coffeeTycoonActiveTab';
+
+  function claimTabSession() {
+    try {
+      localStorage.setItem(TAB_SESSION_KEY, JSON.stringify({ id: TAB_SESSION_ID, time: Date.now() }));
+    } catch (e) { /* storage unavailable — behaves as a single tab */ }
+  }
+
+  function showTabSupersededBanner() {
+    if (document.getElementById('tabSupersededBanner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'tabSupersededBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#b3541e;color:#fff;' +
+      'text-align:center;padding:10px 16px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+    banner.textContent = '⏸ Paused — this game is open in another tab. Only the newest tab saves progress. Reload this tab to take over.';
+    document.body.prepend(banner);
+  }
+
+  window.addEventListener('storage', (e) => {
+    if (e.key !== TAB_SESSION_KEY || !e.newValue) return;
+    try {
+      const claim = JSON.parse(e.newValue);
+      if (claim.id !== TAB_SESSION_ID && isPrimaryTab) {
+        isPrimaryTab = false;
+        showTabSupersededBanner();
+        showNotification('Paused', 'Game opened in another tab — this tab stopped saving.', 'default');
+      }
+    } catch (err) { /* ignore malformed claims */ }
+  });
+
+  claimTabSession();
 
   // ═══ GAME INITIALIZATION ═══
   const hasExistingSave = loadGame();
   loadSettings();
+  // Automation flags must match owned upgrades (an imported save must not
+  // inherit auto-buy from this browser's standalone settings).
+  reconcileAutomationSettings();
   initSfx();
 
   // Show offline earnings earned while the game was closed
@@ -988,14 +1088,13 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingOfflineEarnings = null;
   }
 
-  // Update mode button display
+  // Update mode button display (exactly one active per type)
   document.querySelectorAll('.buy-mode-btn').forEach(btn => {
     const type = btn.dataset.type;
     const mode = parseInt(btn.dataset.mode);
-    if ((type === 'sell' && mode === gameState.sellMode) ||
-        (type === 'buy' && mode === gameState.buyMode)) {
-      btn.classList.add('active');
-    }
+    btn.classList.toggle('active',
+      (type === 'sell' && mode === gameState.sellMode) ||
+      (type === 'buy' && mode === gameState.buyMode));
   });
 
   if (!hasExistingSave) {

@@ -345,13 +345,16 @@ const goldenUpgrades = [
   {
     id: 'mark_notifications_read',
     name: 'Mark All Read',
-    description: 'Clear all notifications (one-time action)',
+    description: 'Claim all pending achievement rewards and clear notifications (one-time action)',
     cost: 2,
     effect: () => {
-      // Clear all active notifications
+      // Clear all active notifications first...
       activeNotifications.forEach(n => removeNotificationNow(n));
-      // Clear unclaimed achievements
-      gameState.unclaimedAchievements.clear();
+      // ...then CLAIM (never delete) all pending achievement rewards
+      [...gameState.unclaimedAchievements].forEach(id => {
+        const achievement = gameState.achievements.find(a => a.id === id);
+        if (achievement) claimAchievementReward(achievement);
+      });
       // Clear upgrade notifications
       gameState.viewedUpgrades = new Set([...gameState.viewedUpgrades, ...upgrades.map(u => u.id)]);
     },
@@ -445,22 +448,23 @@ function abbreviateNumber(num) {
   if (num < 1000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Du';
   if (num < 1000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tr';
   if (num < 1000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qa';
-  if (num < 1000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qi';
-  if (num < 1000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sx';
-  if (num < 1000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sp';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Oc';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'No';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Vg';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Uv';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Dv';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tv';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qt';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qn';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sx';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Sp';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Oc';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'No';
-  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
+  if (num < 1000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'QiD';
+  if (num < 1000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'SxD';
+  if (num < 1000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'SpD';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'OcD';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'NoD';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Vg';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Uv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Dv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tv';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qt';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Qn';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'SxV';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'SpV';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'OcV';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'NoV';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'NoT';
+  if (num < 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
   return (num / 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Tg';
 }
 
@@ -683,6 +687,22 @@ function applySaveData(data) {
   });
 }
 
+// Automation flags must never be ON for upgrades the player hasn't purchased.
+// A standalone settings key (or a stale one) must not override what the save owns,
+// e.g. after importing a save into a browser that had auto-buy enabled.
+function reconcileAutomationSettings() {
+  let fixed = false;
+  goldenUpgrades.forEach(upgrade => {
+    if (upgrade.type === 'toggle' && upgrade.setting) {
+      if (!gameState.purchasedGoldenUpgrades.has(upgrade.id) && gameState.settings[upgrade.setting]) {
+        gameState.settings[upgrade.setting] = false;
+        fixed = true;
+      }
+    }
+  });
+  if (fixed) saveSettings();
+}
+
 // Restore the permanent CPS bonus without re-applying effects. Each permanent
 // upgrade is a one-time purchase, so counts are derived from the purchased set
 // — this also heals legacy saves whose stored bonus got double-applied.
@@ -721,7 +741,14 @@ function eraseProgress() {
   }
 }
 
+// Multi-tab guard: when another tab takes over as the active session, this tab
+// must stop saving so it can't clobber the newer tab's progress. Managed by ui.js.
+let isPrimaryTab = true;
+
 function saveGame() {
+  // A superseded tab never writes: its in-memory state is older than the
+  // active tab's, and saving would overwrite the player's real progress.
+  if (!isPrimaryTab) return;
   const saveData = {
     coffee: gameState.coffee,
     totalCoffeeAllTime: gameState.totalCoffeeAllTime,
@@ -769,9 +796,9 @@ function loadGame() {
 }
 
 // ═══ CORE GAME ACTIONS ═══
-function buyItem(itemId, amount = 1) {
+function buyItem(itemId, amount = 1, quiet = false) {
   const shopItem = shopItems.find(i => i.id === itemId);
-  if (!shopItem) return;
+  if (!shopItem) return false;
 
   if (!gameState.items[itemId]) {
     gameState.items[itemId] = { count: 0, cost: shopItem.baseCost };
@@ -782,7 +809,7 @@ function buyItem(itemId, amount = 1) {
 
   const affordableAmount = calculateAffordableAmount(shopItem, currentCount, amount, gameState.coffee);
 
-  if (affordableAmount === 0) return;
+  if (affordableAmount === 0) return false;
 
   const totalCost = calculateBulkCost(shopItem, currentCount, affordableAmount);
 
@@ -792,12 +819,16 @@ function buyItem(itemId, amount = 1) {
 
     itemState.cost = Math.floor(shopItem.baseCost * Math.pow(shopItem.scale, itemState.count));
 
-    showPurchaseNotification(shopItem.name, affordableAmount);
-    playSfx('purchaseorclaim');
-
-    saveGame();
-    updateUI();
+    // Automated purchases stay silent: no per-purchase sound/notification spam
+    if (!quiet) {
+      showPurchaseNotification(shopItem.name, affordableAmount);
+      playSfx('purchaseorclaim');
+      saveGame();
+      updateUI();
+    }
+    return true;
   }
+  return false;
 }
 
 function sellItem(itemId, amount = 1) {
@@ -826,9 +857,9 @@ function sellItem(itemId, amount = 1) {
   updateUI();
 }
 
-function buyUpgrade(upgradeId) {
+function buyUpgrade(upgradeId, quiet = false) {
   const upgrade = upgrades.find(u => u.id === upgradeId);
-  if (!upgrade || gameState.purchasedUpgrades.has(upgradeId)) return;
+  if (!upgrade || gameState.purchasedUpgrades.has(upgradeId)) return false;
   
   if (gameState.coffee >= upgrade.cost) {
     gameState.coffee -= upgrade.cost;
@@ -841,12 +872,16 @@ function buyUpgrade(upgradeId) {
       removeNotificationsByPack(packId);
     }
     
-    showPurchaseNotification(upgrade.name);
-    playSfx('purchaseorclaim');
-    
-    saveGame();
-    updateUI();
+    // Automated purchases stay silent: no per-purchase sound/notification spam
+    if (!quiet) {
+      showPurchaseNotification(upgrade.name);
+      playSfx('purchaseorclaim');
+      saveGame();
+      updateUI();
+    }
+    return true;
   }
+  return false;
 }
 
 function buyGoldenUpgrade(upgradeId) {
@@ -869,14 +904,14 @@ function buyGoldenUpgrade(upgradeId) {
 function doPrestige() {
   const gained = prestigeGain();
   if (gained > 0) {
-    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• All achievements`)) {
+    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• All achievements and their claimed rewards`)) {
       gameState.goldenCoffee += gained;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
 
       gameState.coffee = 0;
       gameState.clickPower = 1;
       gameState.purchasedUpgrades = new Set();
-      gameState.itemMultipliers = {};
+      // Claimed achievement multipliers are permanent rewards — keep them.
 
       shopItems.forEach(item => {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
@@ -912,7 +947,7 @@ function checkAchievements() {
   });
 }
 
-function claimAchievementReward(achievement) {
+function claimAchievementReward(achievement, quiet = false) {
   if (!achievement.reward || !gameState.unclaimedAchievements.has(achievement.id)) return '';
   
   gameState.unclaimedAchievements.delete(achievement.id);
@@ -920,21 +955,30 @@ function claimAchievementReward(achievement) {
   
   removeNotificationsByAchievement(achievement.id);
   
-  showClaimNotification(achievement.name);
-  playSfx('purchaseorclaim');
+  // Automated claims stay silent: no per-claim sound/notification spam
+  if (!quiet) {
+    showClaimNotification(achievement.name);
+    playSfx('purchaseorclaim');
+  }
   
   if (achievement.reward.type === 'coffee') {
     gameState.coffee += achievement.reward.value;
-    saveGame();
-    updateUI();
+    // Coffee rewards count toward lifetime totals (prestige progress), like offline earnings
+    gameState.totalCoffeeAllTime += achievement.reward.value;
+    if (!quiet) {
+      saveGame();
+      updateUI();
+    }
     return ` (+${formatNumber(achievement.reward.value)} coffee!)`;
   } else if (achievement.reward.type === 'multiplier') {
     const itemId = achievement.reward.itemId;
     gameState.itemMultipliers[itemId] = (gameState.itemMultipliers[itemId] || 1) * achievement.reward.value;
     const itemName = shopItems.find(i => i.id === itemId)?.name;
     const multiplierPercent = ((achievement.reward.value - 1) * 100).toFixed(1);
-    saveGame();
-    updateUI();
+    if (!quiet) {
+      saveGame();
+      updateUI();
+    }
     return ` (+${multiplierPercent}% ${itemName} production!)`;
   }
   
@@ -1022,12 +1066,14 @@ function getAchievementPacks() {
 
 // ═══ AUTOMATION SYSTEM ═══
 function runAutomation() {
+  let changed = false;
+
   // Auto-buy upgrades
   if (gameState.settings.autoBuyUpgrades) {
     upgrades.forEach(upgrade => {
       if (!gameState.purchasedUpgrades.has(upgrade.id)) {
         if (gameState.coffee >= upgrade.cost && upgrade.unlockCondition()) {
-          buyUpgrade(upgrade.id);
+          if (buyUpgrade(upgrade.id, true)) changed = true;
         }
       }
     });
@@ -1041,7 +1087,7 @@ function runAutomation() {
         const currentCount = itemState.count ?? 0;
         const affordableAmount = calculateAffordableAmount(item, currentCount, 1, gameState.coffee);
         if (affordableAmount > 0) {
-          buyItem(item.id, affordableAmount);
+          if (buyItem(item.id, affordableAmount, true)) changed = true;
         }
       }
     });
@@ -1051,10 +1097,14 @@ function runAutomation() {
   if (gameState.settings.autoClaimAchievements) {
     gameState.achievements.forEach(achievement => {
       if (achievement.earned && gameState.unclaimedAchievements.has(achievement.id)) {
-        claimAchievementReward(achievement);
+        claimAchievementReward(achievement, true);
+        changed = true;
       }
     });
   }
+
+  // One save per automation pass instead of one per purchase
+  if (changed) saveGame();
 }
 
 // Automation and rendering are driven by the game loop intervals in ui.js
