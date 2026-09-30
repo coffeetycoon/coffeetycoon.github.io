@@ -261,6 +261,24 @@ function updateNotificationBadges() {
       labBadge.remove();
     }
   }
+
+  // Roastery: badge when the player can do something right now — buy beans,
+  // roast a blend, or activate a blend while none is active
+  const roasteryBtn = document.querySelector('[data-tab="roastery"]');
+  if (roasteryBtn && gameState.purchasedGoldenUpgrades.has('roastery')) {
+    const canBuyBeans = gameState.coffee >= beanCost(1);
+    const canRoast = blendRecipes.some(b => gameState.beans >= roastBeanCost(b));
+    const canActivate = !gameState.activeBlend && blendRecipes.some(b => (gameState.blends[b.id] || 0) > 0);
+    const actionable = (canBuyBeans || canRoast || canActivate) ? 1 : 0;
+    let roasteryBadge = roasteryBtn.querySelector('.notification-badge');
+    if (actionable > 0 && !roasteryBadge) {
+      roasteryBadge = document.createElement('div');
+      roasteryBadge.className = 'notification-badge';
+      roasteryBtn.appendChild(roasteryBadge);
+    } else if (actionable === 0 && roasteryBadge) {
+      roasteryBadge.remove();
+    }
+  }
 }
 
 // `force` re-renders hidden tabs too (used on init, import and tab switches)
@@ -283,6 +301,7 @@ function updateUI(force = false) {
   }
   if (force || activeTab === 'upgrades') renderUpgrades();
   if (force || activeTab === 'lab') renderLab();
+  if (force || activeTab === 'roastery') renderRoastery();
   if (force || activeTab === 'prestige') renderPrestige();
   if (force || activeTab === 'achievements') renderAchievements();
 }
@@ -703,6 +722,125 @@ function renderLab() {
   });
 }
 
+// ═══ ROASTERY RENDERING (v1.16) ═══
+function renderRoastery() {
+  const container = document.getElementById('roasteryContent');
+  if (!container) return;
+
+  // Locked: the Roastery building hasn't been purchased yet
+  if (!gameState.purchasedGoldenUpgrades.has('roastery')) {
+    container.innerHTML = `
+      <div class="upgrade-pack" style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.3);">
+        <div class="upgrade-pack-header">
+          <div class="upgrade-pack-title">🔒 Roastery</div>
+        </div>
+        <div class="upgrade-pack-description">The roasters are cold. Purchase the <strong>Roastery</strong> golden upgrade (8 Golden Coffee) to unlock it: buy green beans, roast them into blends, and activate blends for temporary global boosts.</div>
+        <div style="margin-top: 12px;">
+          <button class="upgrade-buy-btn" id="roasteryLockedGotoGolden" style="width: 100%; padding: 10px; background: #ffd700; color: #1a1a2e; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+            VIEW GOLDEN UPGRADES
+          </button>
+        </div>
+      </div>`;
+    document.getElementById('roasteryLockedGotoGolden').onclick = () => {
+      document.querySelector('[data-tab="upgrades"]').click();
+      switchUpgradeTab('golden');
+    };
+    return;
+  }
+
+  tickBlendExpiry();
+
+  // Active blend panel
+  const active = gameState.activeBlend;
+  let activeHtml = '';
+  if (active) {
+    const blend = blendRecipes.find(b => b.id === active.id);
+    const remaining = Math.max(0, active.expiresAt - Date.now());
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    activeHtml = `
+      <div class="upgrade-pack" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50;">
+        <div class="upgrade-pack-header">
+          <div class="upgrade-pack-title">🔥 ${blend.name} <span style="color: #4CAF50; font-size: 12px;">[BREWING]</span></div>
+        </div>
+        <div class="upgrade-pack-description">${describeBlendEffect(blend)}</div>
+        <div style="margin-top: 8px; font-size: 1.2rem; font-weight: 700;">⏱ ${m}:${String(s).padStart(2, '0')} remaining</div>
+      </div>`;
+  } else {
+    activeHtml = `
+      <div class="upgrade-pack" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed #666;">
+        <div class="upgrade-pack-description" style="text-align: center; padding: 20px 0;">No blend active — roast beans and activate a blend below</div>
+      </div>`;
+  }
+
+  // Green bean purchasing
+  const beanBtns = [1, 10, 100].map(n => {
+    const cost = beanCost(n);
+    const afford = gameState.coffee >= cost;
+    return `
+      <button class="upgrade-buy-btn" data-buy-beans="${n}" ${afford ? '' : 'disabled'}
+              style="flex: 1; padding: 10px; background: ${afford ? '#d4a574' : '#666'}; color: ${afford ? '#1a1a2e' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${afford ? 'pointer' : 'not-allowed'};">
+        BUY ×${n}<br><span style="font-size: 12px;">${formatNumber(cost)} ☕</span>
+      </button>`;
+  }).join('');
+
+  // Blend roasting cards
+  let blendsHtml = '';
+  blendRecipes.forEach(blend => {
+    const cost = roastBeanCost(blend);
+    const canRoast = gameState.beans >= cost;
+    const owned = gameState.blends[blend.id] || 0;
+    const discounted = gameState.purchasedGoldenUpgrades.has('master_roaster');
+    blendsHtml += `
+      <div class="upgrade-pack" style="background: rgba(212, 165, 116, 0.08); border: 1px solid rgba(212, 165, 116, 0.3);">
+        <div class="upgrade-pack-header">
+          <div class="upgrade-pack-title">🫘 ${blend.name} ${owned > 0 ? `<span style="color: #4CAF50; font-size: 14px;">(×${owned})</span>` : ''}</div>
+        </div>
+        <div class="upgrade-pack-description">${blend.description}</div>
+        <div style="margin: 8px 0; font-size: 14px;">${describeBlendEffect(blend)}</div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <button class="upgrade-buy-btn" data-roast="${blend.id}" ${canRoast ? '' : 'disabled'}
+                  style="flex: 1; padding: 10px; background: ${canRoast ? '#d4a574' : '#666'}; color: ${canRoast ? '#1a1a2e' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${canRoast ? 'pointer' : 'not-allowed'};">
+            ROAST — ${cost} bean${cost !== 1 ? 's' : ''}${discounted ? ' ★' : ''}
+          </button>
+          <button class="upgrade-buy-btn" data-activate-blend="${blend.id}" ${owned > 0 ? '' : 'disabled'}
+                  style="flex: 1; padding: 10px; background: ${owned > 0 ? '#4CAF50' : '#666'}; color: ${owned > 0 ? '#fff' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${owned > 0 ? 'pointer' : 'not-allowed'};">
+            ACTIVATE
+          </button>
+        </div>
+      </div>`;
+  });
+
+  const doubleBatch = gameState.purchasedGoldenUpgrades.has('double_batch');
+  container.innerHTML = `
+    <h3 style="color: #d4a574; margin: 0 0 12px;">Active Blend</h3>
+    <div class="achievements-grid">${activeHtml}</div>
+    <h3 style="color: #d4a574; margin: 20px 0 12px;">Green Beans</h3>
+    <div class="upgrade-pack" style="background: rgba(139, 90, 43, 0.12); border: 1px solid rgba(139, 90, 43, 0.5);">
+      <div class="upgrade-pack-header">
+        <div class="upgrade-pack-title">🫘 Bean Stock: ${gameState.beans}</div>
+      </div>
+      <div class="upgrade-pack-description">
+        Lifetime purchased: ${formatNumber(gameState.lifetimeBeans)}<br>
+        Beans start at 1B coffee each and get 1.15× more expensive per bean bought.
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">${beanBtns}</div>
+    </div>
+    <h3 style="color: #d4a574; margin: 20px 0 12px;">Roast Blends${doubleBatch ? ' <span style="font-size: 12px; color: #ffd700;">(Double Batch: 2 per roast!)</span>' : ''}</h3>
+    <div class="upgrade-pack-description" style="margin-bottom: 12px;">Activating a blend consumes 1 from your stock and replaces any active blend.</div>
+    <div class="achievements-grid">${blendsHtml}</div>`;
+
+  container.querySelectorAll('[data-buy-beans]').forEach(btn => {
+    btn.onclick = () => { if (buyBeans(parseInt(btn.dataset.buyBeans))) updateUI(true); };
+  });
+  container.querySelectorAll('[data-roast]').forEach(btn => {
+    btn.onclick = () => { if (roastBlend(btn.dataset.roast)) updateUI(true); };
+  });
+  container.querySelectorAll('[data-activate-blend]').forEach(btn => {
+    btn.onclick = () => { if (activateBlend(btn.dataset.activateBlend)) updateUI(true); };
+  });
+}
+
 function switchUpgradeTab(tab) {
   currentUpgradeTab = tab;
   
@@ -763,6 +901,8 @@ function renderPrestige() {
         <p>• Each Golden Coffee gives +10% production (permanent!)</p>
         <p>• Prestiging resets coffee, items, and regular upgrades</p>
         <p>• Golden Coffee, multiplier, permanent CPS bonuses, golden upgrades and their automations are kept forever</p>
+        <p>• Research Lab drinks and discoveries are kept forever</p>
+        <p>• Roastery beans and roasted blends are kept forever (an active blend ends)</p>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
@@ -970,7 +1110,7 @@ function closeSettingsModal() {
 document.addEventListener('DOMContentLoaded', () => {
   // Coffee button click
   document.getElementById('coffeeButton').onclick = () => {
-    const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click;
+    const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click * getBlendMultipliers().click;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
 
@@ -1029,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-    const tabs = ['brew', 'shop', 'upgrades', 'lab', 'prestige', 'achievements'];
+    const tabs = ['brew', 'shop', 'upgrades', 'lab', 'roastery', 'prestige', 'achievements'];
     const index = parseInt(e.key) - 1;
 
     if (index >= 0 && index < tabs.length) {
@@ -1167,6 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lastAutomationTime = now;
     }
     regenSwaps();
+    tickBlendExpiry();
     updateUI();
   }, 1000);
 
@@ -1189,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hiddenStartTime = null;
         const cps = calculateTotalCPS();
         if (elapsedSeconds >= 1 && cps > 0) {
-          const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline;
+          const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline * getBlendMultipliers().offline;
           gameState.coffee += earnings;
           gameState.totalCoffeeAllTime += earnings;
           if (elapsedSeconds >= 60) {
