@@ -245,6 +245,22 @@ function updateNotificationBadges() {
   } else if (unclaimedCount === 0 && achievementBadge) {
     achievementBadge.remove();
   }
+
+  // Lab: badge when a drink recipe can be discovered right now
+  const labBtn = document.querySelector('[data-tab="lab"]');
+  if (labBtn && gameState.purchasedGoldenUpgrades.has('research_lab')) {
+    const discoverable = drinkRecipes.filter(d =>
+      !gameState.discoveredDrinks.has(d.id) && gameState.coffee >= d.discoveryCost
+    ).length;
+    let labBadge = labBtn.querySelector('.notification-badge');
+    if (discoverable > 0 && !labBadge) {
+      labBadge = document.createElement('div');
+      labBadge.className = 'notification-badge';
+      labBtn.appendChild(labBadge);
+    } else if (discoverable === 0 && labBadge) {
+      labBadge.remove();
+    }
+  }
 }
 
 // `force` re-renders hidden tabs too (used on init, import and tab switches)
@@ -266,6 +282,7 @@ function updateUI(force = false) {
     }
   }
   if (force || activeTab === 'upgrades') renderUpgrades();
+  if (force || activeTab === 'lab') renderLab();
   if (force || activeTab === 'prestige') renderPrestige();
   if (force || activeTab === 'achievements') renderAchievements();
 }
@@ -540,6 +557,152 @@ function renderGoldenUpgrades() {
   });
 }
 
+// ═══ RESEARCH LAB RENDERING ═══
+function describeDrinkEffect(drink) {
+  const e = drink.effect;
+  const parts = [];
+  const fmt = (m) => m > 1 ? `+${Math.round((m - 1) * 100)}%` : `−${Math.round((1 - m) * 100)}%`;
+  if (e.cps) parts.push({ text: `${fmt(e.cps)} CPS`, good: e.cps > 1 });
+  if (e.click) parts.push({ text: `${fmt(e.click)} click power`, good: e.click > 1 });
+  if (e.shopCost) parts.push(e.shopCost < 1
+    ? { text: `−${Math.round((1 - e.shopCost) * 100)}% shop prices`, good: true }
+    : { text: `+${Math.round((e.shopCost - 1) * 100)}% shop prices`, good: false });
+  if (e.offline) parts.push({ text: `${fmt(e.offline)} offline earnings`, good: e.offline > 1 });
+  return parts.map(p => `<span style="color: ${p.good ? '#4CAF50' : '#f44336'}; font-weight: 600;">${p.text}</span>`).join(' &nbsp;·&nbsp; ');
+}
+
+function renderLab() {
+  const container = document.getElementById('labContent');
+  if (!container) return;
+
+  // Locked: the Research Lab building hasn't been purchased yet
+  if (!gameState.purchasedGoldenUpgrades.has('research_lab')) {
+    container.innerHTML = `
+      <div class="upgrade-pack" style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.3);">
+        <div class="upgrade-pack-header">
+          <div class="upgrade-pack-title">🔒 Research Lab</div>
+        </div>
+        <div class="upgrade-pack-description">The lab is dark. Purchase the <strong>Research Lab</strong> golden upgrade (3 Golden Coffee) to unlock it and start discovering drink recipes with powerful buffs — and risky debuffs.</div>
+        <div style="margin-top: 12px;">
+          <button class="upgrade-buy-btn" id="labLockedGotoGolden" style="width: 100%; padding: 10px; background: #ffd700; color: #1a1a2e; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+            VIEW GOLDEN UPGRADES
+          </button>
+        </div>
+      </div>`;
+    document.getElementById('labLockedGotoGolden').onclick = () => {
+      document.querySelector('[data-tab="upgrades"]').click();
+      switchUpgradeTab('golden');
+    };
+    return;
+  }
+
+  regenSwaps();
+
+  // Swap status
+  const now = Date.now();
+  let nextIn = '';
+  if (gameState.swapCharges < SWAP_MAX_CHARGES) {
+    const ms = Math.max(0, swapRegenMs() - (now - (gameState.lastSwapRegen || now)));
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    nextIn = ` — next in ${m}:${String(s).padStart(2, '0')}`;
+  }
+  const dots = '●'.repeat(gameState.swapCharges) + '○'.repeat(SWAP_MAX_CHARGES - gameState.swapCharges);
+
+  // Active drink flasks
+  const maxActive = maxActiveDrinks();
+  let activeHtml = '';
+  for (let i = 0; i < maxActive; i++) {
+    const id = gameState.activeDrinks[i];
+    if (id) {
+      const drink = drinkRecipes.find(d => d.id === id);
+      if (!drink) continue;
+      activeHtml += `
+        <div class="upgrade-pack" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50;">
+          <div class="upgrade-pack-header">
+            <div class="upgrade-pack-title">🧪 ${drink.name} <span style="color: #4CAF50; font-size: 12px;">[BREWING]</span></div>
+          </div>
+          <div class="upgrade-pack-description">${drink.description}</div>
+          <div style="margin: 8px 0; font-size: 14px;">${describeDrinkEffect(drink)}</div>
+          <div style="margin-top: 12px;">
+            <button class="upgrade-buy-btn" data-deactivate="${drink.id}" style="width: 100%; padding: 10px; background: #f44336; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+              POUR OUT (1 swap)
+            </button>
+          </div>
+        </div>`;
+    } else {
+      activeHtml += `
+        <div class="upgrade-pack" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed #666;">
+          <div class="upgrade-pack-description" style="text-align: center; padding: 20px 0;">Empty flask — activate a discovered drink below</div>
+        </div>`;
+    }
+  }
+
+  // Recipe book
+  let recipesHtml = '';
+  drinkRecipes.forEach(drink => {
+    const discovered = gameState.discoveredDrinks.has(drink.id);
+    const active = gameState.activeDrinks.includes(drink.id);
+    let actionHtml = '';
+    if (!discovered) {
+      const afford = gameState.coffee >= drink.discoveryCost;
+      actionHtml = `
+        <button class="upgrade-buy-btn" data-discover="${drink.id}" ${afford ? '' : 'disabled'}
+                style="width: 100%; padding: 10px; background: ${afford ? '#d4a574' : '#666'}; color: ${afford ? '#1a1a2e' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${afford ? 'pointer' : 'not-allowed'};">
+          ${afford ? `DISCOVER — ${formatNumber(drink.discoveryCost)} coffee` : `NEED ${formatNumber(drink.discoveryCost)} coffee`}
+        </button>`;
+    } else if (active) {
+      actionHtml = `
+        <button class="upgrade-buy-btn" data-deactivate="${drink.id}"
+                style="width: 100%; padding: 10px; background: #f44336; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+          POUR OUT (1 swap)
+        </button>`;
+    } else {
+      const canSwap = gameState.swapCharges >= 1 && gameState.activeDrinks.length < maxActive;
+      actionHtml = `
+        <button class="upgrade-buy-btn" data-activate="${drink.id}" ${canSwap ? '' : 'disabled'}
+                style="width: 100%; padding: 10px; background: ${canSwap ? '#4CAF50' : '#666'}; color: ${canSwap ? '#fff' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${canSwap ? 'pointer' : 'not-allowed'};">
+          ACTIVATE (1 swap)
+        </button>`;
+    }
+    recipesHtml += `
+      <div class="upgrade-pack" style="background: ${discovered ? 'rgba(212, 165, 116, 0.08)' : 'rgba(255, 255, 255, 0.02)'}; border: 1px solid ${active ? '#4CAF50' : 'rgba(212, 165, 116, 0.3)'};">
+        <div class="upgrade-pack-header">
+          <div class="upgrade-pack-title">${discovered ? '📖' : '❓'} ${discovered ? drink.name : '???'}</div>
+        </div>
+        <div class="upgrade-pack-description">${discovered ? drink.description : 'An undiscovered recipe. Research it to reveal its effects.'}</div>
+        ${discovered ? `<div style="margin: 8px 0; font-size: 14px;">${describeDrinkEffect(drink)}</div>` : ''}
+        <div style="margin-top: 12px;">${actionHtml}</div>
+      </div>`;
+  });
+
+  container.innerHTML = `
+    <div class="upgrade-pack" style="background: rgba(33, 150, 243, 0.08); border: 1px solid rgba(33, 150, 243, 0.4);">
+      <div class="upgrade-pack-header">
+        <div class="upgrade-pack-title">🔄 Drink Swaps</div>
+      </div>
+      <div class="upgrade-pack-description">
+        <span style="font-size: 18px; letter-spacing: 4px; color: #2196F3;">${dots}</span>
+        <span style="margin-left: 8px;">${gameState.swapCharges}/${SWAP_MAX_CHARGES}${nextIn}</span><br>
+        Activating or pouring out a drink costs 1 swap. Swaps regenerate over time.
+      </div>
+    </div>
+    <h3 style="color: #d4a574; margin: 20px 0 12px;">Active Drinks (${gameState.activeDrinks.length}/${maxActive})</h3>
+    <div class="achievements-grid">${activeHtml}</div>
+    <h3 style="color: #d4a574; margin: 20px 0 12px;">Recipe Book (${gameState.discoveredDrinks.size}/${drinkRecipes.length})</h3>
+    <div class="achievements-grid">${recipesHtml}</div>`;
+
+  container.querySelectorAll('[data-discover]').forEach(btn => {
+    btn.onclick = () => { if (discoverDrink(btn.dataset.discover)) updateUI(true); };
+  });
+  container.querySelectorAll('[data-activate]').forEach(btn => {
+    btn.onclick = () => { if (setDrinkActive(btn.dataset.activate, true)) updateUI(true); };
+  });
+  container.querySelectorAll('[data-deactivate]').forEach(btn => {
+    btn.onclick = () => { if (setDrinkActive(btn.dataset.deactivate, false)) updateUI(true); };
+  });
+}
+
 function switchUpgradeTab(tab) {
   currentUpgradeTab = tab;
   
@@ -807,7 +970,7 @@ function closeSettingsModal() {
 document.addEventListener('DOMContentLoaded', () => {
   // Coffee button click
   document.getElementById('coffeeButton').onclick = () => {
-    const earned = gameState.clickPower * gameState.prestigeMultiplier;
+    const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
 
@@ -866,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-    const tabs = ['brew', 'shop', 'upgrades', 'prestige', 'achievements'];
+    const tabs = ['brew', 'shop', 'upgrades', 'lab', 'prestige', 'achievements'];
     const index = parseInt(e.key) - 1;
 
     if (index >= 0 && index < tabs.length) {
@@ -1003,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       runAutomation();
       lastAutomationTime = now;
     }
+    regenSwaps();
     updateUI();
   }, 1000);
 
@@ -1025,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hiddenStartTime = null;
         const cps = calculateTotalCPS();
         if (elapsedSeconds >= 1 && cps > 0) {
-          const earnings = cps * elapsedSeconds;
+          const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline;
           gameState.coffee += earnings;
           gameState.totalCoffeeAllTime += earnings;
           if (elapsedSeconds >= 60) {

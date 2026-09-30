@@ -19,6 +19,10 @@ const gameState = {
   achievements: [],
   collapsedPacks: new Set(),
   unclaimedAchievements: new Set(),
+  discoveredDrinks: new Set(), // drink recipe ids discovered in the Research Lab
+  activeDrinks: [], // drink recipe ids currently active (max 3, 4 with Extra Thermos)
+  swapCharges: 3, // drink swap charges; regenerate over real time
+  lastSwapRegen: null, // timestamp used to regenerate swap charges
   buyMode: 1, // ×1, ×10, ×100
   sellMode: 1,
   settings: {
@@ -216,7 +220,9 @@ const achievements = [
   { id: 'total_50000', name: 'Cappuccino Conqueror', requirement: 'Own 50,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 50000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/50,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 50000 * 100, 100) || 0, reward: { type: 'coffee', value: 500000 } },
   { id: 'total_100000', name: 'Drip Drop Dominator', requirement: 'Own 100,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 100000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/100,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 100000 * 100, 100) || 0, reward: { type: 'coffee', value: 1000000 } },
   { id: 'total_500000', name: 'Macchiato Mastermind', requirement: 'Own 500,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 500000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/500,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 500000 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
-  { id: 'total_1000000', name: 'French Press Pharaoh', requirement: 'Own 1,000,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 1000000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/1,000,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 1000000 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } }
+  { id: 'total_1000000', name: 'French Press Pharaoh', requirement: 'Own 1,000,000 total buildings', condition: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) >= 1000000, earned: false, progress: () => Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) + "/1,000,000", percent: () => Math.min(Object.values(gameState.items).reduce((sum, i) => sum + (i?.count ?? 0), 0) / 1000000 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } },
+  { id: 'lab_rat', name: 'Lab Rat', requirement: 'Discover 1 drink recipe in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 1, earned: false, progress: () => gameState.discoveredDrinks.size + "/1", percent: () => Math.min(gameState.discoveredDrinks.size / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 250 } },
+  { id: 'master_brewer', name: 'Master Brewer', requirement: 'Discover all 10 drink recipes in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 10, earned: false, progress: () => gameState.discoveredDrinks.size + "/10", percent: () => Math.min(gameState.discoveredDrinks.size / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000 } }
 ];
 
 // Generate item-specific milestones
@@ -396,6 +402,42 @@ const goldenUpgrades = [
     },
     unlockCondition: () => gameState.goldenCoffee >= 20,
     type: 'bonus'
+  },
+  {
+    id: 'research_lab',
+    name: 'Research Lab',
+    description: 'Unlock the Research Lab tab: discover drink recipes with powerful buffs and debuffs',
+    cost: 3,
+    effect: () => {},
+    unlockCondition: () => gameState.goldenCoffee >= 1,
+    type: 'building'
+  },
+  {
+    id: 'extra_thermos',
+    name: 'Extra Thermos',
+    description: 'Research Lab: +1 active drink slot (4 total)',
+    cost: 5,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('research_lab'),
+    type: 'building'
+  },
+  {
+    id: 'rapid_experimentation',
+    name: 'Rapid Experimentation',
+    description: 'Research Lab: drink swaps regenerate twice as fast',
+    cost: 4,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('research_lab'),
+    type: 'building'
+  },
+  {
+    id: 'potent_brews',
+    name: 'Potent Brews',
+    description: 'Research Lab: drink buffs are 25% stronger (debuffs unaffected)',
+    cost: 6,
+    effect: () => {},
+    unlockCondition: () => gameState.purchasedGoldenUpgrades.has('research_lab'),
+    type: 'building'
   }
 ];
 
@@ -405,6 +447,109 @@ gameState.permanentCPSBonus = 1.0;
 gameState.cpsBonus5Count = 0;
 gameState.cpsBonus10Count = 0;
 gameState.cpsBonus20Count = 0;
+
+// ═══ RESEARCH LAB — DRINK RECIPES ═══
+// effect axes: cps (CPS multiplier), click (click power multiplier),
+// shopCost (shop price multiplier, <1 = discount), offline (offline earnings multiplier)
+const drinkRecipes = [
+  { id: 'double_espresso', name: 'Double Espresso', description: 'Twice the beans, twice the buzz.', discoveryCost: 5000, effect: { cps: 1.2, click: 0.85 } },
+  { id: 'cold_brew', name: 'Cold Brew', description: 'Slow-steeped and smooth. Strengthens the hands.', discoveryCost: 5000, effect: { click: 1.3, cps: 0.9 } },
+  { id: 'caramel_latte', name: 'Caramel Latte', description: 'Sweet talk for your suppliers.', discoveryCost: 25000, effect: { shopCost: 0.9, cps: 0.95 } },
+  { id: 'black_coffee', name: 'Black Coffee', description: 'No frills. Just production.', discoveryCost: 50000, effect: { cps: 1.1 } },
+  { id: 'mocha_madness', name: 'Mocha Madness', description: 'Chocolate-fueled frenzy on the production floor.', discoveryCost: 200000, effect: { cps: 1.35, click: 0.8 } },
+  { id: 'decaf_delight', name: 'Decaf Delight', description: 'The night shift never sleeps.', discoveryCost: 200000, effect: { offline: 1.3, cps: 0.95 } },
+  { id: 'nitro_boost', name: 'Nitro Boost', description: 'Infused with pure velocity.', discoveryCost: 1000000, effect: { click: 1.6, cps: 0.85 } },
+  { id: 'pumpkin_spice', name: 'Pumpkin Spice', description: 'Basic, but brutally effective.', discoveryCost: 1000000, effect: { cps: 1.15, click: 1.15, shopCost: 1.1 } },
+  { id: 'french_press', name: 'French Press', description: 'Full-immersion brewing for full-immersion profits.', discoveryCost: 5000000, effect: { cps: 1.25, offline: 0.9 } },
+  { id: 'turkish_coffee', name: 'Turkish Coffee', description: 'Ancient. Intense. Uncompromising.', discoveryCost: 25000000, effect: { cps: 1.5, click: 0.75, shopCost: 1.05 } }
+];
+
+const SWAP_MAX_CHARGES = 3;
+const SWAP_REGEN_MS = 5 * 60 * 1000; // one swap every 5 minutes of real time
+
+function maxActiveDrinks() {
+  return 3 + (gameState.purchasedGoldenUpgrades.has('extra_thermos') ? 1 : 0);
+}
+
+function swapRegenMs() {
+  return gameState.purchasedGoldenUpgrades.has('rapid_experimentation') ? SWAP_REGEN_MS / 2 : SWAP_REGEN_MS;
+}
+
+// Combined multipliers from all active drinks (stack multiplicatively).
+// Potent Brews amplifies only the beneficial (buff) side of each drink.
+function getDrinkMultipliers() {
+  const mults = { cps: 1, click: 1, shopCost: 1, offline: 1 };
+  const potent = gameState.purchasedGoldenUpgrades.has('potent_brews');
+  gameState.activeDrinks.forEach(id => {
+    const drink = drinkRecipes.find(d => d.id === id);
+    if (!drink) return;
+    for (const key of Object.keys(mults)) {
+      let m = drink.effect[key] || 1;
+      if (potent && m > 1) m = 1 + (m - 1) * 1.25;
+      mults[key] *= m;
+    }
+  });
+  return mults;
+}
+
+// Regenerate swap charges based on elapsed real time. Called on load and
+// every second by the game loop so swaps tick up even while playing.
+function regenSwaps() {
+  if (gameState.swapCharges >= SWAP_MAX_CHARGES) {
+    gameState.lastSwapRegen = Date.now();
+    return;
+  }
+  const regenMs = swapRegenMs();
+  let last = gameState.lastSwapRegen || Date.now();
+  const now = Date.now();
+  while (gameState.swapCharges < SWAP_MAX_CHARGES && now - last >= regenMs) {
+    gameState.swapCharges++;
+    last += regenMs;
+  }
+  gameState.lastSwapRegen = last;
+}
+
+function discoverDrink(drinkId, quiet = false) {
+  const drink = drinkRecipes.find(d => d.id === drinkId);
+  if (!drink || gameState.discoveredDrinks.has(drinkId)) return false;
+  if (gameState.coffee < drink.discoveryCost) {
+    if (!quiet) showNotification(`Not enough coffee to research ${drink.name}`, 'warning');
+    return false;
+  }
+  gameState.coffee -= drink.discoveryCost;
+  gameState.discoveredDrinks.add(drinkId);
+  if (!quiet) showNotification(`Discovered recipe: ${drink.name}!`, 'success');
+  checkAchievements();
+  saveGame();
+  return true;
+}
+
+// Activating or deactivating a drink costs 1 swap charge.
+function setDrinkActive(drinkId, active, quiet = false) {
+  const drink = drinkRecipes.find(d => d.id === drinkId);
+  if (!drink || !gameState.discoveredDrinks.has(drinkId)) return false;
+  const isActive = gameState.activeDrinks.includes(drinkId);
+  if (active === isActive) return false;
+  if (gameState.swapCharges < 1) {
+    if (!quiet) showNotification('No drink swaps left — they regenerate over time', 'warning');
+    return false;
+  }
+  if (active && gameState.activeDrinks.length >= maxActiveDrinks()) {
+    if (!quiet) showNotification('No empty flask — deactivate a drink first', 'warning');
+    return false;
+  }
+  gameState.swapCharges--;
+  gameState.lastSwapRegen = Date.now();
+  if (active) {
+    gameState.activeDrinks.push(drinkId);
+    if (!quiet) showNotification(`${drink.name} is now brewing!`, 'success');
+  } else {
+    gameState.activeDrinks = gameState.activeDrinks.filter(id => id !== drinkId);
+    if (!quiet) showNotification(`${drink.name} poured out`, 'info');
+  }
+  saveGame();
+  return true;
+}
 
 function recalculatePermanentCPSBonus() {
   gameState.permanentCPSBonus =
@@ -487,19 +632,19 @@ function calculateTotalCPS() {
     const count = itemState.count ?? 0;
     totalCPS += item.cps * count * multiplier;
   });
-  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1);
+  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps;
 }
 
 function calculateItemCPS(item) {
   const multiplier = gameState.itemMultipliers[item.id] || 1;
-  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1);
+  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps;
 }
 
 function calculateBulkCost(item, currentCount, amount) {
   const { baseCost, scale } = item;
   const firstCost = baseCost * Math.pow(scale, currentCount);
   const totalCost = firstCost * (Math.pow(scale, amount) - 1) / (scale - 1);
-  return Math.floor(totalCost);
+  return Math.floor(totalCost * getDrinkMultipliers().shopCost);
 }
 
 function calculateAffordableAmount(item, currentCount, maxAmount, availableCoffee) {
@@ -601,7 +746,7 @@ function applyOfflineEarnings(lastPlayed) {
   const cps = calculateTotalCPS();
   if (cps <= 0) return;
 
-  const earnings = cps * elapsedSeconds;
+  const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline;
 
   gameState.coffee += earnings;
   gameState.totalCoffeeAllTime += earnings;
@@ -633,6 +778,10 @@ function exportSave() {
     sellMode: gameState.sellMode,
     settings: gameState.settings,
     permanentCPSBonus: gameState.permanentCPSBonus,
+    discoveredDrinks: Array.from(gameState.discoveredDrinks),
+    activeDrinks: gameState.activeDrinks,
+    swapCharges: gameState.swapCharges,
+    lastSwapRegen: gameState.lastSwapRegen,
     lastPlayed: Date.now()
   };
   return btoa(JSON.stringify(saveData));
@@ -654,6 +803,12 @@ function applySaveData(data) {
   gameState.viewedAchievements = new Set(data.viewedAchievements || []);
   gameState.collapsedPacks = new Set(data.collapsedPacks || []);
   gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
+  gameState.discoveredDrinks = new Set(data.discoveredDrinks || []);
+  gameState.activeDrinks = Array.isArray(data.activeDrinks) ? data.activeDrinks.filter(id => gameState.discoveredDrinks.has(id)) : [];
+  gameState.swapCharges = typeof data.swapCharges === 'number' ? Math.min(Math.max(data.swapCharges, 0), SWAP_MAX_CHARGES) : SWAP_MAX_CHARGES;
+  gameState.lastSwapRegen = data.lastSwapRegen || null;
+  // Regenerate swaps that accrued while away
+  regenSwaps();
   gameState.buyMode = data.buyMode || 1;
   gameState.sellMode = data.sellMode || 1;
   if (data.settings) {
@@ -768,6 +923,10 @@ function saveGame() {
     settings: gameState.settings,
     purchasedGoldenUpgrades: Array.from(gameState.purchasedGoldenUpgrades),
     permanentCPSBonus: gameState.permanentCPSBonus,
+    discoveredDrinks: Array.from(gameState.discoveredDrinks),
+    activeDrinks: gameState.activeDrinks,
+    swapCharges: gameState.swapCharges,
+    lastSwapRegen: gameState.lastSwapRegen,
     lastPlayed: Date.now()
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
