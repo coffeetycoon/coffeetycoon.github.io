@@ -54,21 +54,21 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.15</div>
+      <div class="modal-title">Coffee Tycoon v1.16</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.15</h3>
+      <h3>What's New in v1.16</h3>
       <ul>
-        <li><strong>Research Lab:</strong> A new golden upgrade (3 Golden Coffee) unlocks the Lab tab</li>
-        <li><strong>Drink Recipes:</strong> Discover 10 drink recipes, each with powerful buffs and risky debuffs — like Double Espresso (+20% CPS, −15% click power) or Caramel Latte (10% cheaper shop, −5% CPS)</li>
-        <li><strong>Active Drinks:</strong> Brew up to 3 drinks at once; buffs stack multiplicatively</li>
-        <li><strong>Drink Swaps:</strong> Activating or pouring out a drink costs 1 swap; swaps regenerate over time (1 per 5 minutes)</li>
-        <li><strong>Lab Golden Upgrades:</strong> Extra Thermos (+1 drink slot), Rapid Experimentation (swaps regenerate 2× faster), Potent Brews (buffs 25% stronger)</li>
-        <li><strong>New Achievements:</strong> Lab Rat and Master Brewer for discovering recipes</li>
+        <li><strong>Roastery:</strong> A new golden upgrade (8 Golden Coffee) unlocks the Roastery tab</li>
+        <li><strong>Green Beans:</strong> Buy beans starting at 1B coffee each, scaling 1.15× per lifetime bean purchased</li>
+        <li><strong>Blend Roasting:</strong> Roast beans into 5 blends — Light, Medium, Dark, French, Italian — each with a temporary global boost</li>
+        <li><strong>Active Blends:</strong> Activate one blend at a time for timed boosts (e.g. French Roast: +100% CPS for 2 min); all buffs stack multiplicatively</li>
+        <li><strong>Roastery Golden Upgrades:</strong> Master Roaster (roasting costs 25% fewer beans), Blend Mastery (blends last 50% longer), Double Batch (2 blends per roast)</li>
+        <li><strong>New Achievements:</strong> Bean Counter and Blend Connoisseur</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.15</p>
+      <p><strong>Version:</strong> 1.16</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -98,6 +98,7 @@
     <button class="tab-btn" data-tab="shop">Shop</button>
     <button class="tab-btn" data-tab="upgrades">Upgrades</button>
     <button class="tab-btn" data-tab="lab">Lab</button>
+    <button class="tab-btn" data-tab="roastery">Roastery</button>
     <button class="tab-btn" data-tab="prestige">Prestige</button>
     <button class="tab-btn" data-tab="achievements">Achievements</button>
   </div>
@@ -138,6 +139,10 @@
     <div id="labTab" class="tab-content">
       <h2 style="margin-top: 0; color: #d4a574;">Research Lab</h2>
       <div id="labContent"></div>
+    </div>
+    <div id="roasteryTab" class="tab-content">
+      <h2 style="margin-top: 0; color: #d4a574;">Roastery</h2>
+      <div id="roasteryContent"></div>
     </div>
     <div id="prestigeTab" class="tab-content">
       <h2 style="margin-top: 0; color: #d4a574;">Prestige</h2>
