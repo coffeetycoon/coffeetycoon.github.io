@@ -34,10 +34,14 @@
       </div>
       <div class="key-item">
         <span class="key">4</span>
-        <span>Prestige - Reset for bonuses</span>
+        <span>Lab - Research drink recipes</span>
       </div>
       <div class="key-item">
         <span class="key">5</span>
+        <span>Prestige - Reset for bonuses</span>
+      </div>
+      <div class="key-item">
+        <span class="key">6</span>
         <span>Achievements - Track progress & earn rewards</span>
       </div>
     </div>
@@ -50,19 +54,21 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.14</div>
+      <div class="modal-title">Coffee Tycoon v1.15</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.14</h3>
+      <h3>What's New in v1.15</h3>
       <ul>
-        <li><strong>Offline CPS:</strong> Earn coffee while you're away — you're credited your CPS for the time since you last played (5+ minute threshold, capped at 24 hours)</li>
-        <li><strong>Welcome Back Modal:</strong> See how long you were gone and how much coffee you earned while away</li>
-        <li><strong>Save on Exit:</strong> Progress is saved the moment you leave, keeping offline earnings accurate</li>
-        <li><strong>Bug Fixes:</strong> Golden Upgrades and permanent CPS bonuses now persist correctly when saving</li>
+        <li><strong>Research Lab:</strong> A new golden upgrade (3 Golden Coffee) unlocks the Lab tab</li>
+        <li><strong>Drink Recipes:</strong> Discover 10 drink recipes, each with powerful buffs and risky debuffs — like Double Espresso (+20% CPS, −15% click power) or Caramel Latte (10% cheaper shop, −5% CPS)</li>
+        <li><strong>Active Drinks:</strong> Brew up to 3 drinks at once; buffs stack multiplicatively</li>
+        <li><strong>Drink Swaps:</strong> Activating or pouring out a drink costs 1 swap; swaps regenerate over time (1 per 5 minutes)</li>
+        <li><strong>Lab Golden Upgrades:</strong> Extra Thermos (+1 drink slot), Rapid Experimentation (swaps regenerate 2× faster), Potent Brews (buffs 25% stronger)</li>
+        <li><strong>New Achievements:</strong> Lab Rat and Master Brewer for discovering recipes</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.14</p>
+      <p><strong>Version:</strong> 1.15</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -91,6 +97,7 @@
     <button class="tab-btn active" data-tab="brew">Brew House</button>
     <button class="tab-btn" data-tab="shop">Shop</button>
     <button class="tab-btn" data-tab="upgrades">Upgrades</button>
+    <button class="tab-btn" data-tab="lab">Lab</button>
     <button class="tab-btn" data-tab="prestige">Prestige</button>
     <button class="tab-btn" data-tab="achievements">Achievements</button>
   </div>
@@ -127,6 +134,10 @@
         <div id="goldenCoffeeProgressContainer"></div>
         <div id="goldenUpgradesList" class="achievements-grid"></div>
       </div>
+    </div>
+    <div id="labTab" class="tab-content">
+      <h2 style="margin-top: 0; color: #d4a574;">Research Lab</h2>
+      <div id="labContent"></div>
     </div>
     <div id="prestigeTab" class="tab-content">
       <h2 style="margin-top: 0; color: #d4a574;">Prestige</h2>

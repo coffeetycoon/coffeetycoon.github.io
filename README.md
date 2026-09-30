@@ -11,7 +11,7 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v114--offline-cps)
+  - [Latest Version](#latest-version-v115--grab-a-lab)
 - [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
 
@@ -35,26 +35,21 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.14 – Offline CPS
-**Release Date:** Aug 14, 2026
+### Latest Version: v1.15 – Grab a Lab
+**Release Date:** Sep 30, 2026
 
 **Key Features**
-- Offline CPS: Earn coffee while away — credited your CPS for the time since you last played (5+ minute threshold)
-- Welcome Back modal: shows how long you were gone and how much coffee you earned
-- Save on Exit: last-played time is saved the moment you leave, for accurate offline earnings
-- Bug Fixes: Golden Upgrades and permanent CPS bonuses now save correctly
+- Research Lab: a new golden upgrade (3 Golden Coffee) unlocks the Lab tab
+- Drink Recipes: discover 10 recipes, each with buffs and debuffs — e.g. Double Espresso (+20% CPS, −15% click power), Caramel Latte (−10% shop prices, −5% CPS)
+- Active Drinks: brew up to 3 drinks at once; buffs stack multiplicatively
+- Drink Swaps: activating or pouring out a drink costs 1 swap; swaps regenerate over time (1 per 5 minutes)
+- Lab Golden Upgrades: Extra Thermos (+1 drink slot), Rapid Experimentation (swaps regenerate 2× faster), Potent Brews (buffs 25% stronger)
+- New Achievements: Lab Rat and Master Brewer for discovering recipes
+- Bug Fixes: all 15 findings from the post-v1.14 bug hunt are fixed (golden toggles, silent automation, prestige disclosures, offline credit for hidden tabs, multi-tab guard, save-import safety, number suffixes, and more)
 
 ---
 
 ## Future Updates
-
-### v1.15 – Grab a Lab
-- Research Lab as Golden Upgrade (new main tab)
-- Discover ~10 drink recipes with buffs/debuffs
-- Max 3 active drinks at a time
-- Swaps regenerate over time
-- Golden Upgrades for building
-- Coffee display change: it displays instant change in coffee every 0.1 sec, rather than delayed as it is now
 
 ### v1.16 – Roasters and Coasters
 - Roastery as Golden Upgrade (new main tab)
