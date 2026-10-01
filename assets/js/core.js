@@ -13,6 +13,7 @@ const gameState = {
   items: {},
   purchasedUpgrades: new Set(),
   purchasedGoldenUpgrades: new Set(),
+  goldenUpgradeStacks: {}, // { upgradeId: times purchased } — for stackable golden upgrades
   itemMultipliers: {},
   viewedUpgrades: new Set(),
   viewedAchievements: new Set(),
@@ -485,8 +486,10 @@ const goldenUpgrades = [
   {
     id: 'master_roaster',
     name: 'Master Roaster',
-    description: 'Roastery: roasting costs 25% fewer green beans',
+    description: 'Roastery: roasting costs 25% fewer green beans per stack',
     cost: 10,
+    costScale: 2,
+    stackable: true,
     effect: () => {},
     unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
     type: 'building'
@@ -494,8 +497,10 @@ const goldenUpgrades = [
   {
     id: 'blend_mastery',
     name: 'Blend Mastery',
-    description: 'Roastery: active blends last 50% longer',
+    description: 'Roastery: active blends last 50% longer per stack',
     cost: 10,
+    costScale: 2,
+    stackable: true,
     effect: () => {},
     unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
     type: 'building'
@@ -503,8 +508,10 @@ const goldenUpgrades = [
   {
     id: 'double_batch',
     name: 'Double Batch',
-    description: 'Roastery: each roast produces 2 blends instead of 1',
+    description: 'Roastery: each roast produces +1 extra blend per stack',
     cost: 12,
+    costScale: 2,
+    stackable: true,
     effect: () => {},
     unlockCondition: () => gameState.purchasedGoldenUpgrades.has('roastery'),
     type: 'building'
@@ -693,7 +700,7 @@ function buyBeans(count = 1) {
 }
 
 function roastBeanCost(blend) {
-  const discount = gameState.purchasedGoldenUpgrades.has('master_roaster') ? 0.75 : 1;
+  const discount = Math.pow(0.75, goldenUpgradeStacks('master_roaster'));
   return Math.max(1, Math.ceil(blend.beanCost * discount));
 }
 
@@ -706,7 +713,7 @@ function roastBlend(blendId) {
     return false;
   }
   gameState.beans -= cost;
-  const batch = gameState.purchasedGoldenUpgrades.has('double_batch') ? 2 : 1;
+  const batch = 1 + goldenUpgradeStacks('double_batch');
   gameState.blends[blendId] = (gameState.blends[blendId] || 0) + batch;
   gameState.lifetimeBlendsRoasted += batch;
   showPurchaseNotification(batch === 1 ? blend.name : `${batch}x ${blend.name}`, batch);
@@ -717,8 +724,20 @@ function roastBlend(blendId) {
 }
 
 function blendDurationMs(blend) {
-  const longer = gameState.purchasedGoldenUpgrades.has('blend_mastery') ? 1.5 : 1;
+  const longer = Math.pow(1.5, goldenUpgradeStacks('blend_mastery'));
   return Math.floor(blend.durationMs * longer);
+}
+
+// ═══ STACKABLE GOLDEN UPGRADES ═══
+// Roastery golden upgrades can be purchased repeatedly; each purchase (stack)
+// multiplies the effect and doubles the price of the next stack.
+function goldenUpgradeStacks(id) {
+  return gameState.goldenUpgradeStacks[id] || 0;
+}
+
+function goldenUpgradeCost(upgrade) {
+  if (!upgrade.stackable) return upgrade.cost;
+  return Math.floor(upgrade.cost * Math.pow(upgrade.costScale || 2, goldenUpgradeStacks(upgrade.id)));
 }
 
 // Multipliers from the currently active blend (stacks multiplicatively with
@@ -1221,6 +1240,7 @@ function exportSave() {
     items: gameState.items,
     purchasedUpgrades: Array.from(gameState.purchasedUpgrades),
     purchasedGoldenUpgrades: Array.from(gameState.purchasedGoldenUpgrades),
+    goldenUpgradeStacks: gameState.goldenUpgradeStacks,
     itemMultipliers: gameState.itemMultipliers,
     viewedUpgrades: Array.from(gameState.viewedUpgrades),
     viewedAchievements: Array.from(gameState.viewedAchievements),
@@ -1265,6 +1285,7 @@ function applySaveData(data) {
   gameState.items = data.items || {};
   gameState.purchasedUpgrades = new Set(data.purchasedUpgrades || []);
   gameState.purchasedGoldenUpgrades = new Set(data.purchasedGoldenUpgrades || []);
+  gameState.goldenUpgradeStacks = data.goldenUpgradeStacks || {};
   gameState.itemMultipliers = data.itemMultipliers || {};
   gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
   gameState.viewedAchievements = new Set(data.viewedAchievements || []);
@@ -1409,6 +1430,7 @@ function saveGame() {
     sellMode: gameState.sellMode,
     settings: gameState.settings,
     purchasedGoldenUpgrades: Array.from(gameState.purchasedGoldenUpgrades),
+    goldenUpgradeStacks: gameState.goldenUpgradeStacks,
     permanentCPSBonus: gameState.permanentCPSBonus,
     discoveredDrinks: Array.from(gameState.discoveredDrinks),
     activeDrinks: gameState.activeDrinks,
@@ -1546,16 +1568,22 @@ function buyUpgrade(upgradeId, quiet = false) {
 
 function buyGoldenUpgrade(upgradeId) {
   const upgrade = goldenUpgrades.find(u => u.id === upgradeId);
-  if (!upgrade || gameState.purchasedGoldenUpgrades.has(upgradeId)) return;
-  
-  if (gameState.goldenCoffee >= upgrade.cost) {
-    gameState.goldenCoffee -= upgrade.cost;
+  if (!upgrade) return;
+  // Non-stackable golden upgrades can only be purchased once.
+  if (!upgrade.stackable && gameState.purchasedGoldenUpgrades.has(upgradeId)) return;
+
+  const cost = goldenUpgradeCost(upgrade);
+  if (gameState.goldenCoffee >= cost) {
+    gameState.goldenCoffee -= cost;
     gameState.purchasedGoldenUpgrades.add(upgradeId);
+    if (upgrade.stackable) {
+      gameState.goldenUpgradeStacks[upgradeId] = goldenUpgradeStacks(upgradeId) + 1;
+    }
     upgrade.effect();
-    
+
     showPurchaseNotification(upgrade.name);
     playSfx('purchaseorclaim');
-    
+
     saveGame();
     updateUI();
   }
@@ -1753,29 +1781,36 @@ function getAchievementPacks() {
 function runAutomation() {
   let changed = false;
 
-  // Auto-buy upgrades
+  // Auto-buy upgrades: buy the single next-cheapest affordable upgrade each pass
   if (gameState.settings.autoBuyUpgrades) {
+    let cheapest = null;
+    let cheapestCost = Infinity;
     upgrades.forEach(upgrade => {
-      if (!gameState.purchasedUpgrades.has(upgrade.id)) {
-        if (gameState.coffee >= upgrade.cost && upgrade.unlockCondition()) {
-          if (buyUpgrade(upgrade.id, true)) changed = true;
-        }
+      if (gameState.purchasedUpgrades.has(upgrade.id)) return;
+      if (!upgrade.unlockCondition()) return;
+      const cost = upgrade.cost;
+      if (gameState.coffee >= cost && cost < cheapestCost) {
+        cheapest = upgrade;
+        cheapestCost = cost;
       }
     });
+    if (cheapest && buyUpgrade(cheapest.id, true)) changed = true;
   }
 
-  // Auto-buy items
+  // Auto-buy items: buy the single next-cheapest item each pass
   if (gameState.settings.autoBuyItems) {
+    let cheapest = null;
+    let cheapestCost = Infinity;
     shopItems.forEach(item => {
-      if (isItemUnlocked(item)) {
-        const itemState = gameState.items[item.id];
-        const currentCount = itemState.count ?? 0;
-        const affordableAmount = calculateAffordableAmount(item, currentCount, 1, gameState.coffee);
-        if (affordableAmount > 0) {
-          if (buyItem(item.id, affordableAmount, true)) changed = true;
-        }
+      if (!isItemUnlocked(item)) return;
+      const itemState = gameState.items[item.id];
+      const cost = (itemState && itemState.cost) ?? item.baseCost;
+      if (gameState.coffee >= cost && cost < cheapestCost) {
+        cheapest = item;
+        cheapestCost = cost;
       }
     });
+    if (cheapest && buyItem(cheapest.id, 1, true)) changed = true;
   }
 
   // Auto-claim achievements
