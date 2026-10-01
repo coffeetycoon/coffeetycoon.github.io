@@ -29,6 +29,14 @@ const gameState = {
   activeBlend: null, // { id, expiresAt } — one active blend at a time
   lifetimeBlendsRoasted: 0,
   lifetimeBlendsActivated: 0,
+  // Super Coffee (v1.17) — temporary active-play bonuses
+  superEffects: [], // [{ kind: 'cps'|'click', mult, expiresAt, label }]
+  storm: null, // { mult, expiresAt } — coffee storm boosting all CPS
+  mysteryCPSBonus: 1, // permanent CPS multiplier from Mystery Coffee Beans
+  lifetimeSuperCoffee: 0,
+  lifetimeGoldenSuperCoffee: 0,
+  lifetimeStorms: 0,
+  lifetimeMysteryBeans: 0,
   buyMode: 1, // ×1, ×10, ×100
   sellMode: 1,
   settings: {
@@ -230,7 +238,12 @@ const achievements = [
   { id: 'lab_rat', name: 'Lab Rat', requirement: 'Discover 1 drink recipe in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 1, earned: false, progress: () => gameState.discoveredDrinks.size + "/1", percent: () => Math.min(gameState.discoveredDrinks.size / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 250 } },
   { id: 'master_brewer', name: 'Master Brewer', requirement: 'Discover all 10 drink recipes in the Research Lab', condition: () => gameState.discoveredDrinks.size >= 10, earned: false, progress: () => gameState.discoveredDrinks.size + "/10", percent: () => Math.min(gameState.discoveredDrinks.size / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000 } },
   { id: 'bean_100', name: 'Bean Counter', requirement: 'Buy 100 green beans in the Roastery', condition: () => gameState.lifetimeBeans >= 100, earned: false, progress: () => gameState.lifetimeBeans + "/100", percent: () => Math.min(gameState.lifetimeBeans / 100 * 100, 100) || 0, reward: { type: 'coffee', value: 5000000 } },
-  { id: 'blend_10', name: 'Blend Connoisseur', requirement: 'Activate 10 blends in the Roastery', condition: () => gameState.lifetimeBlendsActivated >= 10, earned: false, progress: () => gameState.lifetimeBlendsActivated + "/10", percent: () => Math.min(gameState.lifetimeBlendsActivated / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } }
+  { id: 'blend_10', name: 'Blend Connoisseur', requirement: 'Activate 10 blends in the Roastery', condition: () => gameState.lifetimeBlendsActivated >= 10, earned: false, progress: () => gameState.lifetimeBlendsActivated + "/10", percent: () => Math.min(gameState.lifetimeBlendsActivated / 10 * 100, 100) || 0, reward: { type: 'coffee', value: 10000000 } },
+  { id: 'super_1', name: 'Super Sipper', requirement: 'Collect 1 Super Coffee', condition: () => gameState.lifetimeSuperCoffee >= 1, earned: false, progress: () => gameState.lifetimeSuperCoffee + "/1", percent: () => Math.min(gameState.lifetimeSuperCoffee / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 5000 } },
+  { id: 'super_25', name: 'Super Collector', requirement: 'Collect 25 Super Coffees', condition: () => gameState.lifetimeSuperCoffee >= 25, earned: false, progress: () => gameState.lifetimeSuperCoffee + "/25", percent: () => Math.min(gameState.lifetimeSuperCoffee / 25 * 100, 100) || 0, reward: { type: 'coffee', value: 250000 } },
+  { id: 'golden_super_1', name: 'Golden Gulp', requirement: 'Buy 1 Golden Super Coffee', condition: () => gameState.lifetimeGoldenSuperCoffee >= 1, earned: false, progress: () => gameState.lifetimeGoldenSuperCoffee + "/1", percent: () => Math.min(gameState.lifetimeGoldenSuperCoffee / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 1000000 } },
+  { id: 'storm_1', name: 'Storm Chaser', requirement: 'Experience 1 coffee storm', condition: () => gameState.lifetimeStorms >= 1, earned: false, progress: () => gameState.lifetimeStorms + "/1", percent: () => Math.min(gameState.lifetimeStorms / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 50000 } },
+  { id: 'mystery_1', name: 'Mystery Solver', requirement: 'Find 1 Mystery Coffee Bean', condition: () => gameState.lifetimeMysteryBeans >= 1, earned: false, progress: () => gameState.lifetimeMysteryBeans + "/1", percent: () => Math.min(gameState.lifetimeMysteryBeans / 1 * 100, 100) || 0, reward: { type: 'coffee', value: 100000 } }
 ];
 
 // Generate item-specific milestones
@@ -749,6 +762,161 @@ function tickBlendExpiry() {
   }
 }
 
+// ═══ SUPER COFFEE (v1.17) ═══
+// Randomly spawning Super Coffees with temporary bonuses, occasional Golden
+// Super Coffees (purchased with Golden Coffee), coffee storms that boost all
+// CPS 2x-5x, and rare Mystery Coffee Beans. These are active-play bonuses:
+// they do NOT apply to offline earnings.
+const SUPER_SPAWN_CHANCE = 1 / 300; // per second, ~once every 5 min on average
+const SUPER_DESPAWN_MS = 25000;
+const GOLDEN_SUPER_CHANCE = 0.08; // of super spawns
+const GOLDEN_SUPER_COST = 5; // Golden Coffee
+const GOLDEN_SUPER_DESPAWN_MS = 30000;
+const MYSTERY_BEAN_CHANCE = 0.03; // of super spawns
+const STORM_CHANCE = 1 / 2400; // per second, ~once every 40 min on average
+
+const superCoffeeBonuses = [
+  { id: 'cps_rush', label: 'Espresso Rush', description: '2× CPS for 60s', weight: 3, apply: () => addSuperEffect('cps', 2, 60 * 1000, 'Espresso Rush') },
+  { id: 'click_frenzy', label: 'Click Frenzy', description: '5× click power for 30s', weight: 2, apply: () => addSuperEffect('click', 5, 30 * 1000, 'Click Frenzy') },
+  { id: 'instant_brew', label: 'Instant Brew', description: '+10 minutes of CPS instantly', weight: 3, apply: () => {
+    const gain = Math.max(calculateTotalCPS() * 600, 1000);
+    gameState.coffee += gain;
+    gameState.totalCoffeeAllTime += gain;
+    return `+${formatNumber(gain)} coffee!`;
+  } },
+  { id: 'storm_call', label: 'Storm Call', description: 'Summons a coffee storm!', weight: 1, apply: () => { startStorm(); return 'A coffee storm brews on the horizon!'; } }
+];
+
+const mysteryBeanOutcomes = [
+  { id: 'jackpot', label: 'Jackpot Beans', description: '+2 Golden Coffee', weight: 1, apply: () => {
+    gameState.goldenCoffee = Math.min(gameState.goldenCoffee + 2, MAX_GOLDEN_COFFEE);
+    return '+2 Golden Coffee!';
+  } },
+  { id: 'ancient', label: 'Ancient Blend', description: 'Permanent +5% CPS', weight: 2, apply: () => {
+    gameState.mysteryCPSBonus *= 1.05;
+    return 'Permanent +5% CPS!';
+  } },
+  { id: 'time_warp', label: 'Time Warp', description: '+1 hour of CPS instantly', weight: 2, apply: () => {
+    const gain = Math.max(calculateTotalCPS() * 3600, 10000);
+    gameState.coffee += gain;
+    gameState.totalCoffeeAllTime += gain;
+    return `+${formatNumber(gain)} coffee!`;
+  } },
+  { id: 'bean_feast', label: 'Bean Feast', description: '+100 green beans', weight: 2, apply: () => {
+    gameState.beans += 100;
+    gameState.lifetimeBeans += 100;
+    return '+100 green beans!';
+  } }
+];
+
+function pickWeighted(list) {
+  const total = list.reduce((s, e) => s + e.weight, 0);
+  let roll = Math.random() * total;
+  for (const entry of list) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry;
+  }
+  return list[list.length - 1];
+}
+
+function addSuperEffect(kind, mult, durationMs, label) {
+  gameState.superEffects.push({ kind, mult, expiresAt: Date.now() + durationMs, label });
+  return `${label}: ${kind === 'cps' ? mult + '× CPS' : mult + '× click power'}`;
+}
+
+// Multipliers from active super effects + coffee storm (multiplicative).
+function getSuperMultipliers() {
+  const mults = { cps: 1, click: 1 };
+  const now = Date.now();
+  for (const fx of gameState.superEffects) {
+    if (fx.expiresAt > now && (fx.kind === 'cps' || fx.kind === 'click')) {
+      mults[fx.kind] *= fx.mult;
+    }
+  }
+  if (gameState.storm && gameState.storm.expiresAt > now) {
+    mults.cps *= gameState.storm.mult;
+  }
+  return mults;
+}
+
+function pruneSuperEffects() {
+  const now = Date.now();
+  const before = gameState.superEffects.length;
+  gameState.superEffects = gameState.superEffects.filter(fx => fx.expiresAt > now);
+  let stormEnded = false;
+  if (gameState.storm && gameState.storm.expiresAt <= now) {
+    gameState.storm = null;
+    stormEnded = true;
+    showNotification('Storm Passed', 'The coffee storm has blown over.', 'info');
+  }
+  if (gameState.superEffects.length !== before || stormEnded) saveGame();
+}
+
+function collectSuperCoffee() {
+  gameState.lifetimeSuperCoffee++;
+  const bonus = pickWeighted(superCoffeeBonuses);
+  const result = bonus.apply();
+  showNotification(`☕ Super Coffee: ${bonus.label}!`, typeof result === 'string' ? result : bonus.description, 'default');
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+}
+
+function buyGoldenSuperCoffee() {
+  if (gameState.goldenCoffee < GOLDEN_SUPER_COST) {
+    showNotification('Not Enough Golden Coffee', `A Golden Super Coffee costs ${GOLDEN_SUPER_COST} Golden Coffee.`, 'info');
+    return false;
+  }
+  gameState.goldenCoffee -= GOLDEN_SUPER_COST;
+  gameState.lifetimeGoldenSuperCoffee++;
+  const result = addSuperEffect('cps', 3, 5 * 60 * 1000, 'Golden Brew');
+  showNotification('✨ Golden Super Coffee!', `${result} — 3× CPS for 5 minutes!`, 'default');
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+  return true;
+}
+
+function collectMysteryBean() {
+  gameState.lifetimeMysteryBeans++;
+  const outcome = pickWeighted(mysteryBeanOutcomes);
+  const result = outcome.apply();
+  showNotification(`❓ Mystery Coffee Beans: ${outcome.label}!`, `${outcome.description} ${result}`, 'default');
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+}
+
+function startStorm(mult) {
+  const stormMult = mult || (2 + Math.floor(Math.random() * 4)); // 2x-5x
+  const durationMs = (60 + Math.floor(Math.random() * 61)) * 1000; // 60-120s
+  gameState.storm = { mult: stormMult, expiresAt: Date.now() + durationMs };
+  gameState.lifetimeStorms++;
+  showNotification('⛈ Coffee Storm!', `All CPS boosted ${stormMult}× for ${Math.round(durationMs / 1000)}s!`, 'default');
+  playSfx('purchaseorclaim');
+  checkAchievements();
+  saveGame();
+}
+
+// Called by the per-second game loop. Spawning is handled by ui.js
+// (it owns the spawn button DOM); this rolls the dice and reports spawns.
+function rollSuperSpawns() {
+  if (document.hidden) return null;
+  if (uiSuperSpawnActive()) return null; // one spawn on screen at a time
+  if (Math.random() >= SUPER_SPAWN_CHANCE) {
+    // No super coffee this tick — maybe a storm instead
+    if (gameState.totalCoffeeAllTime >= 100000 && !gameState.storm && Math.random() < STORM_CHANCE) {
+      startStorm();
+    }
+    return null;
+  }
+  if (gameState.totalCoffeeAllTime < 5000) return null;
+  const roll = Math.random();
+  if (roll < MYSTERY_BEAN_CHANCE && gameState.totalCoffeeAllTime >= 50000) return 'mystery';
+  if (roll < MYSTERY_BEAN_CHANCE + GOLDEN_SUPER_CHANCE && gameState.goldenCoffee >= GOLDEN_SUPER_COST) return 'golden';
+  return 'super';
+}
+
 function recalculatePermanentCPSBonus() {
   gameState.permanentCPSBonus =
     Math.pow(1.05, gameState.cpsBonus5Count || 0) *
@@ -830,12 +998,12 @@ function calculateTotalCPS() {
     const count = itemState.count ?? 0;
     totalCPS += item.cps * count * multiplier;
   });
-  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps;
+  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * (gameState.mysteryCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps * getSuperMultipliers().cps;
 }
 
 function calculateItemCPS(item) {
   const multiplier = gameState.itemMultipliers[item.id] || 1;
-  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps;
+  return item.cps * multiplier * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * (gameState.mysteryCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps * getSuperMultipliers().cps;
 }
 
 function calculateBulkCost(item, currentCount, amount) {
@@ -986,6 +1154,13 @@ function exportSave() {
     activeBlend: gameState.activeBlend,
     lifetimeBlendsRoasted: gameState.lifetimeBlendsRoasted,
     lifetimeBlendsActivated: gameState.lifetimeBlendsActivated,
+    superEffects: gameState.superEffects,
+    storm: gameState.storm,
+    mysteryCPSBonus: gameState.mysteryCPSBonus,
+    lifetimeSuperCoffee: gameState.lifetimeSuperCoffee,
+    lifetimeGoldenSuperCoffee: gameState.lifetimeGoldenSuperCoffee,
+    lifetimeStorms: gameState.lifetimeStorms,
+    lifetimeMysteryBeans: gameState.lifetimeMysteryBeans,
     lastPlayed: Date.now()
   };
   return btoa(JSON.stringify(saveData));
@@ -1018,6 +1193,17 @@ function applySaveData(data) {
   gameState.activeBlend = (data.activeBlend && typeof data.activeBlend.expiresAt === 'number' && data.activeBlend.expiresAt > Date.now() && blendRecipes.some(b => b.id === data.activeBlend.id)) ? data.activeBlend : null;
   gameState.lifetimeBlendsRoasted = data.lifetimeBlendsRoasted || 0;
   gameState.lifetimeBlendsActivated = data.lifetimeBlendsActivated || 0;
+  // Super Coffee: only restore unexpired temporary effects
+  const now = Date.now();
+  gameState.superEffects = Array.isArray(data.superEffects)
+    ? data.superEffects.filter(fx => fx && (fx.kind === 'cps' || fx.kind === 'click') && typeof fx.expiresAt === 'number' && fx.expiresAt > now)
+    : [];
+  gameState.storm = (data.storm && typeof data.storm.expiresAt === 'number' && data.storm.expiresAt > now) ? data.storm : null;
+  gameState.mysteryCPSBonus = typeof data.mysteryCPSBonus === 'number' && data.mysteryCPSBonus >= 1 ? data.mysteryCPSBonus : 1;
+  gameState.lifetimeSuperCoffee = data.lifetimeSuperCoffee || 0;
+  gameState.lifetimeGoldenSuperCoffee = data.lifetimeGoldenSuperCoffee || 0;
+  gameState.lifetimeStorms = data.lifetimeStorms || 0;
+  gameState.lifetimeMysteryBeans = data.lifetimeMysteryBeans || 0;
   // Regenerate swaps that accrued while away
   regenSwaps();
   gameState.buyMode = data.buyMode || 1;
@@ -1144,6 +1330,13 @@ function saveGame() {
     activeBlend: gameState.activeBlend,
     lifetimeBlendsRoasted: gameState.lifetimeBlendsRoasted,
     lifetimeBlendsActivated: gameState.lifetimeBlendsActivated,
+    superEffects: gameState.superEffects,
+    storm: gameState.storm,
+    mysteryCPSBonus: gameState.mysteryCPSBonus,
+    lifetimeSuperCoffee: gameState.lifetimeSuperCoffee,
+    lifetimeGoldenSuperCoffee: gameState.lifetimeGoldenSuperCoffee,
+    lifetimeStorms: gameState.lifetimeStorms,
+    lifetimeMysteryBeans: gameState.lifetimeMysteryBeans,
     lastPlayed: Date.now()
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
@@ -1280,7 +1473,7 @@ function buyGoldenUpgrade(upgradeId) {
 function doPrestige() {
   const gained = prestigeGain();
   if (gained > 0) {
-    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• Research Lab drinks and discoveries\n• Roastery beans and roasted blends (active blend ends)\n• All achievements and their claimed rewards`)) {
+    if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• Research Lab drinks and discoveries\n• Roastery beans and roasted blends (active blend ends)\n• Mystery Bean permanent CPS bonus\n• Super Coffee effects and storms end\n• All achievements and their claimed rewards`)) {
       gameState.goldenCoffee += gained;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
 
@@ -1290,6 +1483,9 @@ function doPrestige() {
       // Claimed achievement multipliers are permanent rewards — keep them.
       // Roastery: beans and roasted blends persist; the temporary active blend ends.
       gameState.activeBlend = null;
+      // Super Coffee: temporary effects and storms end; permanent mystery bonus stays.
+      gameState.superEffects = [];
+      gameState.storm = null;
 
       shopItems.forEach(item => {
         gameState.items[item.id] = { count: 0, cost: item.baseCost };
@@ -1436,6 +1632,12 @@ function getAchievementPacks() {
       title: 'Roastery Collection',
       description: 'Achievements for roasting in the Roastery',
       achievements: achievements.filter(a => a.id === 'bean_100' || a.id === 'blend_10')
+    },
+    {
+      id: 'super_collection',
+      title: 'Super Coffee Collection',
+      description: 'Achievements for Super Coffees, storms, and mystery beans',
+      achievements: achievements.filter(a => ['super_1', 'super_25', 'golden_super_1', 'storm_1', 'mystery_1'].includes(a.id))
     }
   ];
 
