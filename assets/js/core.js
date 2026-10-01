@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.14 - CORE GAME LOGIC
+   COFFEE TYCOON v1.18 - CORE GAME LOGIC
    Game State, Save System, Math, and Core Calculations
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -37,6 +37,18 @@ const gameState = {
   lifetimeGoldenSuperCoffee: 0,
   lifetimeStorms: 0,
   lifetimeMysteryBeans: 0,
+  // Stats Window (v1.18) — lifetime production statistics
+  stats: {
+    startedAt: null, // timestamp of first production tick
+    totalClicks: 0,
+    clicksCoffee: 0, // lifetime coffee earned from manual clicks
+    totalPrestiges: 0,
+    maxCPS: 0,
+    lifetimeGoldenEarned: 0,
+    coffeeOffline: 0, // lifetime coffee from offline earnings
+    coffeeByBuilding: {}, // { itemId: lifetime coffee produced }
+    history: [] // [[timestamp, cps, totalCoffeeAllTime, goldenCoffee], ...] sampled every 30s, max 960
+  },
   buyMode: 1, // ×1, ×10, ×100
   sellMode: 1,
   settings: {
@@ -790,6 +802,7 @@ const superCoffeeBonuses = [
 const mysteryBeanOutcomes = [
   { id: 'jackpot', label: 'Jackpot Beans', description: '+2 Golden Coffee', weight: 1, apply: () => {
     gameState.goldenCoffee = Math.min(gameState.goldenCoffee + 2, MAX_GOLDEN_COFFEE);
+    ensureStats().lifetimeGoldenEarned += 2;
     return '+2 Golden Coffee!';
   } },
   { id: 'ancient', label: 'Ancient Blend', description: 'Permanent +5% CPS', weight: 2, apply: () => {
@@ -988,7 +1001,15 @@ function formatNumber(num) {
 }
 
 function calculateTotalCPS() {
-  let totalCPS = 0;
+  return calculateCPSBreakdown().total;
+}
+
+// Per-building CPS breakdown (v1.18 Stats Window). Returns
+// { total, perItem: { itemId: cps }, global } where global is the
+// combined multiplier applied on top of every building.
+function calculateCPSBreakdown() {
+  const perItem = {};
+  let base = 0;
   shopItems.forEach(item => {
     if (!gameState.items[item.id]) {
       gameState.items[item.id] = { count: 0, cost: item.baseCost };
@@ -996,9 +1017,74 @@ function calculateTotalCPS() {
     const itemState = gameState.items[item.id];
     const multiplier = gameState.itemMultipliers[item.id] || 1;
     const count = itemState.count ?? 0;
-    totalCPS += item.cps * count * multiplier;
+    const unit = item.cps * multiplier * count;
+    perItem[item.id] = unit;
+    base += unit;
   });
-  return totalCPS * gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * (gameState.mysteryCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps * getSuperMultipliers().cps;
+  const global = gameState.prestigeMultiplier * (gameState.permanentCPSBonus || 1) * (gameState.mysteryCPSBonus || 1) * getDrinkMultipliers().cps * getBlendMultipliers().cps * getSuperMultipliers().cps;
+  let total = 0;
+  for (const id in perItem) {
+    perItem[id] *= global;
+    total += perItem[id];
+  }
+  return { total, perItem, global };
+}
+
+// Backfill stats defaults for saves from before v1.18.
+function ensureStats() {
+  if (!gameState.stats || typeof gameState.stats !== 'object') gameState.stats = {};
+  const s = gameState.stats;
+  if (typeof s.startedAt !== 'number') s.startedAt = null;
+  s.totalClicks = s.totalClicks || 0;
+  s.clicksCoffee = s.clicksCoffee || 0;
+  s.totalPrestiges = s.totalPrestiges || 0;
+  s.maxCPS = s.maxCPS || 0;
+  s.lifetimeGoldenEarned = s.lifetimeGoldenEarned || 0;
+  s.coffeeOffline = s.coffeeOffline || 0;
+  if (!s.coffeeByBuilding || typeof s.coffeeByBuilding !== 'object') s.coffeeByBuilding = {};
+  if (!Array.isArray(s.history)) s.history = [];
+  return s;
+}
+
+// Credit one production tick and record per-building lifetime stats.
+// Returns { earned, totalCPS }.
+function creditProduction(elapsedSeconds) {
+  ensureStats();
+  const s = gameState.stats;
+  if (!s.startedAt) s.startedAt = Date.now();
+  const { total, perItem } = calculateCPSBreakdown();
+  let earned = 0;
+  if (total > 0 && elapsedSeconds > 0) {
+    earned = total * elapsedSeconds;
+    gameState.coffee += earned;
+    gameState.totalCoffeeAllTime += earned;
+    for (const id in perItem) {
+      if (perItem[id] > 0) {
+        s.coffeeByBuilding[id] = (s.coffeeByBuilding[id] || 0) + perItem[id] * elapsedSeconds;
+      }
+    }
+  }
+  return { earned, totalCPS: total };
+}
+
+// Sample the production timeline (v1.18): every 30s, keep 960 samples (8h).
+const STATS_SAMPLE_MS = 30000;
+const STATS_HISTORY_MAX = 960;
+function sampleStatsHistory() {
+  const s = ensureStats();
+  const now = Date.now();
+  const cps = calculateTotalCPS();
+  if (cps > s.maxCPS) s.maxCPS = cps;
+  const last = s.history[s.history.length - 1];
+  if (last && now - last[0] < STATS_SAMPLE_MS) return;
+  s.history.push([now, cps, gameState.totalCoffeeAllTime, gameState.goldenCoffee]);
+  while (s.history.length > STATS_HISTORY_MAX) s.history.shift();
+}
+
+function trackClick(earned) {
+  const s = ensureStats();
+  s.totalClicks++;
+  s.clicksCoffee += earned;
 }
 
 function calculateItemCPS(item) {
@@ -1116,6 +1202,7 @@ function applyOfflineEarnings(lastPlayed) {
 
   gameState.coffee += earnings;
   gameState.totalCoffeeAllTime += earnings;
+  ensureStats().coffeeOffline += earnings;
 
   pendingOfflineEarnings = {
     seconds: elapsedSeconds,
@@ -1161,6 +1248,7 @@ function exportSave() {
     lifetimeGoldenSuperCoffee: gameState.lifetimeGoldenSuperCoffee,
     lifetimeStorms: gameState.lifetimeStorms,
     lifetimeMysteryBeans: gameState.lifetimeMysteryBeans,
+    stats: gameState.stats,
     lastPlayed: Date.now()
   };
   return btoa(JSON.stringify(saveData));
@@ -1204,6 +1292,8 @@ function applySaveData(data) {
   gameState.lifetimeGoldenSuperCoffee = data.lifetimeGoldenSuperCoffee || 0;
   gameState.lifetimeStorms = data.lifetimeStorms || 0;
   gameState.lifetimeMysteryBeans = data.lifetimeMysteryBeans || 0;
+  gameState.stats = data.stats || null;
+  ensureStats();
   // Regenerate swaps that accrued while away
   regenSwaps();
   gameState.buyMode = data.buyMode || 1;
@@ -1337,6 +1427,7 @@ function saveGame() {
     lifetimeGoldenSuperCoffee: gameState.lifetimeGoldenSuperCoffee,
     lifetimeStorms: gameState.lifetimeStorms,
     lifetimeMysteryBeans: gameState.lifetimeMysteryBeans,
+    stats: gameState.stats,
     lastPlayed: Date.now()
   };
   localStorage.setItem('coffeeTycoonSave', JSON.stringify(saveData));
@@ -1476,6 +1567,8 @@ function doPrestige() {
     if (confirm(`Prestige and gain ${gained} Golden Coffee?\n\nThis will reset:\n• Coffee count\n• All items\n• All regular upgrades\n\nYou will keep:\n• Golden Coffee\n• ${((gameState.goldenCoffee + gained) * 10)}% production multiplier\n• Permanent CPS bonuses\n• Golden upgrades and their automations (Auto-Buy, Auto-Claim)\n• Research Lab drinks and discoveries\n• Roastery beans and roasted blends (active blend ends)\n• Mystery Bean permanent CPS bonus\n• Super Coffee effects and storms end\n• All achievements and their claimed rewards`)) {
       gameState.goldenCoffee += gained;
       gameState.prestigeMultiplier = 1 + (gameState.goldenCoffee * 0.1);
+      ensureStats().totalPrestiges++;
+      ensureStats().lifetimeGoldenEarned += gained;
 
       gameState.coffee = 0;
       gameState.clickPower = 1;
