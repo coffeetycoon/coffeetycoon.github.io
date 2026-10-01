@@ -11,7 +11,7 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v117--super-coffee)
+  - [Latest Version](#latest-version-v118--stats-window)
 - [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
 
@@ -35,28 +35,22 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.17 – Super Coffee
+### Latest Version: v1.18 – Stats Window
 **Release Date:** Sep 30, 2026
 
 **Key Features**
-- Super Coffee: random ☕ Super Coffees pop up around the screen — click for temporary bonuses (Espresso Rush 2× CPS, Click Frenzy 5× clicks, Instant Brew, Storm Call)
-- Golden Super Coffee: rare ✨ spawns purchasable for 5 Golden Coffee — 3× CPS for 5 minutes
-- Coffee Storms: ⛈ random storms boost all CPS 2×–5× for 1–2 minutes
-- Mystery Coffee Beans: rare ❓ spawns grant jackpot rewards — Golden Coffee, permanent +5% CPS, Time Warp, or Bean Feast
-- New Achievements: Super Sipper, Super Collector, Golden Gulp, Storm Chaser, Mystery Solver
-- Bug Fixes: Lab achievements now appear in the Achievements tab; prestige discloses that Lab drinks and Roastery stock persist
+- Stats Window: new 📊 button (or press 8) opens a full statistics dashboard
+- Overview tab: Total coffee, CPS, and Golden Coffee cards plus time played, clicks, prestiges, and max CPS
+- Production tab: historical CPS and coffee graphs with hover tooltips showing exact numbers
+- Buildings tab: per-building CPS breakdown with share %, lifetime production, text filter, and bar chart
+- Multipliers tab: every active multiplier (prestige, drinks, blends, storms...) in stacking order
+- Lifetime tab: lifetime stats for everything — clicks, offline earnings, beans, storms, and more
 
 ---
 
 ## Future Updates
 
-### v1.18 – Stats Window
-- Stats button with tabs for total coffee, CPS, golden coffee
-- Graphs for each building and combined CPS
-- Historical coffee production timeline
-- Filter CPS by building or upgrade type
-- Tooltip hover to see exact numbers
-- Will show lifetime stats for everything
+_See [Undecided Additions](#undecided-additions) below._
 
 ---
 

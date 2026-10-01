@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.17</title>
+<title>Coffee Tycoon v1.18</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
@@ -49,6 +49,10 @@
         <span class="key">7</span>
         <span>Achievements - Track progress & earn rewards</span>
       </div>
+      <div class="key-item">
+        <span class="key">8</span>
+        <span>Stats - Production graphs & lifetime stats</span>
+      </div>
     </div>
     <h3 style="color: #d4a574; margin-top: 24px;">Super Coffee:</h3>
     <p>Keep an eye out for <strong>☕ Super Coffees</strong> popping up around the screen — click them for temporary bonuses like Espresso Rush (2× CPS) or Click Frenzy! Rare <strong>✨ Golden Super Coffees</strong> can be bought with Golden Coffee for even stronger buffs, and mysterious <strong>❓ Mystery Coffee Beans</strong> grant rare rewards. Watch the skies for <strong>⛈ coffee storms</strong> that boost all CPS 2×–5×!</p>
@@ -58,23 +62,66 @@
   </div>
 </div>
 
+<div id="statsModal" class="modal hidden">
+  <div class="modal-content stats-modal">
+    <div class="modal-header">
+      <div class="modal-title">📊 Statistics</div>
+      <button class="modal-close" id="closeStatsModal">×</button>
+    </div>
+    <div class="stats-tabs">
+      <button class="stats-tab active" data-stats-tab="overview">Overview</button>
+      <button class="stats-tab" data-stats-tab="production">Production</button>
+      <button class="stats-tab" data-stats-tab="buildings">Buildings</button>
+      <button class="stats-tab" data-stats-tab="multipliers">Multipliers</button>
+      <button class="stats-tab" data-stats-tab="lifetime">Lifetime</button>
+    </div>
+    <div class="stats-body">
+      <div class="stats-pane" id="stats-overview"></div>
+      <div class="stats-pane hidden" id="stats-production">
+        <h4>CPS History</h4>
+        <canvas id="cpsChart" width="640" height="220"></canvas>
+        <h4>Total Coffee History</h4>
+        <canvas id="coffeeChart" width="640" height="220"></canvas>
+        <div class="stats-note" id="historyNote"></div>
+      </div>
+      <div class="stats-pane hidden" id="stats-buildings">
+        <input id="buildingFilter" class="stats-filter" type="text" placeholder="Filter buildings..." autocomplete="off" />
+        <table class="stats-table" id="buildingsTable">
+          <thead><tr><th>Building</th><th>Count</th><th>Each</th><th>Total CPS</th><th>Share</th><th>Lifetime ☕</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <h4>Current CPS by Building</h4>
+        <canvas id="buildingChart" width="640" height="280"></canvas>
+      </div>
+      <div class="stats-pane hidden" id="stats-multipliers">
+        <div class="stats-note">Every multiplier currently applied to your production, in the order they stack.</div>
+        <div id="multipliersList"></div>
+      </div>
+      <div class="stats-pane hidden" id="stats-lifetime">
+        <div id="lifetimeGrid" class="lifetime-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="chartTooltip" class="chart-tooltip hidden"></div>
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.17</div>
+      <div class="modal-title">Coffee Tycoon v1.18</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.17</h3>
+      <h3>What's New in v1.18</h3>
       <ul>
-        <li><strong>Super Coffee:</strong> Random ☕ Super Coffees pop up around the screen — click them for temporary bonuses like Espresso Rush (2× CPS), Click Frenzy (5× clicks), Instant Brew, or Storm Call</li>
-        <li><strong>Golden Super Coffee:</strong> Rare ✨ spawns purchasable for 5 Golden Coffee — grants 3× CPS for 5 minutes</li>
-        <li><strong>Coffee Storms:</strong> ⛈ Random storms boost all CPS 2×–5× for 1–2 minutes</li>
-        <li><strong>Mystery Coffee Beans:</strong> Rare ❓ spawns grant jackpot rewards — Golden Coffee, permanent +5% CPS, Time Warp, or a Bean Feast</li>
-        <li><strong>New Achievements:</strong> Super Sipper, Super Collector, Golden Gulp, Storm Chaser, Mystery Solver</li>
+        <li><strong>Stats Window:</strong> New 📊 button (or press 8) opens a full statistics dashboard</li>
+        <li><strong>Overview tab:</strong> Total coffee, CPS, and Golden Coffee cards plus time played, clicks, prestiges, and max CPS</li>
+        <li><strong>Production tab:</strong> Historical CPS and coffee graphs with hover tooltips showing exact numbers</li>
+        <li><strong>Buildings tab:</strong> Per-building CPS breakdown with share %, lifetime production, text filter, and bar chart</li>
+        <li><strong>Multipliers tab:</strong> Every active multiplier (prestige, drinks, blends, storms...) in stacking order</li>
+        <li><strong>Lifetime tab:</strong> Lifetime stats for everything — clicks, offline earnings, beans, storms, and more</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.17</p>
+      <p><strong>Version:</strong> 1.18</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -87,6 +134,7 @@
   <div class="header-buttons">
     <button class="help-btn" id="helpBtn" title="Help">?</button>
     <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+    <button class="stats-btn" id="statsBtn" title="Statistics">📊</button>
     <button class="info-btn" id="infoBtn" title="Info">i</button>
   </div>
   <h1>Coffee Tycoon</h1>
