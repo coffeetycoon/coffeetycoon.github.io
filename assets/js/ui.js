@@ -178,6 +178,29 @@ function removeNotificationsByPack(packId) {
   toRemove.forEach(n => removeNotificationNow(n));
 }
 
+// ═══ MILESTONE CELEBRATION (v1.20 UX) ═══
+// Full-screen flash + confetti burst the first time a big empire moment hits.
+// Called from core.js checkMilestones(); guarded there with a typeof check.
+function celebrateMilestone(label) {
+  const overlay = document.createElement('div');
+  overlay.className = 'milestone-overlay';
+  overlay.innerHTML = `<div class="milestone-label">🎉 ${label}</div>`;
+  const colors = ['#ffd700', '#d4a574', '#ff6b6b', '#4ecdc4', '#a78bfa', '#f5f5f5'];
+  for (let i = 0; i < 48; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    overlay.appendChild(piece);
+  }
+  document.body.appendChild(overlay);
+  showNotification('Milestone!', label, 'milestone');
+  setTimeout(() => overlay.remove(), 3000);
+}
+
 // ═══ SHARED PRESTIGE / PROGRESS RENDERING ═══
 function renderGoldenCoffeeProgressCard() {
   const threshold = nextGoldenThreshold();
@@ -279,6 +302,35 @@ function updateNotificationBadges() {
       roasteryBadge.remove();
     }
   }
+
+  // Shop (v1.20): badge when a shop item unlocked that the player hasn't seen yet
+  const shopBtn = document.querySelector('[data-tab="shop"]');
+  if (shopBtn) {
+    const unseen = shopItems.some(i => isItemUnlocked(i) && !gameState.viewedShopItems.has(i.id));
+    let shopBadge = shopBtn.querySelector('.notification-badge');
+    if (unseen && !shopBadge) {
+      shopBadge = document.createElement('div');
+      shopBadge.className = 'notification-badge';
+      shopBtn.appendChild(shopBadge);
+    } else if (!unseen && shopBadge) {
+      shopBadge.remove();
+    }
+  }
+
+  // Prestige (v1.20): badge when prestiging would earn at least 1 Golden Coffee
+  const prestigeBtn = document.querySelector('[data-tab="prestige"]');
+  if (prestigeBtn) {
+    let canPrestige = false;
+    try { canPrestige = prestigeGain() >= 1; } catch (e) { canPrestige = false; }
+    let prestigeBadge = prestigeBtn.querySelector('.notification-badge');
+    if (canPrestige && !prestigeBadge) {
+      prestigeBadge = document.createElement('div');
+      prestigeBadge.className = 'notification-badge';
+      prestigeBtn.appendChild(prestigeBadge);
+    } else if (!canPrestige && prestigeBadge) {
+      prestigeBadge.remove();
+    }
+  }
 }
 
 // `force` re-renders hidden tabs too (used on init, import and tab switches)
@@ -290,8 +342,17 @@ function updateUI(force = false) {
 
   const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'brew';
 
+  // v1.20: viewing the shop marks unlocked items as seen BEFORE badges are
+  // computed, so the shop tab badge clears the moment the tab opens
+  if (activeTab === 'shop') {
+    shopItems.forEach(item => {
+      if (isItemUnlocked(item)) gameState.viewedShopItems.add(item.id);
+    });
+  }
+
   updateNotificationBadges();
   checkAchievements();
+  checkMilestones();
   renderStormBanner();
   renderActiveEffectsStrip();
   if (force || activeTab === 'shop') {
@@ -299,8 +360,14 @@ function updateUI(force = false) {
     if (force || sig !== lastShopSignature) {
       renderShop();
       lastShopSignature = sig;
+    } else {
+      updateShopDynamic();
     }
+  } else {
+    // Keep countdowns fresh even when the shop tab isn't the render target
+    updateShopDynamic();
   }
+  updateTutorial();
   if (force || activeTab === 'upgrades') renderUpgrades();
   if (force || activeTab === 'lab') renderLab();
   if (force || activeTab === 'roastery') renderRoastery();
@@ -313,8 +380,26 @@ function updateUI(force = false) {
 // second replaces the buy/sell buttons under the player's finger and swallows
 // rapid (or mobile) taps, so updateUI() only re-renders when this changes.
 let lastShopSignature = null;
+
+// v1.20: id of the shop item with the best CPS-per-coffee ratio right now.
+// Recomputed inside renderShop so the 💰 badge always reflects live prices.
+function bestValueItemId() {
+  let bestId = null;
+  let bestRatio = Infinity;
+  shopItems.forEach(item => {
+    if (!isItemUnlocked(item)) return;
+    const itemState = gameState.items[item.id] || { count: 0, cost: item.baseCost };
+    const perUnitCPS = calculateItemCPS(item);
+    if (perUnitCPS <= 0) return;
+    const nextCost = calculateBulkCost(item, itemState.count ?? 0, 1);
+    const ratio = nextCost / perUnitCPS;
+    if (ratio < bestRatio) { bestRatio = ratio; bestId = item.id; }
+  });
+  return bestId;
+}
+
 function shopSignature() {
-  const parts = [gameState.buyMode, gameState.sellMode];
+  const parts = [gameState.buyMode, gameState.sellMode, bestValueItemId()];
   shopItems.forEach(item => {
     if (!isItemUnlocked(item)) return;
     const itemState = gameState.items[item.id] || { count: 0, cost: item.baseCost };
@@ -323,8 +408,14 @@ function shopSignature() {
     const buyAmount = affordableAmount > 0 ? affordableAmount : gameState.buyMode;
     const totalCost = calculateBulkCost(item, currentCount, buyAmount);
     parts.push(item.id, currentCount, Math.floor(itemState.cost ?? item.baseCost),
-      affordableAmount > 0, buyAmount, Math.floor(totalCost), currentCount > 0);
+      affordableAmount > 0, buyAmount, Math.floor(totalCost), currentCount > 0,
+      gameState.viewedShopItems.has(item.id) ? 1 : 0);
   });
+  // Next locked item: re-render as its unlock progress crosses 5% buckets
+  const lockedItem = shopItems.find(i => !isItemUnlocked(i));
+  if (lockedItem) {
+    parts.push('locked', lockedItem.id, Math.floor(Math.min(gameState.coffee / (lockedItem.baseCost * 0.5), 1) * 20));
+  }
   return parts.join('|');
 }
 
@@ -332,6 +423,8 @@ function renderShop() {
   const container = document.getElementById('shopList');
   if (!container) return;
   container.innerHTML = '';
+
+  const bestId = bestValueItemId();
 
   shopItems.forEach(item => {
     if (!isItemUnlocked(item)) return;
@@ -353,13 +446,19 @@ function renderShop() {
     const itemCPS = calculateItemCPS(item);
     const sellValue = calculateSellValue(item, currentCount);
     const canSell = currentCount > 0;
+    const isBestValue = item.id === bestId && currentCount >= 0;
+    const isNew = !gameState.viewedShopItems.has(item.id);
+    // v1.20: bulk-buy preview — how much CPS this purchase adds
+    const previewCPS = itemCPS * buyAmount;
 
     const div = document.createElement('div');
     div.className = 'shop-item' + (canAfford ? ' affordable' : '');
+    div.dataset.itemId = item.id;
     div.innerHTML = `
       <div class="item-info">
-        <div class="item-name">${item.name}</div>
+        <div class="item-name">${item.name}${isBestValue ? ' <span class="best-value-badge" title="Best CPS per coffee right now">💰 Best value</span>' : ''}${isNew ? ' <span class="new-tag">✨ NEW</span>' : ''}</div>
         <div class="item-effect">Effect: +${formatNumber(itemCPS)} CPS each</div>
+        <div class="tta-label" data-item-id="${item.id}" style="display: none;"></div>
       </div>
       <div class="item-actions">
         <div class="quantity-display" title="${currentCount.toLocaleString('en-US')}">${formatNumber(currentCount)}</div>
@@ -373,6 +472,7 @@ function renderShop() {
             BUY ${buyAmount > 1 ? 'x' + buyAmount : ''}
           </button>
           <div class="cost-tile">${formatNumber(totalCost)} coffee</div>
+          <div class="bulk-preview" title="CPS this purchase adds">+${formatNumber(previewCPS)} CPS</div>
         </div>
       </div>
     `;
@@ -382,9 +482,56 @@ function renderShop() {
     container.appendChild(div);
   });
 
+  // v1.20: preview the next locked item with an unlock progress bar so
+  // players can see what's coming and how close they are to it
+  const lockedItem = shopItems.find(i => !isItemUnlocked(i));
+  if (lockedItem) {
+    const progress = Math.min(gameState.coffee / (lockedItem.baseCost * 0.5), 1);
+    const lockedDiv = document.createElement('div');
+    lockedDiv.className = 'shop-item locked-preview';
+    lockedDiv.innerHTML = `
+      <div class="item-info">
+        <div class="item-name">🔒 ${lockedItem.name}</div>
+        <div class="item-effect">Unlocks at ${formatNumber(lockedItem.baseCost * 0.5)} coffee</div>
+        <div class="unlock-progress"><div class="unlock-progress-fill" data-item-id="${lockedItem.id}" style="width: ${(progress * 100).toFixed(1)}%;"></div></div>
+      </div>
+    `;
+    container.appendChild(lockedDiv);
+  }
+
   if (container.children.length === 0) {
     container.innerHTML = '<div class="empty-state">No items available yet. Keep brewing coffee to unlock shop items!</div>';
   }
+
+  updateShopDynamic();
+}
+
+// v1.20: lightweight per-tick updater for shop elements that change
+// continuously (time-to-afford countdowns, unlock progress bars) without
+// triggering a full shop re-render (which would swallow rapid taps).
+function updateShopDynamic() {
+  const container = document.getElementById('shopList');
+  if (!container || !container.isConnected) return;
+  const cps = calculateTotalCPS();
+  container.querySelectorAll('.tta-label').forEach(el => {
+    const item = shopItems.find(i => i.id === el.dataset.itemId);
+    if (!item) return;
+    const itemState = gameState.items[item.id] || { count: 0, cost: item.baseCost };
+    const currentCount = itemState.count ?? 0;
+    const amount = gameState.buyMode;
+    const affordableAmount = calculateAffordableAmount(item, currentCount, amount, gameState.coffee);
+    if (affordableAmount > 0 || cps <= 0) { el.style.display = 'none'; return; }
+    const totalCost = calculateBulkCost(item, currentCount, amount);
+    const secs = Math.ceil((totalCost - gameState.coffee) / cps);
+    el.style.display = '';
+    el.textContent = '⏳ ' + formatDuration(secs);
+  });
+  container.querySelectorAll('.unlock-progress-fill').forEach(el => {
+    const item = shopItems.find(i => i.id === el.dataset.itemId);
+    if (!item) return;
+    const progress = Math.min(gameState.coffee / (item.baseCost * 0.5), 1);
+    el.style.width = (progress * 100).toFixed(1) + '%';
+  });
 }
 
 // ═══ UPGRADES RENDERING ═══
@@ -1011,6 +1158,39 @@ function renderActiveEffectsStrip() {
   strip.style.display = html ? 'flex' : 'none';
 }
 
+// ═══ CPS BREAKDOWN TOOLTIP (v1.20 UX) ═══
+// Hovering the CPS stat in the header shows where production comes from.
+function cpsTooltipHTML() {
+  const { total, perItem, global } = calculateCPSBreakdown();
+  const rows = shopItems
+    .map(item => ({ item, cps: perItem[item.id] || 0 }))
+    .filter(r => r.cps > 0)
+    .sort((a, b) => b.cps - a.cps)
+    .slice(0, 5);
+  let html = `<div class="cps-tip-title">☕ ${formatNumber(total)} CPS</div>`;
+  if (rows.length === 0) {
+    html += `<div class="cps-tip-row"><span>No production yet — buy something in the Shop!</span></div>`;
+  } else {
+    rows.forEach(r => {
+      const pct = total > 0 ? Math.round((r.cps / total) * 100) : 0;
+      html += `<div class="cps-tip-row"><span>${r.item.name}</span><span>${formatNumber(r.cps)} (${pct}%)</span></div>`;
+    });
+  }
+  html += `<div class="cps-tip-row cps-tip-global"><span>Global multiplier</span><span>×${global >= 1000 ? formatNumber(global) : (Math.round(global * 100) / 100)}</span></div>`;
+  return html;
+}
+
+function attachCPSTooltip() {
+  const stat = document.getElementById('cpsStat');
+  const tip = document.getElementById('cpsTooltip');
+  if (!stat || !tip) return;
+  stat.addEventListener('mouseenter', () => {
+    tip.innerHTML = cpsTooltipHTML();
+    tip.classList.remove('hidden');
+  });
+  stat.addEventListener('mouseleave', () => tip.classList.add('hidden'));
+}
+
 // ═══ STATS WINDOW (v1.18) ═══
 function fmtExact(v) {
   if (!isFinite(v)) return '0';
@@ -1548,9 +1728,116 @@ function closeSettingsModal() {
 }
 
 // ═══ EVENT LISTENERS ═══
+// ═══ GUIDED ONBOARDING (v1.20 UX) ═══
+// 3-step tour for brand-new players. The overlay is pointer-events:none so it
+// never traps the player; only the tooltip card and Skip button take clicks.
+const TUTORIAL_STEPS = [
+  { id: 'click', target: '#coffeeButton', text: 'Welcome to Coffee Tycoon! ☕ Click the big coffee cup to start brewing.' },
+  { id: 'shop', target: '[data-tab="shop"]', text: 'Nice brewing! Open the Shop and buy an Auto Brewer to automate production.' },
+  { id: 'upgrades', target: '[data-tab="upgrades"]', text: 'Last step: check the Upgrades tab to boost your empire. Happy brewing! 🎉' },
+];
+let tutorialActive = false;
+let tutorialStep = 0;
+
+function startTutorial() {
+  if (gameState.tutorialDone) return;
+  tutorialActive = true;
+  tutorialStep = 0;
+  document.getElementById('tutorialOverlay').classList.remove('hidden');
+  renderTutorialStep();
+}
+
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialStep];
+  if (!step) { endTutorial(); return; }
+  document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+  const target = document.querySelector(step.target);
+  const tip = document.getElementById('tutorialTip');
+  const text = document.getElementById('tutorialText');
+  if (!target || !tip || !text) return;
+  target.classList.add('tutorial-highlight');
+  text.textContent = step.text;
+  // Position the tip near the target without covering it
+  const rect = target.getBoundingClientRect();
+  tip.style.visibility = 'hidden';
+  tip.style.left = '0px';
+  tip.style.top = '0px';
+  requestAnimationFrame(() => {
+    const tipRect = tip.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - tipRect.width - 12));
+    let top = rect.bottom + 14;
+    if (top + tipRect.height > window.innerHeight - 12) {
+      top = Math.max(12, rect.top - tipRect.height - 14);
+    }
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+    tip.style.visibility = 'visible';
+  });
+}
+
+// Event-driven advance (e.g. first click on the brew button)
+function advanceTutorial(event) {
+  if (!tutorialActive) return;
+  const step = TUTORIAL_STEPS[tutorialStep];
+  if (step && step.id === event) {
+    tutorialStep++;
+    renderTutorialStep();
+  }
+}
+
+// State-driven advance, checked every updateUI tick
+function updateTutorial() {
+  if (!tutorialActive) return;
+  const step = TUTORIAL_STEPS[tutorialStep];
+  if (!step) { endTutorial(); return; }
+  if (step.id === 'shop' && (gameState.items.brewer?.count ?? 0) >= 1) {
+    tutorialStep++;
+    renderTutorialStep();
+    return;
+  }
+  if (step.id === 'upgrades' && document.querySelector('.tab-btn.active')?.dataset.tab === 'upgrades') {
+    endTutorial();
+    return;
+  }
+  // Keep the tip glued to its target as layout shifts (throttled)
+  const now = Date.now();
+  if (now - (updateTutorial._last || 0) < 2000) return;
+  updateTutorial._last = now;
+  document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+  const target = document.querySelector(step.target);
+  const tip = document.getElementById('tutorialTip');
+  if (!target || !tip) return;
+  target.classList.add('tutorial-highlight');
+  const rect = target.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  const left = Math.max(12, Math.min(rect.left + rect.width / 2 - tipRect.width / 2, window.innerWidth - tipRect.width - 12));
+  let top = rect.bottom + 14;
+  if (top + tipRect.height > window.innerHeight - 12) top = Math.max(12, rect.top - tipRect.height - 14);
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+
+function endTutorial() {
+  tutorialActive = false;
+  document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+  document.getElementById('tutorialOverlay')?.classList.add('hidden');
+  if (!gameState.tutorialDone) {
+    gameState.tutorialDone = true;
+    saveGame();
+  }
+}
+window.endTutorial = endTutorial;
+
 document.addEventListener('DOMContentLoaded', () => {
+
   // Coffee button click
-  document.getElementById('coffeeButton').onclick = () => {
+  // v1.20 click juice state
+  let clickCombo = 0;
+  let lastClickAt = 0;
+  let comboHideTimer = null;
+
+  document.getElementById('coffeeButton').onclick = (e) => {
     const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click * getBlendMultipliers().click * getSuperMultipliers().click;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
@@ -1559,8 +1846,44 @@ document.addEventListener('DOMContentLoaded', () => {
     playSfx('buttonclick');
 
     const btn = document.getElementById('coffeeButton');
-    btn.style.transform = 'scale(0.9)';
-    setTimeout(() => btn.style.transform = 'scale(1)', 100);
+    // v1.20: cup squash animation (CSS class instead of inline style juggling)
+    btn.classList.remove('cup-squash');
+    void btn.offsetWidth; // restart the animation
+    btn.classList.add('cup-squash');
+
+    // v1.20: floating "+N" at the click point
+    const brewTab = document.getElementById('brewTab');
+    if (brewTab && e) {
+      const rect = brewTab.getBoundingClientRect();
+      const floater = document.createElement('div');
+      floater.className = 'click-floater';
+      floater.textContent = '+' + formatNumber(earned);
+      const x = (e.clientX || rect.left + rect.width / 2) - rect.left + (Math.random() * 40 - 20);
+      const y = (e.clientY || rect.top + 120) - rect.top;
+      floater.style.left = x + 'px';
+      floater.style.top = y + 'px';
+      brewTab.appendChild(floater);
+      setTimeout(() => floater.remove(), 950);
+    }
+
+    // v1.20: combo counter for rapid clicking
+    const now = Date.now();
+    clickCombo = (now - lastClickAt < 1500) ? clickCombo + 1 : 1;
+    lastClickAt = now;
+    const comboEl = document.getElementById('comboCounter');
+    if (comboEl) {
+      if (clickCombo >= 5) {
+        comboEl.textContent = `🔥 x${clickCombo} COMBO!`;
+        comboEl.classList.remove('hidden');
+        if (comboHideTimer) clearTimeout(comboHideTimer);
+        comboHideTimer = setTimeout(() => {
+          comboEl.classList.add('hidden');
+          clickCombo = 0;
+        }, 1600);
+      }
+    }
+
+    advanceTutorial('click');
   };
 
   // Tab switching
@@ -1637,6 +1960,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeSettingsModal').onclick = closeSettingsModal;
   document.getElementById('closeOfflineModal').onclick = closeOfflineModal;
   document.getElementById('offlineContinueBtn').onclick = closeOfflineModal;
+  document.getElementById('tutorialSkipBtn').onclick = endTutorial;
+  attachCPSTooltip();
 
   document.getElementById('statsModal').onclick = (e) => {
     if (e.target.id === 'statsModal') {
@@ -1863,7 +2188,11 @@ document.addEventListener('DOMContentLoaded', () => {
       (type === 'buy' && mode === gameState.buyMode));
   });
 
-  if (!hasExistingSave) {
+  // v1.20: brand-new players get the 3-step guided tour instead of the
+  // wall-of-text modal (still available anytime via the Help button).
+  if (!hasExistingSave && !gameState.tutorialDone) {
+    startTutorial();
+  } else if (!hasExistingSave) {
     document.getElementById('instructionsOverlay').classList.remove('hidden');
   }
 
