@@ -292,6 +292,8 @@ function updateUI(force = false) {
 
   updateNotificationBadges();
   checkAchievements();
+  renderStormBanner();
+  renderActiveEffectsStrip();
   if (force || activeTab === 'shop') {
     const sig = shopSignature();
     if (force || sig !== lastShopSignature) {
@@ -874,6 +876,126 @@ function toggleUpgradePack(packId) {
   saveGame();
 }
 
+// ═══ SUPER COFFEE SPAWNING (v1.17) ═══
+// One spawn on screen at a time. core.js rolls the dice (rollSuperSpawns);
+// this module owns the button DOM.
+let superSpawnEl = null;
+let superSpawnType = null;
+let superSpawnDespawnAt = 0;
+
+function uiSuperSpawnActive() {
+  return !!superSpawnEl;
+}
+
+function clearSuperSpawn() {
+  if (superSpawnEl) {
+    superSpawnEl.remove();
+    superSpawnEl = null;
+    superSpawnType = null;
+  }
+}
+
+function spawnSuperCoffee(type) {
+  clearSuperSpawn();
+  const layer = document.getElementById('superCoffeeLayer');
+  if (!layer) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'super-spawn-btn';
+  const labels = {
+    super: { emoji: '☕', title: 'Super Coffee! Click for a bonus!' },
+    golden: { emoji: '✨', title: `Golden Super Coffee! Costs ${GOLDEN_SUPER_COST} Golden Coffee — click to buy a powerful buff!` },
+    mystery: { emoji: '❓', title: 'Mystery Coffee Beans! Click for a rare boost!' }
+  };
+  const label = labels[type] || labels.super;
+  btn.textContent = label.emoji;
+  btn.title = label.title;
+  btn.setAttribute('aria-label', label.title);
+  if (type === 'golden') btn.classList.add('golden');
+  if (type === 'mystery') btn.classList.add('mystery');
+
+  // Random spot on screen, kept clear of the edges
+  const pad = 100;
+  const x = pad + Math.random() * Math.max(1, window.innerWidth - pad * 2);
+  const y = pad + Math.random() * Math.max(1, window.innerHeight - pad * 2);
+  btn.style.left = `${x - 42}px`;
+  btn.style.top = `${y - 42}px`;
+
+  const despawnMs = type === 'golden' ? GOLDEN_SUPER_DESPAWN_MS : SUPER_DESPAWN_MS;
+  superSpawnDespawnAt = Date.now() + despawnMs;
+
+  btn.onclick = () => {
+    if (type === 'super') {
+      collectSuperCoffee();
+    } else if (type === 'mystery') {
+      collectMysteryBean();
+    } else if (type === 'golden') {
+      if (confirm(`Buy a Golden Super Coffee for ${GOLDEN_SUPER_COST} Golden Coffee?\n\nGrants 3× CPS for 5 minutes!`)) {
+        buyGoldenSuperCoffee();
+      } else {
+        return; // keep the button on screen if they cancel
+      }
+    }
+    clearSuperSpawn();
+    updateUI(true);
+  };
+
+  layer.appendChild(btn);
+  superSpawnEl = btn;
+  superSpawnType = type;
+}
+
+// Per-second maintenance: despawn expired buttons, roll new spawns,
+// prune expired effects.
+function tickSuperCoffee() {
+  if (superSpawnEl && Date.now() >= superSpawnDespawnAt) {
+    clearSuperSpawn();
+  }
+  pruneSuperEffects();
+  const spawn = rollSuperSpawns();
+  if (spawn) spawnSuperCoffee(spawn);
+}
+
+// Storm banner + active effects strip (brew tab)
+function renderStormBanner() {
+  const banner = document.getElementById('stormBanner');
+  if (!banner) return;
+  const storm = gameState.storm;
+  if (storm && storm.expiresAt > Date.now()) {
+    const s = Math.ceil((storm.expiresAt - Date.now()) / 1000);
+    banner.classList.remove('hidden');
+    banner.textContent = `⛈ COFFEE STORM — all CPS ×${storm.mult} for ${s}s!`;
+  } else {
+    banner.classList.add('hidden');
+    banner.textContent = '';
+  }
+}
+
+function renderActiveEffectsStrip() {
+  const strip = document.getElementById('activeEffectsStrip');
+  if (!strip) return;
+  const now = Date.now();
+  let html = '';
+
+  if (gameState.storm && gameState.storm.expiresAt > now) {
+    const s = Math.ceil((gameState.storm.expiresAt - now) / 1000);
+    html += `<span class="effect-chip storm">⛈ Storm ×${gameState.storm.mult} CPS (${s}s)</span>`;
+  }
+  for (const fx of gameState.superEffects) {
+    if (fx.expiresAt <= now) continue;
+    const s = Math.ceil((fx.expiresAt - now) / 1000);
+    const golden = fx.label === 'Golden Brew' ? ' golden' : '';
+    html += `<span class="effect-chip${golden}">${fx.kind === 'cps' ? '☕' : '👆'} ${fx.label} ×${fx.mult} (${s}s)</span>`;
+  }
+  if (gameState.activeBlend && gameState.activeBlend.expiresAt > now) {
+    const blend = blendRecipes.find(b => b.id === gameState.activeBlend.id);
+    const s = Math.ceil((gameState.activeBlend.expiresAt - now) / 1000);
+    if (blend) html += `<span class="effect-chip">🔥 ${blend.name} (${s}s)</span>`;
+  }
+  strip.innerHTML = html;
+  strip.style.display = html ? 'flex' : 'none';
+}
+
 // ═══ PRESTIGE RENDERING ═══
 function renderPrestige() {
   const container = document.getElementById('prestigeContent');
@@ -903,6 +1025,7 @@ function renderPrestige() {
         <p>• Golden Coffee, multiplier, permanent CPS bonuses, golden upgrades and their automations are kept forever</p>
         <p>• Research Lab drinks and discoveries are kept forever</p>
         <p>• Roastery beans and roasted blends are kept forever (an active blend ends)</p>
+        <p>• Mystery Bean permanent CPS bonuses are kept forever (active Super Coffee effects and storms end)</p>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
@@ -1110,7 +1233,7 @@ function closeSettingsModal() {
 document.addEventListener('DOMContentLoaded', () => {
   // Coffee button click
   document.getElementById('coffeeButton').onclick = () => {
-    const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click * getBlendMultipliers().click;
+    const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click * getBlendMultipliers().click * getSuperMultipliers().click;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
 
@@ -1308,6 +1431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     regenSwaps();
     tickBlendExpiry();
+    tickSuperCoffee();
     updateUI();
   }, 1000);
 
