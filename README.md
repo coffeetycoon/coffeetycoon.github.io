@@ -35,7 +35,17 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.18 – Stats Window
+### Latest Version: v1.19 – Polish & Stackable Roastery
+**Release Date:** Oct 1, 2026
+
+**Key Features**
+- Stackable Roastery Upgrades: Master Roaster, Blend Mastery, and Double Batch can now be purchased repeatedly — each stack strengthens the effect (compounding) and doubles the next stack's Golden Coffee price
+- Smarter Auto-Buy: Auto-Buy Items and Auto-Buy Upgrades now buy the single next-cheapest affordable thing each automation pass
+- Icon indicators: ✅ owned / claimed, 🔔 affordable / unclaimed, ◻️ locked replace all [x]/[!]/[] text markers across upgrades, golden upgrades, and achievements
+- Number shorthand: all visible numbers use k/M/B/T notation (exact values kept in hover tooltips)
+- Roastery UI: roast buttons show 🫘 icon costs, batch-size header reflects Double Batch stacks
+
+### Previous Version: v1.18 – Stats Window
 **Release Date:** Sep 30, 2026
 
 **Key Features**

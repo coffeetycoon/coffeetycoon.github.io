@@ -188,7 +188,7 @@ function renderGoldenCoffeeProgressCard() {
   const ready = gain > 0;
 
   const statusText = ready
-    ? `<span style="color: #4CAF50; font-weight: 600;">[!] Ready to prestige for ${gain} more Golden Coffee!</span>`
+    ? `<span style="color: #4CAF50; font-weight: 600;">🔔 Ready to prestige for ${gain} more Golden Coffee!</span>`
     : atMax
       ? '<span style="color: #d4a574;">Maximum Golden Coffee reached (100)</span>'
       : `<span style="color: rgba(245, 245, 245, 0.8);">Need ${formatNumber(coffeeNeeded)} more total coffee for next Golden Coffee</span>`;
@@ -362,7 +362,7 @@ function renderShop() {
         <div class="item-effect">Effect: +${formatNumber(itemCPS)} CPS each</div>
       </div>
       <div class="item-actions">
-        <div class="quantity-display">${currentCount}</div>
+        <div class="quantity-display" title="${currentCount.toLocaleString('en-US')}">${formatNumber(currentCount)}</div>
         <div class="sell-section">
           <button class="sell-btn" data-item-id="${item.id}" ${!canSell ? 'disabled' : ''}>
             SELL x${gameState.sellMode}<br><span style="font-size: 0.8rem;">(${formatNumber(sellValue)} each)</span>
@@ -449,12 +449,12 @@ function renderRegularUpgrades() {
         ${previewUpgrades.map(u => {
           const purchased = gameState.purchasedUpgrades.has(u.id);
           const affordable = !purchased && gameState.coffee >= u.cost && u.unlockCondition();
-          return `<span class="upgrade-pack-badge" ${affordable ? 'title="Affordable" aria-label="Affordable"' : ''}>${purchased ? '[x]' : (affordable ? '[!]' : '[ ]')}</span>`;
+          return `<span class="upgrade-pack-badge" ${affordable ? 'title="Affordable" aria-label="Affordable"' : ''}>${purchased ? '✅' : (affordable ? '🔔' : '◻️')}</span>`;
         }).join('')}
         ${unlockedUpgrades.length > 8 ? '<span style="opacity: 0.6;">...</span>' : ''}
       </div>
-      ${affordableUpgrades.length > 0 ? `<div style="color: #4CAF50; font-weight: 600; font-size: 0.9rem; margin-top: 8px;">${affordableUpgrades.length} affordable upgrade${affordableUpgrades.length !== 1 ? 's' : ''}</div>` : ''}
-      <div class="upgrade-pack-toggle">${isCollapsed ? '▼ Click to expand' : '▲ Click to collapse'}</div>
+      ${affordableUpgrades.length > 0 ? `<div style="color: #4CAF50; font-weight: 600; font-size: 0.9rem; margin-top: 8px;">🔔 ${affordableUpgrades.length} affordable</div>` : ''}
+      <div class="upgrade-pack-toggle" title="${isCollapsed ? 'Expand' : 'Collapse'}">${isCollapsed ? '▼' : '▲'}</div>
     `;
 
     packDiv.onclick = (e) => {
@@ -478,13 +478,13 @@ function renderRegularUpgrades() {
       upgradeDiv.innerHTML = `
         <div class="upgrade-header">
           <div class="upgrade-name">${upgrade.name}</div>
-          <div class="upgrade-status">${purchased ? '[OWNED]' : ''}</div>
+          <div class="upgrade-status">${purchased ? '✅' : ''}</div>
         </div>
         <div class="upgrade-description">${upgrade.description}</div>
         <div class="upgrade-footer">
-          <div class="cost-tile">${formatNumber(upgrade.cost)} coffee</div>
+          <div class="cost-tile">${formatNumber(upgrade.cost)} ☕</div>
           <button class="upgrade-buy-btn" ${!canAfford || purchased ? 'disabled' : ''}>
-            ${purchased ? 'PURCHASED' : 'BUY UPGRADE'}
+            ${purchased ? '✅ Owned' : '🛒 Buy'}
           </button>
         </div>
       `;
@@ -519,23 +519,38 @@ function renderGoldenUpgrades() {
   // Render ALL Golden Upgrades (always visible, regardless of unlock status)
   goldenUpgrades.forEach(upgrade => {
     const purchased = gameState.purchasedGoldenUpgrades.has(upgrade.id);
-    const canAfford = gameState.goldenCoffee >= upgrade.cost && !purchased;
+    const stackable = !!upgrade.stackable;
+    const stacks = stackable ? goldenUpgradeStacks(upgrade.id) : (purchased ? 1 : 0);
+    const cost = stackable ? goldenUpgradeCost(upgrade) : upgrade.cost;
+    // Stackable upgrades can always be bought again; one-time ones only when unpurchased.
+    const canAfford = gameState.goldenCoffee >= cost && (stackable || !purchased);
     const isLocked = !upgrade.unlockCondition();
     const isToggle = upgrade.type === 'toggle' && upgrade.setting;
     const toggleOn = isToggle ? gameState.settings[upgrade.setting] !== false : false;
-    
+    const levelBadge = stackable && stacks > 0 ? ` <span style="font-size: 0.8rem; opacity: 0.85;">×${stacks}</span>` : '';
+    // Button state: stackable upgrades stay buyable; one-time upgrades become "owned".
+    const btnLabel = stackable
+      ? (canAfford ? `🛒 Buy — Lv ${stacks + 1}` : '🔒 Not enough')
+      : (purchased ? '✅ Owned' : (canAfford ? '🛒 Buy' : '🔒 Not enough'));
+    const btnBg = stackable
+      ? (canAfford ? '#ffd700' : '#666')
+      : (purchased ? '#4CAF50' : (canAfford ? '#ffd700' : '#666'));
+    const btnColor = stackable
+      ? (canAfford ? '#1a1a2e' : '#aaa')
+      : (purchased ? '#fff' : (canAfford ? '#1a1a2e' : '#aaa'));
+
     const upgradeDiv = document.createElement('div');
     upgradeDiv.className = 'upgrade-pack';
     upgradeDiv.style.background = purchased ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 215, 0, 0.05)';
     upgradeDiv.style.border = purchased ? '1px solid #4CAF50' : '1px solid rgba(255, 215, 0, 0.3)';
-    
+
     upgradeDiv.innerHTML = `
       <div class="upgrade-pack-header" style="justify-content: space-between;">
         <div class="upgrade-pack-title">
-          <span style="color: ${purchased ? '#4CAF50' : '#ffd700'};">${purchased ? '[x]' : '[*]'} ${upgrade.name}</span>
+          <span style="color: ${purchased ? '#4CAF50' : '#ffd700'};">${purchased ? '✅' : '✨'} ${upgrade.name}${levelBadge}</span>
         </div>
         <div style="color: #ffd700; font-weight: 600; font-size: 14px;">
-          ${upgrade.cost} Golden Coffee
+          ${formatNumber(cost)} ✨
         </div>
       </div>
       <div class="upgrade-pack-description">${upgrade.description}</div>
@@ -546,18 +561,18 @@ function renderGoldenUpgrades() {
             <input type="checkbox" id="golden-toggle-${upgrade.id}" ${toggleOn ? 'checked' : ''} style="opacity: 0; width: 0; height: 0;">
             <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${toggleOn ? '#4CAF50' : '#666'}; border-radius: 24px; transition: 0.2s;"></span>
           </label>
-        </div>` : (upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">[x] Active</div>' : '')}
-      ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">[Locked] Need more Golden Coffee</div>' : ''}
+        </div>` : (upgrade.type === 'toggle' && purchased ? '<div style="color: #4CAF50; font-size: 12px; margin-top: 8px;">✅ Active</div>' : '')}
+      ${isLocked ? '<div style="color: #888; font-size: 12px; margin-top: 8px;">🔒 Need more Golden Coffee</div>' : ''}
       ${isToggle && purchased ? '' : `
       <div style="margin-top: 12px;">
-        <button class="upgrade-buy-btn" 
-                style="width: 100%; padding: 10px; background: ${purchased ? '#4CAF50' : (canAfford ? '#ffd700' : '#666')}; color: ${purchased ? '#fff' : '#1a1a2e'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${purchased || !canAfford ? 'not-allowed' : 'pointer'};" 
-                ${!canAfford || purchased ? 'disabled' : ''}>
-          ${purchased ? 'PURCHASED' : (canAfford ? 'BUY UPGRADE' : 'NOT ENOUGH GOLDEN COFFEE')}
+        <button class="upgrade-buy-btn"
+                style="width: 100%; padding: 10px; background: ${btnBg}; color: ${btnColor}; border: none; border-radius: 6px; font-weight: 600; cursor: ${!canAfford ? 'not-allowed' : 'pointer'};"
+                ${!canAfford ? 'disabled' : ''}>
+          ${btnLabel}
         </button>
       </div>`}
     `;
-    
+
     if (isToggle && purchased) {
       const toggle = upgradeDiv.querySelector(`#golden-toggle-${upgrade.id}`);
       if (toggle) {
@@ -568,7 +583,7 @@ function renderGoldenUpgrades() {
           renderGoldenUpgrades();
         };
       }
-    } else if (!purchased && canAfford) {
+    } else if (canAfford && (stackable || !purchased)) {
       upgradeDiv.querySelector('.upgrade-buy-btn').onclick = () => {
         buyGoldenUpgrade(upgrade.id);
       };
@@ -792,7 +807,7 @@ function renderRoastery() {
     const cost = roastBeanCost(blend);
     const canRoast = gameState.beans >= cost;
     const owned = gameState.blends[blend.id] || 0;
-    const discounted = gameState.purchasedGoldenUpgrades.has('master_roaster');
+    const discounted = goldenUpgradeStacks('master_roaster') > 0;
     blendsHtml += `
       <div class="upgrade-pack" style="background: rgba(212, 165, 116, 0.08); border: 1px solid rgba(212, 165, 116, 0.3);">
         <div class="upgrade-pack-header">
@@ -803,7 +818,7 @@ function renderRoastery() {
         <div style="display: flex; gap: 8px; margin-top: 12px;">
           <button class="upgrade-buy-btn" data-roast="${blend.id}" ${canRoast ? '' : 'disabled'}
                   style="flex: 1; padding: 10px; background: ${canRoast ? '#d4a574' : '#666'}; color: ${canRoast ? '#1a1a2e' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${canRoast ? 'pointer' : 'not-allowed'};">
-            ROAST — ${cost} bean${cost !== 1 ? 's' : ''}${discounted ? ' ★' : ''}
+            ROAST — ${formatNumber(cost)} 🫘${discounted ? ' ★' : ''}
           </button>
           <button class="upgrade-buy-btn" data-activate-blend="${blend.id}" ${owned > 0 ? '' : 'disabled'}
                   style="flex: 1; padding: 10px; background: ${owned > 0 ? '#4CAF50' : '#666'}; color: ${owned > 0 ? '#fff' : '#aaa'}; border: none; border-radius: 6px; font-weight: 600; cursor: ${owned > 0 ? 'pointer' : 'not-allowed'};">
@@ -813,14 +828,14 @@ function renderRoastery() {
       </div>`;
   });
 
-  const doubleBatch = gameState.purchasedGoldenUpgrades.has('double_batch');
+  const batchSize = 1 + goldenUpgradeStacks('double_batch');
   container.innerHTML = `
     <h3 style="color: #d4a574; margin: 0 0 12px;">Active Blend</h3>
     <div class="achievements-grid">${activeHtml}</div>
     <h3 style="color: #d4a574; margin: 20px 0 12px;">Green Beans</h3>
     <div class="upgrade-pack" style="background: rgba(139, 90, 43, 0.12); border: 1px solid rgba(139, 90, 43, 0.5);">
       <div class="upgrade-pack-header">
-        <div class="upgrade-pack-title">🫘 Bean Stock: ${gameState.beans}</div>
+        <div class="upgrade-pack-title">🫘 Bean Stock: ${formatNumber(gameState.beans)}</div>
       </div>
       <div class="upgrade-pack-description">
         Lifetime purchased: ${formatNumber(gameState.lifetimeBeans)}<br>
@@ -828,7 +843,7 @@ function renderRoastery() {
       </div>
       <div style="display: flex; gap: 8px; margin-top: 12px;">${beanBtns}</div>
     </div>
-    <h3 style="color: #d4a574; margin: 20px 0 12px;">Roast Blends${doubleBatch ? ' <span style="font-size: 12px; color: #ffd700;">(Double Batch: 2 per roast!)</span>' : ''}</h3>
+    <h3 style="color: #d4a574; margin: 20px 0 12px;">Roast Blends${batchSize > 1 ? ` <span style="font-size: 12px; color: #ffd700;">(${batchSize} per roast!)</span>` : ''}</h3>
     <div class="upgrade-pack-description" style="margin-bottom: 12px;">Activating a blend consumes 1 from your stock and replaces any active blend.</div>
     <div class="achievements-grid">${blendsHtml}</div>`;
 
@@ -1056,8 +1071,8 @@ function renderStatsOverview() {
     </div>
     <div class="stats-mini-grid">
       <div class="stats-mini"><span class="mini-label">Time played</span><span class="mini-value">${played}</span></div>
-      <div class="stats-mini"><span class="mini-label">Manual clicks</span><span class="mini-value">${fmtExact(s.totalClicks)}</span></div>
-      <div class="stats-mini"><span class="mini-label">Prestiges</span><span class="mini-value">${fmtExact(s.totalPrestiges)}</span></div>
+      <div class="stats-mini"><span class="mini-label">Manual clicks</span><span class="mini-value" title="${fmtExact(s.totalClicks)}">${formatNumber(s.totalClicks)}</span></div>
+      <div class="stats-mini"><span class="mini-label">Prestiges</span><span class="mini-value" title="${fmtExact(s.totalPrestiges)}">${formatNumber(s.totalPrestiges)}</span></div>
       <div class="stats-mini"><span class="mini-label">Max CPS</span><span class="mini-value" title="${fmtExact(s.maxCPS)}">${formatNumber(s.maxCPS)}</span></div>
     </div>`;
 }
@@ -1134,7 +1149,7 @@ function attachLineHover(canvas, valueLabel) {
     pts.forEach((p, i) => { const d = Math.abs(g.x(i) - mx); if (d < bd) { bd = d; best = i; } });
     const p = pts[best];
     const rect = canvas.getBoundingClientRect();
-    showChartTooltip(e.clientX, e.clientY, fmtClock(p.t), `${valueLabel}: ${fmtExact(p.v)}`);
+    showChartTooltip(e.clientX, e.clientY, fmtClock(p.t), `${valueLabel}: ${formatNumber(p.v)}`);
     // crosshair
     const ctx = canvas.getContext('2d');
     drawLineChart(canvas, pts, canvas._chartColor);
@@ -1206,7 +1221,7 @@ function drawBarChart(canvas, bars) {
     const my = (e.clientY - r.top) * (canvas.height / r.height);
     const i = Math.floor((my - 8) / g.rowH);
     if (i < 0 || i >= data.length) { hideChartTooltip(); return; }
-    showChartTooltip(e.clientX, e.clientY, data[i].label, `CPS: ${fmtExact(data[i].value)}`);
+    showChartTooltip(e.clientX, e.clientY, data[i].label, `CPS: ${formatNumber(data[i].value)}`);
   };
   canvas.onmouseleave = hideChartTooltip;
 }
@@ -1230,7 +1245,7 @@ function renderStatsBuildings() {
     const life = s.coffeeByBuilding[r.item.id] || 0;
     return `<tr>
       <td>${r.item.name}</td>
-      <td>${fmtExact(r.count)}</td>
+      <td title="${fmtExact(r.count)}">${formatNumber(r.count)}</td>
       <td title="${fmtExact((perItem[r.item.id] || 0) / Math.max(1, r.count))}">${formatNumber(r.count ? (perItem[r.item.id] || 0) / r.count : 0)}</td>
       <td title="${fmtExact(r.cps)}">${formatNumber(r.cps)}</td>
       <td>${share.toFixed(1)}%</td>
@@ -1250,7 +1265,7 @@ function renderStatsMultipliers() {
   const storm = gameState.storm && gameState.storm.expiresAt > Date.now() ? gameState.storm : null;
   const rows = [
     { name: 'Base building output', detail: 'Sum of all buildings × their shop upgrades', value: '×1' },
-    { name: 'Prestige', detail: `${fmtExact(gameState.goldenCoffee)} Golden Coffee`, value: `×${gameState.prestigeMultiplier.toFixed(2)}` },
+    { name: 'Prestige', detail: `${formatNumber(gameState.goldenCoffee)} ✨ Golden Coffee`, value: `×${gameState.prestigeMultiplier.toFixed(2)}` },
     { name: 'Permanent GC bonus', detail: 'Golden upgrades', value: `×${(gameState.permanentCPSBonus || 1).toFixed(2)}` },
     { name: 'Mystery Bean bonus', detail: 'Permanent, from Mystery Coffee Beans', value: `×${(gameState.mysteryCPSBonus || 1).toFixed(3)}` },
     { name: 'Lab drinks', detail: activeDrinks ? `${activeDrinks} drink${activeDrinks === 1 ? '' : 's'} active` : 'No drinks active', value: `×${drinkM.toFixed(2)}` },
@@ -1405,7 +1420,7 @@ function renderAchievements() {
       <div class="pack-preview">
         ${visibleAchievements.slice(0, 8).map(a => {
           const isUnclaimed = gameState.unclaimedAchievements.has(a.id);
-          return `<span class="pack-badge">${a.earned ? (isUnclaimed ? '[!]' : '[x]') : '[ ]'}</span>`;
+          return `<span class="pack-badge">${a.earned ? (isUnclaimed ? '🔔' : '✅') : '◻️'}</span>`;
         }).join('')}
         ${visibleAchievements.length > 8 ? '<span style="opacity: 0.6;">...</span>' : ''}
       </div>
@@ -1443,7 +1458,7 @@ function openAchievementModal(pack) {
     
     div.innerHTML = `
       <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">
-        ${a.earned ? (isUnclaimed ? '[!]' : '[x]') : '[ ]'} ${a.name}
+        ${a.earned ? (isUnclaimed ? '🔔' : '✅') : '◻️'} ${a.name}
       </div>
       <div style="opacity: 0.9; margin-bottom: 8px; font-size: 0.9rem;">${a.requirement}</div>
       ${a.reward ? `<div class="achievement-reward">${getRewardText(a.reward)}${isUnclaimed ? ' - Click to claim!' : ''}</div>` : ''}
