@@ -35,7 +35,21 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.19 – Polish & Stackable Roastery
+### Latest Version: v1.20 – UX Overhaul
+**Release Date:** Oct 1, 2026
+
+**Key Features**
+- Shop smarts: affordable items glow gold and unaffordable ones dim; every price shows a ⏳ time-to-afford countdown; the next locked item previews with an unlock progress bar
+- 💰 Best value badge: the shop item with the best CPS-per-coffee ratio right now is flagged automatically
+- Bulk-buy preview: every buy button shows the +CPS it will add before you click
+- CPS breakdown: hovering the CPS stat in the header shows per-building production with share %
+- Click juice: floating +N numbers at the click point, cup squash animation, and a 🔥 combo counter for rapid clicking
+- Milestone celebrations: confetti bursts for big moments — 1M coffee, 100 buildings, first prestige, and more
+- Tab badges everywhere: Shop (new unlocks) and Prestige (can prestige) tabs now get notification dots too
+- ✨ NEW tags: freshly unlocked shop items are flagged until viewed
+- Guided tour: new players get a 3-step interactive tutorial instead of a wall-of-text modal (full guide still in Help)
+
+### Previous Version: v1.19 – Polish & Stackable Roastery
 **Release Date:** Oct 1, 2026
 
 **Key Features**

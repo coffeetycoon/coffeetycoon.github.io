@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.19</title>
+<title>Coffee Tycoon v1.20</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
@@ -13,6 +13,14 @@
 <body>
 <div id="notificationContainer" class="notification-container"></div>
 <div id="superCoffeeLayer"></div>
+
+<!-- v1.20 guided onboarding: non-blocking overlay, tooltip is positioned by JS -->
+<div id="tutorialOverlay" class="tutorial-overlay hidden">
+  <div id="tutorialTip" class="tutorial-tip">
+    <div id="tutorialText" class="tutorial-text"></div>
+    <button id="tutorialSkipBtn" class="tutorial-skip">Skip tour</button>
+  </div>
+</div>
 
 <div id="instructionsOverlay" class="overlay hidden">
   <div class="instructions-modal">
@@ -107,10 +115,22 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.19</div>
+      <div class="modal-title">Coffee Tycoon v1.20</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
+      <h3>What's New in v1.20</h3>
+      <ul>
+        <li><strong>Shop smarts:</strong> affordable items glow gold, unaffordable ones dim; each price shows a ⏳ time-to-afford countdown; the next locked item previews with an unlock progress bar</li>
+        <li><strong>💰 Best value badge:</strong> the shop item with the best CPS-per-coffee right now is flagged automatically</li>
+        <li><strong>Bulk-buy preview:</strong> every buy button shows the +CPS it will add before you click</li>
+        <li><strong>CPS breakdown:</strong> hover the CPS stat in the header for a per-building production breakdown</li>
+        <li><strong>Click juice:</strong> floating +N numbers, cup squash animation, and a 🔥 combo counter for rapid clicking</li>
+        <li><strong>Milestone celebrations:</strong> confetti bursts for big moments — 1M coffee, 100 buildings, first prestige, and more</li>
+        <li><strong>Tab badges everywhere:</strong> Shop and Prestige tabs now get notification dots too</li>
+        <li><strong>✨ NEW tags:</strong> freshly unlocked shop items are flagged until you've seen them</li>
+        <li><strong>Guided tour:</strong> new players get a 3-step interactive tutorial instead of a wall of text</li>
+      </ul>
       <h3>What's New in v1.19</h3>
       <ul>
         <li><strong>Stackable Roastery Upgrades:</strong> Master Roaster, Blend Mastery, and Double Batch can now be bought repeatedly — each stack strengthens the effect and doubles the next price</li>
@@ -128,7 +148,7 @@
         <li><strong>Lifetime tab:</strong> Lifetime stats for everything — clicks, offline earnings, beans, storms, and more</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.19</p>
+      <p><strong>Version:</strong> 1.20</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -148,7 +168,9 @@
   <p>Brew coffee, earn rewards, and build your empire!</p>
   <div class="status-bar">
     <div class="stat">Coffee: <span id="coffeeDisplay">0</span></div>
-    <div class="stat">CPS: <span id="cpsDisplay">0</span></div>
+    <div class="stat cps-stat" id="cpsStat">CPS: <span id="cpsDisplay">0</span>
+      <div class="cps-tooltip hidden" id="cpsTooltip"></div>
+    </div>
     <div class="stat">Golden Coffee: <span id="goldenCoffeeDisplay">0</span></div>
   </div>
   <div id="stormBanner" class="storm-banner hidden"></div>
@@ -168,6 +190,7 @@
     <div id="brewTab" class="tab-content active">
       <div style="text-align: center;">
         <button id="coffeeButton">☕</button>
+        <div id="comboCounter" class="combo-counter hidden"></div>
         <div style="font-size: 1.2rem; margin-top: 16px;">Click the button to brew coffee!</div>
         <div style="margin-top: 12px; opacity: 0.8;">Each click: +<span id="clickPowerDisplay">1</span> Coffee</div>
         <div id="activeEffectsStrip" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></div>

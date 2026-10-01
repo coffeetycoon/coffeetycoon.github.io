@@ -249,8 +249,13 @@
 }
 
 .shop-item.affordable, .upgrade-item.affordable {
-  border-color: rgba(76, 175, 80, 0.5);
-  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(255, 215, 0, 0.65);
+  background: rgba(255, 215, 0, 0.07);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.25);
+}
+
+.shop-item:not(.affordable):not(.locked-preview) {
+  opacity: 0.72;
 }
 
 .shop-item {
@@ -1323,4 +1328,251 @@ canvas#buildingChart {
   .stats-mini-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ═══ v1.20 UX OVERHAUL ═══ */
+
+/* Time-to-afford countdown under each shop price */
+.tta-label {
+  font-size: 0.85rem;
+  color: #d4a574;
+  opacity: 0.9;
+  margin-top: 6px;
+}
+
+/* Best-value badge and NEW tag on shop items */
+.best-value-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  background: rgba(255, 215, 0, 0.16);
+  border: 1px solid rgba(255, 215, 0, 0.55);
+  color: #ffd700;
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.new-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  background: rgba(78, 205, 196, 0.14);
+  border: 1px solid rgba(78, 205, 196, 0.55);
+  color: #4ecdc4;
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: newTagPulse 1.6s ease-in-out infinite;
+}
+@keyframes newTagPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Bulk-buy CPS preview */
+.bulk-preview {
+  font-size: 0.8rem;
+  color: #9ccc9c;
+  margin-top: 3px;
+  text-align: center;
+}
+
+/* Locked next-item preview with unlock progress */
+.shop-item.locked-preview {
+  border-style: dashed;
+  opacity: 0.6;
+}
+.unlock-progress {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  margin-top: 10px;
+  overflow: hidden;
+  max-width: 320px;
+}
+.unlock-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4a574, #ffd700);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* CPS breakdown tooltip in the header */
+.cps-stat {
+  position: relative;
+  cursor: help;
+}
+.cps-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 270px;
+  background: rgba(20, 20, 35, 0.97);
+  border: 1px solid rgba(212, 165, 116, 0.45);
+  border-radius: 12px;
+  padding: 12px 14px;
+  z-index: 300;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+  text-align: left;
+  pointer-events: none;
+  font-weight: 400;
+}
+.cps-tip-title {
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+.cps-tip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 0.85rem;
+  padding: 2px 0;
+  opacity: 0.92;
+}
+.cps-tip-global {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  margin-top: 6px;
+  padding-top: 8px;
+  color: #d4a574;
+}
+
+/* Click juice: floaters, cup squash, combo counter */
+#brewTab {
+  position: relative;
+  overflow: hidden;
+}
+#coffeeButton.cup-squash {
+  animation: cupSquash 0.18s ease;
+}
+@keyframes cupSquash {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.86); }
+  100% { transform: scale(1); }
+}
+.click-floater {
+  position: absolute;
+  font-weight: 700;
+  color: #ffd700;
+  font-size: 1.15rem;
+  pointer-events: none;
+  animation: floatUp 0.9s ease-out forwards;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+  z-index: 60;
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-72px); }
+}
+.combo-counter {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ff9f43;
+  margin-top: 10px;
+  min-height: 1.4em;
+  animation: comboPop 0.25s ease;
+}
+@keyframes comboPop {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Milestone celebration */
+.milestone-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: milestoneFlash 0.6s ease;
+}
+@keyframes milestoneFlash {
+  0% { background: rgba(255, 215, 0, 0); }
+  30% { background: rgba(255, 215, 0, 0.13); }
+  100% { background: rgba(255, 215, 0, 0); }
+}
+.milestone-label {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffd700;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+  animation: milestonePop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1);
+  z-index: 1001;
+  padding: 0 16px;
+  text-align: center;
+}
+@keyframes milestonePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.confetti-piece {
+  position: absolute;
+  top: -14px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  to { transform: translateY(108vh) rotate(720deg); }
+}
+
+/* Guided tutorial */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.45);
+}
+.tutorial-tip {
+  position: fixed;
+  max-width: 300px;
+  background: rgba(26, 26, 46, 0.98);
+  border: 2px solid #d4a574;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+  z-index: 901;
+}
+.tutorial-text {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+.tutorial-skip {
+  background: transparent;
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  color: #d4a574;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.tutorial-skip:hover {
+  background: rgba(212, 165, 116, 0.15);
+}
+.tutorial-highlight {
+  position: relative;
+  z-index: 902;
+  outline: 3px solid #ffd700;
+  outline-offset: 4px;
+  border-radius: 12px;
+  animation: tutorialPulse 1.4s ease-in-out infinite;
+}
+@keyframes tutorialPulse {
+  0%, 100% { outline-color: rgba(255, 215, 0, 0.9); }
+  50% { outline-color: rgba(255, 215, 0, 0.3); }
 }
