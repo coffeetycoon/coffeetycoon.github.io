@@ -16,6 +16,9 @@ const gameState = {
   goldenUpgradeStacks: {}, // { upgradeId: times purchased } — for stackable golden upgrades
   itemMultipliers: {},
   viewedUpgrades: new Set(),
+  viewedShopItems: new Set(), // shop item ids the player has seen (drives "new" tags + shop tab badge)
+  celebratedMilestones: new Set(), // milestone ids already celebrated with confetti
+  tutorialDone: false, // guided onboarding completed or skipped
   viewedAchievements: new Set(),
   achievements: [],
   collapsedPacks: new Set(),
@@ -1288,6 +1291,9 @@ function applySaveData(data) {
   gameState.goldenUpgradeStacks = data.goldenUpgradeStacks || {};
   gameState.itemMultipliers = data.itemMultipliers || {};
   gameState.viewedUpgrades = new Set(data.viewedUpgrades || []);
+  gameState.viewedShopItems = new Set(data.viewedShopItems || []);
+  gameState.celebratedMilestones = new Set(data.celebratedMilestones || []);
+  gameState.tutorialDone = data.tutorialDone === true;
   gameState.viewedAchievements = new Set(data.viewedAchievements || []);
   gameState.collapsedPacks = new Set(data.collapsedPacks || []);
   gameState.unclaimedAchievements = new Set(data.unclaimedAchievements || []);
@@ -1422,6 +1428,9 @@ function saveGame() {
     purchasedUpgrades: Array.from(gameState.purchasedUpgrades),
     itemMultipliers: gameState.itemMultipliers,
     viewedUpgrades: Array.from(gameState.viewedUpgrades),
+    viewedShopItems: Array.from(gameState.viewedShopItems),
+    celebratedMilestones: Array.from(gameState.celebratedMilestones),
+    tutorialDone: gameState.tutorialDone,
     viewedAchievements: Array.from(gameState.viewedAchievements),
     achievements: gameState.achievements.map(a => ({ id: a.id, earned: a.earned })),
     collapsedPacks: Array.from(gameState.collapsedPacks),
@@ -1642,7 +1651,35 @@ function checkAchievements() {
   });
 }
 
+// ═══ MILESTONE CELEBRATIONS (v1.20 UX) ═══
+// Big empire moments get a confetti celebration the first time they happen.
+// The visual celebration itself lives in ui.js (celebrateMilestone); core
+// only detects crossings and records them so they persist across sessions.
+const MILESTONES = [
+  { id: 'ms_coffee_1k', label: '1K coffee brewed!', value: () => gameState.totalCoffeeAllTime, threshold: 1000 },
+  { id: 'ms_coffee_100k', label: '100K coffee brewed!', value: () => gameState.totalCoffeeAllTime, threshold: 100000 },
+  { id: 'ms_coffee_1m', label: '1M coffee brewed! ☕', value: () => gameState.totalCoffeeAllTime, threshold: 1000000 },
+  { id: 'ms_coffee_100m', label: '100M coffee brewed!', value: () => gameState.totalCoffeeAllTime, threshold: 100000000 },
+  { id: 'ms_coffee_1b', label: '1B coffee brewed!', value: () => gameState.totalCoffeeAllTime, threshold: 1000000000 },
+  { id: 'ms_coffee_10b', label: '10B coffee — prestige awaits!', value: () => gameState.totalCoffeeAllTime, threshold: 10000000000 },
+  { id: 'ms_buildings_10', label: '10 buildings owned!', value: () => Object.values(gameState.items).reduce((s, i) => s + (i?.count ?? 0), 0), threshold: 10 },
+  { id: 'ms_buildings_100', label: '100 buildings owned!', value: () => Object.values(gameState.items).reduce((s, i) => s + (i?.count ?? 0), 0), threshold: 100 },
+  { id: 'ms_buildings_1000', label: '1,000 buildings owned!', value: () => Object.values(gameState.items).reduce((s, i) => s + (i?.count ?? 0), 0), threshold: 1000 },
+  { id: 'ms_prestige_1', label: 'First prestige! 🎉', value: () => gameState.stats?.totalPrestiges ?? 0, threshold: 1 },
+];
+
+function checkMilestones() {
+  for (const m of MILESTONES) {
+    if (!gameState.celebratedMilestones.has(m.id) && m.value() >= m.threshold) {
+      gameState.celebratedMilestones.add(m.id);
+      if (typeof celebrateMilestone === 'function') celebrateMilestone(m.label);
+      saveGame();
+    }
+  }
+}
+
 function claimAchievementReward(achievement, quiet = false) {
+
   if (!achievement.reward || !gameState.unclaimedAchievements.has(achievement.id)) return '';
   
   gameState.unclaimedAchievements.delete(achievement.id);
