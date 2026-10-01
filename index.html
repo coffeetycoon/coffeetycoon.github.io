@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coffee Tycoon v1.14</title>
+<title>Coffee Tycoon v1.17</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/global.css">
@@ -12,6 +12,7 @@
 </head>
 <body>
 <div id="notificationContainer" class="notification-container"></div>
+<div id="superCoffeeLayer"></div>
 
 <div id="instructionsOverlay" class="overlay hidden">
   <div class="instructions-modal">
@@ -38,13 +39,19 @@
       </div>
       <div class="key-item">
         <span class="key">5</span>
-        <span>Prestige - Reset for bonuses</span>
+        <span>Roastery - Roast beans into blends</span>
       </div>
       <div class="key-item">
         <span class="key">6</span>
+        <span>Prestige - Reset for bonuses</span>
+      </div>
+      <div class="key-item">
+        <span class="key">7</span>
         <span>Achievements - Track progress & earn rewards</span>
       </div>
     </div>
+    <h3 style="color: #d4a574; margin-top: 24px;">Super Coffee:</h3>
+    <p>Keep an eye out for <strong>☕ Super Coffees</strong> popping up around the screen — click them for temporary bonuses like Espresso Rush (2× CPS) or Click Frenzy! Rare <strong>✨ Golden Super Coffees</strong> can be bought with Golden Coffee for even stronger buffs, and mysterious <strong>❓ Mystery Coffee Beans</strong> grant rare rewards. Watch the skies for <strong>⛈ coffee storms</strong> that boost all CPS 2×–5×!</p>
     <h3 style="color: #d4a574; margin-top: 24px;">Goal:</h3>
     <p>Earn coffee, unlock upgrades progressively, and reach 10 billion coffee to prestige for permanent Golden Coffee bonuses!</p>
     <button class="start-btn" id="startGameBtn">Start Brewing!</button>
@@ -54,21 +61,20 @@
 <div id="versionModal" class="modal hidden">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Coffee Tycoon v1.16</div>
+      <div class="modal-title">Coffee Tycoon v1.17</div>
       <button class="modal-close" id="closeVersionModal">×</button>
     </div>
     <div class="version-content">
-      <h3>What's New in v1.16</h3>
+      <h3>What's New in v1.17</h3>
       <ul>
-        <li><strong>Roastery:</strong> A new golden upgrade (8 Golden Coffee) unlocks the Roastery tab</li>
-        <li><strong>Green Beans:</strong> Buy beans starting at 1B coffee each, scaling 1.15× per lifetime bean purchased</li>
-        <li><strong>Blend Roasting:</strong> Roast beans into 5 blends — Light, Medium, Dark, French, Italian — each with a temporary global boost</li>
-        <li><strong>Active Blends:</strong> Activate one blend at a time for timed boosts (e.g. French Roast: +100% CPS for 2 min); all buffs stack multiplicatively</li>
-        <li><strong>Roastery Golden Upgrades:</strong> Master Roaster (roasting costs 25% fewer beans), Blend Mastery (blends last 50% longer), Double Batch (2 blends per roast)</li>
-        <li><strong>New Achievements:</strong> Bean Counter and Blend Connoisseur</li>
+        <li><strong>Super Coffee:</strong> Random ☕ Super Coffees pop up around the screen — click them for temporary bonuses like Espresso Rush (2× CPS), Click Frenzy (5× clicks), Instant Brew, or Storm Call</li>
+        <li><strong>Golden Super Coffee:</strong> Rare ✨ spawns purchasable for 5 Golden Coffee — grants 3× CPS for 5 minutes</li>
+        <li><strong>Coffee Storms:</strong> ⛈ Random storms boost all CPS 2×–5× for 1–2 minutes</li>
+        <li><strong>Mystery Coffee Beans:</strong> Rare ❓ spawns grant jackpot rewards — Golden Coffee, permanent +5% CPS, Time Warp, or a Bean Feast</li>
+        <li><strong>New Achievements:</strong> Super Sipper, Super Collector, Golden Gulp, Storm Chaser, Mystery Solver</li>
       </ul>
       <h3>About</h3>
-      <p><strong>Version:</strong> 1.16</p>
+      <p><strong>Version:</strong> 1.17</p>
       <p><strong>Created by:</strong> Sanchit P.</p>
       <p><strong>Play Online:</strong> <a href="https://coffeetycoon.github.io/" target="_blank">coffeetycoon.github.io</a></p>
       <p><strong>GitHub:</strong> <a href="https://github.com/SPYPProjects/Website" target="_blank">View Repository</a></p>
@@ -90,6 +96,7 @@
     <div class="stat">CPS: <span id="cpsDisplay">0</span></div>
     <div class="stat">Golden Coffee: <span id="goldenCoffeeDisplay">0</span></div>
   </div>
+  <div id="stormBanner" class="storm-banner hidden"></div>
 </header>
 
 <main>
@@ -108,6 +115,7 @@
         <button id="coffeeButton">☕</button>
         <div style="font-size: 1.2rem; margin-top: 16px;">Click the button to brew coffee!</div>
         <div style="margin-top: 12px; opacity: 0.8;">Each click: +<span id="clickPowerDisplay">1</span> Coffee</div>
+        <div id="activeEffectsStrip" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></div>
       </div>
     </div>
     <div id="shopTab" class="tab-content">

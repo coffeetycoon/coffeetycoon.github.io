@@ -11,7 +11,7 @@ A game where you brew coffee
   - [Option 1: File](#option-1-file)
   - [Option 2: Link](#option-2-link)
 - [Updates](#updates)
-  - [Latest Version](#latest-version-v116--roasters-and-coasters)
+  - [Latest Version](#latest-version-v117--super-coffee)
 - [Future Updates](#future-updates)
 - [Undecided Additions](#undecided-additions)
 
@@ -35,28 +35,20 @@ A game where you brew coffee
 
 ## Updates
 
-### Latest Version: v1.16 – Roasters and Coasters
+### Latest Version: v1.17 – Super Coffee
 **Release Date:** Sep 30, 2026
 
 **Key Features**
-- Roastery: a new golden upgrade (8 Golden Coffee) unlocks the Roastery tab
-- Green Beans: buy beans starting at 1B coffee each, scaling 1.15× per lifetime bean purchased
-- Blend Roasting: roast beans into 5 blends — Light, Medium, Dark, French, Italian — each with a temporary global boost
-- Active Blends: activate one blend at a time for timed boosts (e.g. French Roast: +100% CPS for 2 min); all buffs stack multiplicatively
-- Roastery Golden Upgrades: Master Roaster (roasting costs 25% fewer beans), Blend Mastery (blends last 50% longer), Double Batch (2 blends per roast)
-- New Achievements: Bean Counter and Blend Connoisseur
+- Super Coffee: random ☕ Super Coffees pop up around the screen — click for temporary bonuses (Espresso Rush 2× CPS, Click Frenzy 5× clicks, Instant Brew, Storm Call)
+- Golden Super Coffee: rare ✨ spawns purchasable for 5 Golden Coffee — 3× CPS for 5 minutes
+- Coffee Storms: ⛈ random storms boost all CPS 2×–5× for 1–2 minutes
+- Mystery Coffee Beans: rare ❓ spawns grant jackpot rewards — Golden Coffee, permanent +5% CPS, Time Warp, or Bean Feast
+- New Achievements: Super Sipper, Super Collector, Golden Gulp, Storm Chaser, Mystery Solver
 - Bug Fixes: Lab achievements now appear in the Achievements tab; prestige discloses that Lab drinks and Roastery stock persist
 
 ---
 
 ## Future Updates
-
-### v1.17 – Super Coffee
-- Randomly spawning Super Coffee with temporary bonuses (spawns as a button in a random spot on screen)
-- Occasional Golden Super Coffee (need to purchase with stronger buffs)
-- Coffee storms temporarily boost all CPS 2×–5×
-- Achievements for collecting Super Coffees
-- Chance to spawn Mystery Coffee Beans for rare boosts
 
 ### v1.18 – Stats Window
 - Stats button with tabs for total coffee, CPS, golden coffee
