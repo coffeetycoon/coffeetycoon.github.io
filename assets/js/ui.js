@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   COFFEE TYCOON v1.14 - UI & NOTIFICATIONS
+   COFFEE TYCOON v1.18 - UI & NOTIFICATIONS
    UI Rendering, Notifications, Modals, and Event Handlers
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -996,6 +996,309 @@ function renderActiveEffectsStrip() {
   strip.style.display = html ? 'flex' : 'none';
 }
 
+// ═══ STATS WINDOW (v1.18) ═══
+function fmtExact(v) {
+  if (!isFinite(v)) return '0';
+  if (Math.abs(v) >= 1000) return Math.floor(v).toLocaleString('en-US');
+  return (Math.round(v * 10) / 10).toLocaleString('en-US');
+}
+
+function fmtDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${s % 60}s`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return `${h}h ${m % 60}m`;
+  return `${Math.floor(h / 24)}d ${h % 24}h`;
+}
+
+function fmtClock(t) {
+  return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function openStatsModal() {
+  document.getElementById('statsModal').classList.remove('hidden');
+  renderStatsActiveTab();
+}
+
+function closeStatsModal() {
+  document.getElementById('statsModal').classList.add('hidden');
+  hideChartTooltip();
+}
+
+function switchStatsTab(name) {
+  document.querySelectorAll('.stats-tab').forEach(b => b.classList.toggle('active', b.dataset.statsTab === name));
+  document.querySelectorAll('.stats-pane').forEach(p => p.classList.toggle('hidden', p.id !== `stats-${name}`));
+  renderStatsActiveTab();
+}
+
+function renderStatsActiveTab() {
+  const active = document.querySelector('.stats-tab.active');
+  const name = active ? active.dataset.statsTab : 'overview';
+  if (name === 'overview') renderStatsOverview();
+  else if (name === 'production') renderStatsProduction();
+  else if (name === 'buildings') renderStatsBuildings();
+  else if (name === 'multipliers') renderStatsMultipliers();
+  else if (name === 'lifetime') renderStatsLifetime();
+}
+
+function renderStatsOverview() {
+  const el = document.getElementById('stats-overview');
+  const s = ensureStats();
+  const cps = calculateTotalCPS();
+  const played = s.startedAt ? fmtDuration(Date.now() - s.startedAt) : '—';
+  el.innerHTML = `
+    <div class="stats-cards">
+      <div class="stats-card"><div class="card-label">Total Coffee</div><div class="card-value" title="${fmtExact(gameState.totalCoffeeAllTime)}">${formatNumber(gameState.totalCoffeeAllTime)}</div></div>
+      <div class="stats-card"><div class="card-label">CPS</div><div class="card-value" title="${fmtExact(cps)}">${formatNumber(cps)}</div></div>
+      <div class="stats-card"><div class="card-label">Golden Coffee</div><div class="card-value" title="${fmtExact(gameState.goldenCoffee)}">${formatNumber(gameState.goldenCoffee)}</div></div>
+    </div>
+    <div class="stats-mini-grid">
+      <div class="stats-mini"><span class="mini-label">Time played</span><span class="mini-value">${played}</span></div>
+      <div class="stats-mini"><span class="mini-label">Manual clicks</span><span class="mini-value">${fmtExact(s.totalClicks)}</span></div>
+      <div class="stats-mini"><span class="mini-label">Prestiges</span><span class="mini-value">${fmtExact(s.totalPrestiges)}</span></div>
+      <div class="stats-mini"><span class="mini-label">Max CPS</span><span class="mini-value" title="${fmtExact(s.maxCPS)}">${formatNumber(s.maxCPS)}</span></div>
+    </div>`;
+}
+
+// --- Canvas charts ---
+function hideChartTooltip() {
+  document.getElementById('chartTooltip').classList.add('hidden');
+}
+
+function showChartTooltip(x, y, timeHtml, valueHtml) {
+  const tt = document.getElementById('chartTooltip');
+  tt.innerHTML = `<div class="tt-time">${timeHtml}</div><div class="tt-value">${valueHtml}</div>`;
+  tt.classList.remove('hidden');
+  const pad = 14;
+  tt.style.left = `${Math.min(x + pad, window.innerWidth - tt.offsetWidth - 8)}px`;
+  tt.style.top = `${Math.max(y - tt.offsetHeight - pad, 8)}px`;
+}
+
+// points: [{ t, v }]. Draws a filled line chart; hover shows exact values.
+function drawLineChart(canvas, points, color) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  canvas._chartPoints = points;
+  const padL = 8, padR = 8, padT = 12, padB = 22;
+  if (!points.length) {
+    ctx.fillStyle = '#9a8a70';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Not enough data yet — the timeline samples every 30 seconds.', W / 2, H / 2);
+    return;
+  }
+  let min = Infinity, max = -Infinity;
+  points.forEach(p => { if (p.v < min) min = p.v; if (p.v > max) max = p.v; });
+  if (max === min) { max = min * 1.1 + 1; min = Math.max(0, min * 0.9 - 1); }
+  const span = max - min || 1;
+  const x = i => padL + (i / Math.max(1, points.length - 1)) * (W - padL - padR);
+  const y = v => padT + (1 - (v - min) / span) * (H - padT - padB);
+
+  // fill
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(points[0].v));
+  points.forEach((p, i) => ctx.lineTo(x(i), y(p.v)));
+  ctx.lineTo(x(points.length - 1), H - padB);
+  ctx.lineTo(x(0), H - padB);
+  ctx.closePath();
+  ctx.fillStyle = color + '22';
+  ctx.fill();
+  // line
+  ctx.beginPath();
+  points.forEach((p, i) => i ? ctx.lineTo(x(i), y(p.v)) : ctx.moveTo(x(i), y(p.v)));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // axis labels
+  ctx.fillStyle = '#9a8a70';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(fmtClock(points[0].t), padL, H - 6);
+  ctx.textAlign = 'right';
+  ctx.fillText(fmtClock(points[points.length - 1].t), W - padR, H - 6);
+  ctx.textAlign = 'left';
+  ctx.fillText(formatNumber(max), padL, padT);
+  canvas._chartGeom = { x, y, padL, padR, padT, padB, W, H };
+}
+
+function attachLineHover(canvas, valueLabel) {
+  canvas.onmousemove = (e) => {
+    const pts = canvas._chartPoints, g = canvas._chartGeom;
+    if (!pts || !pts.length) return;
+    const r = canvas.getBoundingClientRect();
+    const mx = (e.clientX - r.left) * (canvas.width / r.width);
+    let best = 0, bd = Infinity;
+    pts.forEach((p, i) => { const d = Math.abs(g.x(i) - mx); if (d < bd) { bd = d; best = i; } });
+    const p = pts[best];
+    const rect = canvas.getBoundingClientRect();
+    showChartTooltip(e.clientX, e.clientY, fmtClock(p.t), `${valueLabel}: ${fmtExact(p.v)}`);
+    // crosshair
+    const ctx = canvas.getContext('2d');
+    drawLineChart(canvas, pts, canvas._chartColor);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(g.x(best), g.padT);
+    ctx.lineTo(g.x(best), g.H - g.padB);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  canvas.onmouseleave = hideChartTooltip;
+}
+
+function renderStatsProduction() {
+  const s = ensureStats();
+  const cpsPts = s.history.map(h => ({ t: h[0], v: h[1] }));
+  const cofPts = s.history.map(h => ({ t: h[0], v: h[2] }));
+  const cpsCanvas = document.getElementById('cpsChart');
+  const cofCanvas = document.getElementById('coffeeChart');
+  cpsCanvas._chartColor = '#ffd700';
+  cofCanvas._chartColor = '#d4a574';
+  drawLineChart(cpsCanvas, cpsPts, '#ffd700');
+  drawLineChart(cofCanvas, cofPts, '#d4a574');
+  attachLineHover(cpsCanvas, 'CPS');
+  attachLineHover(cofCanvas, 'Total coffee');
+  document.getElementById('historyNote').textContent =
+    s.history.length ? `Showing ${s.history.length} sample${s.history.length === 1 ? '' : 's'} — one every 30 seconds, up to 8 hours of history.` : '';
+}
+
+// bars: [{ label, value }]. Horizontal bar chart; hover shows exact values.
+function drawBarChart(canvas, bars) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const owned = bars.filter(b => b.value > 0);
+  canvas._barData = owned;
+  if (!owned.length) {
+    ctx.fillStyle = '#9a8a70';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No production yet — buy buildings in the Shop.', W / 2, H / 2);
+    return;
+  }
+  const max = Math.max(...owned.map(b => b.value));
+  const rowH = Math.min(30, (H - 16) / owned.length);
+  const labelW = 150, padR = 70;
+  canvas._barGeom = { rowH, labelW, padR, W, H };
+  owned.forEach((b, i) => {
+    const y = 8 + i * rowH;
+    ctx.fillStyle = '#e8d5b5';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(b.label, labelW - 8, y + rowH / 2 + 4);
+    const bw = (b.value / max) * (W - labelW - padR);
+    const grad = ctx.createLinearGradient(labelW, 0, labelW + bw, 0);
+    grad.addColorStop(0, '#8a5a2b');
+    grad.addColorStop(1, '#d4a574');
+    ctx.fillStyle = grad;
+    ctx.fillRect(labelW, y + 4, Math.max(2, bw), rowH - 8);
+    ctx.fillStyle = '#9a8a70';
+    ctx.textAlign = 'left';
+    ctx.fillText(formatNumber(b.value), labelW + bw + 6, y + rowH / 2 + 4);
+  });
+  canvas.onmousemove = (e) => {
+    const g = canvas._barGeom, data = canvas._barData;
+    if (!g || !data) return;
+    const r = canvas.getBoundingClientRect();
+    const my = (e.clientY - r.top) * (canvas.height / r.height);
+    const i = Math.floor((my - 8) / g.rowH);
+    if (i < 0 || i >= data.length) { hideChartTooltip(); return; }
+    showChartTooltip(e.clientX, e.clientY, data[i].label, `CPS: ${fmtExact(data[i].value)}`);
+  };
+  canvas.onmouseleave = hideChartTooltip;
+}
+
+function renderStatsBuildings() {
+  const filter = (document.getElementById('buildingFilter').value || '').toLowerCase();
+  const { total, perItem } = calculateCPSBreakdown();
+  const s = ensureStats();
+  const tbody = document.querySelector('#buildingsTable tbody');
+  const rows = shopItems
+    .map(item => {
+      const count = gameState.items[item.id] ? (gameState.items[item.id].count ?? 0) : 0;
+      const cps = perItem[item.id] || 0;
+      return { item, count, cps };
+    })
+    .filter(r => r.count > 0 || r.cps > 0)
+    .filter(r => !filter || r.item.name.toLowerCase().includes(filter))
+    .sort((a, b) => b.cps - a.cps);
+  tbody.innerHTML = rows.map(r => {
+    const share = total > 0 ? (r.cps / total * 100) : 0;
+    const life = s.coffeeByBuilding[r.item.id] || 0;
+    return `<tr>
+      <td>${r.item.name}</td>
+      <td>${fmtExact(r.count)}</td>
+      <td title="${fmtExact((perItem[r.item.id] || 0) / Math.max(1, r.count))}">${formatNumber(r.count ? (perItem[r.item.id] || 0) / r.count : 0)}</td>
+      <td title="${fmtExact(r.cps)}">${formatNumber(r.cps)}</td>
+      <td>${share.toFixed(1)}%</td>
+      <td title="${fmtExact(life)}">${formatNumber(life)}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:#9a8a70;">No buildings match.</td></tr>`;
+  drawBarChart(document.getElementById('buildingChart'), rows.map(r => ({ label: r.item.name, value: r.cps })));
+}
+
+function renderStatsMultipliers() {
+  const el = document.getElementById('multipliersList');
+  const drinkM = getDrinkMultipliers().cps;
+  const blendM = getBlendMultipliers().cps;
+  const superM = getSuperMultipliers().cps;
+  const activeDrinks = gameState.activeDrinks.length;
+  const blend = gameState.activeBlend ? blendRecipes.find(b => b.id === gameState.activeBlend.id) : null;
+  const storm = gameState.storm && gameState.storm.expiresAt > Date.now() ? gameState.storm : null;
+  const rows = [
+    { name: 'Base building output', detail: 'Sum of all buildings × their shop upgrades', value: '×1' },
+    { name: 'Prestige', detail: `${fmtExact(gameState.goldenCoffee)} Golden Coffee`, value: `×${gameState.prestigeMultiplier.toFixed(2)}` },
+    { name: 'Permanent GC bonus', detail: 'Golden upgrades', value: `×${(gameState.permanentCPSBonus || 1).toFixed(2)}` },
+    { name: 'Mystery Bean bonus', detail: 'Permanent, from Mystery Coffee Beans', value: `×${(gameState.mysteryCPSBonus || 1).toFixed(3)}` },
+    { name: 'Lab drinks', detail: activeDrinks ? `${activeDrinks} drink${activeDrinks === 1 ? '' : 's'} active` : 'No drinks active', value: `×${drinkM.toFixed(2)}` },
+    { name: 'Roastery blend', detail: blend ? blend.name : 'No blend active', value: `×${blendM.toFixed(2)}` },
+    { name: 'Super Coffee', detail: gameState.superEffects.length ? `${gameState.superEffects.length} effect${gameState.superEffects.length === 1 ? '' : 's'} active` : 'No effects active', value: `×${superM.toFixed(2)}` },
+    { name: 'Coffee storm', detail: storm ? `×${storm.mult} storm raging` : 'No storm', value: storm ? `×${storm.mult.toFixed(1)}` : '×1' },
+  ];
+  const total = calculateTotalCPS();
+  el.innerHTML = rows.map(r => `
+    <div class="mult-row">
+      <div><div class="mult-name">${r.name}</div><div class="mult-detail">${r.detail}</div></div>
+      <div class="mult-value">${r.value}</div>
+    </div>`).join('') + `
+    <div class="mult-row" style="border-bottom:none;margin-top:8px;">
+      <div><div class="mult-name">Total CPS</div><div class="mult-detail">Base × all multipliers</div></div>
+      <div class="mult-value" title="${fmtExact(total)}">${formatNumber(total)}</div>
+    </div>`;
+}
+
+function renderStatsLifetime() {
+  const el = document.getElementById('lifetimeGrid');
+  const s = ensureStats();
+  const fromBuildings = Object.values(s.coffeeByBuilding).reduce((a, b) => a + b, 0);
+  const earned = gameState.achievements.filter(a => a.earned).length;
+  const items = [
+    ['Total coffee earned', gameState.totalCoffeeAllTime],
+    ['Coffee from clicks', s.clicksCoffee],
+    ['Coffee from buildings', fromBuildings],
+    ['Coffee while away', s.coffeeOffline],
+    ['Manual clicks', s.totalClicks],
+    ['Prestiges', s.totalPrestiges],
+    ['Highest CPS', s.maxCPS],
+    ['Golden Coffee earned', s.lifetimeGoldenEarned],
+    ['Green beans bought', gameState.lifetimeBeans],
+    ['Blends roasted', gameState.lifetimeBlendsRoasted],
+    ['Blends activated', gameState.lifetimeBlendsActivated],
+    ['Drink recipes discovered', gameState.discoveredDrinks.size],
+    ['Super Coffees collected', gameState.lifetimeSuperCoffee],
+    ['Golden Super Coffees', gameState.lifetimeGoldenSuperCoffee],
+    ['Coffee storms weathered', gameState.lifetimeStorms],
+    ['Mystery Beans found', gameState.lifetimeMysteryBeans],
+    ['Achievements earned', `${earned}/${gameState.achievements.length}`],
+  ];
+  el.innerHTML = items.map(([label, v]) =>
+    `<div class="stats-mini"><span class="mini-label">${label}</span><span class="mini-value" title="${typeof v === 'number' ? fmtExact(v) : v}">${typeof v === 'number' ? formatNumber(v) : v}</span></div>`
+  ).join('');
+}
+
 // ═══ PRESTIGE RENDERING ═══
 function renderPrestige() {
   const container = document.getElementById('prestigeContent');
@@ -1236,6 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const earned = gameState.clickPower * gameState.prestigeMultiplier * getDrinkMultipliers().click * getBlendMultipliers().click * getSuperMultipliers().click;
     gameState.coffee += earned;
     gameState.totalCoffeeAllTime += earned;
+    trackClick(earned); // v1.18 stats
 
     playSfx('buttonclick');
 
@@ -1295,6 +1599,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = ['brew', 'shop', 'upgrades', 'lab', 'roastery', 'prestige', 'achievements'];
     const index = parseInt(e.key) - 1;
 
+    if (e.key === '8') {
+      openStatsModal();
+      return;
+    }
+
     if (index >= 0 && index < tabs.length) {
       const btn = document.querySelector(`[data-tab="${tabs[index]}"]`);
       if (btn) btn.click();
@@ -1305,12 +1614,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('helpBtn').onclick = openHelp;
   document.getElementById('infoBtn').onclick = openVersionInfo;
   document.getElementById('settingsBtn').onclick = openSettingsModal;
+  document.getElementById('statsBtn').onclick = openStatsModal;
+  document.getElementById('closeStatsModal').onclick = closeStatsModal;
   document.getElementById('startGameBtn').onclick = closeInstructions;
   document.getElementById('closeVersionModal').onclick = closeVersionInfo;
   document.getElementById('closeAchievementModal').onclick = closeAchievementModal;
   document.getElementById('closeSettingsModal').onclick = closeSettingsModal;
   document.getElementById('closeOfflineModal').onclick = closeOfflineModal;
   document.getElementById('offlineContinueBtn').onclick = closeOfflineModal;
+
+  document.getElementById('statsModal').onclick = (e) => {
+    if (e.target.id === 'statsModal') {
+      closeStatsModal();
+    }
+  };
+  document.querySelectorAll('.stats-tab').forEach(btn => {
+    btn.onclick = () => switchStatsTab(btn.dataset.statsTab);
+  });
+  document.getElementById('buildingFilter').addEventListener('input', renderStatsBuildings);
 
   document.getElementById('offlineModal').onclick = (e) => {
     if (e.target.id === 'offlineModal') {
@@ -1409,12 +1730,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const elapsedSeconds = Math.min((now - lastTickTime) / 1000, 60); // clamp huge pauses
     lastTickTime = now;
 
-    const totalCPS = calculateTotalCPS();
-    if (totalCPS > 0 && elapsedSeconds > 0) {
-      const earned = totalCPS * elapsedSeconds;
-      gameState.coffee += earned;
-      gameState.totalCoffeeAllTime += earned;
-    }
+    // creditProduction records per-building lifetime stats (v1.18)
+    const { totalCPS } = creditProduction(elapsedSeconds);
 
     // Fast, cheap status readout every tick
     document.getElementById('coffeeDisplay').textContent = formatNumber(gameState.coffee);
@@ -1432,6 +1749,10 @@ document.addEventListener('DOMContentLoaded', () => {
     regenSwaps();
     tickBlendExpiry();
     tickSuperCoffee();
+    sampleStatsHistory(); // v1.18: timeline sample + max CPS
+    if (!document.getElementById('statsModal').classList.contains('hidden')) {
+      renderStatsActiveTab(); // keep open stats window live
+    }
     updateUI();
   }, 1000);
 
@@ -1457,6 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const earnings = cps * elapsedSeconds * getDrinkMultipliers().offline * getBlendMultipliers().offline;
           gameState.coffee += earnings;
           gameState.totalCoffeeAllTime += earnings;
+          ensureStats().coffeeOffline += earnings; // v1.18 stats
           if (elapsedSeconds >= 60) {
             showNotification('Welcome Back!', `+${formatNumber(earnings)} coffee earned while away`, 'default');
           }
